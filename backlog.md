@@ -1,3 +1,5 @@
+Story Points Range from 1-10 on how complex the task is<br>
+
 US 01.01.01 As an entrant, I want to join the waiting list for a specific event  
 Story Points:  
 Risk: 
