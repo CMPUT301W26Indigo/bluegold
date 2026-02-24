@@ -1,33 +1,59 @@
 ﻿Entrants/events
 "Allows user to browse and search for events, using both plaintext and tags"
+-Browse events
+-Search events
+-filter by tags
 
 
 Entrants/events/all events
 "Offers info on events like waitlist size, dates, geolocation requirements, and allow entering and canceling waiting list"
+-see waitlist size
+-see dates
+-see geolocation
+-Allow registering and canceling waiting list
 
 
 entrants/my-events
 "Allows users to see the events they signed up for and their current statuses like waiting, selected, rejected, or to confirm"
+-see signed up events
+-see events entered
+-see rejected events
+-see events confirmed
 
 
 entrants/notifications
 "Allows users to see their notifications"
+-see notifications
 
 
 entrants/profile
-"Allows users to see their profiles and all their data like they're phone/phone number, email, and name"
+"Allows users to see their profiles and all their data like they're phone/phone number, email, name, and deleting their account"
+-Phone/phone number
+-email
+-name
+-delete account
 
 
 Organizer/events
 "Allows organizers to create and browse their events"
+-browse events
 
 
 Organizer/Create
 "Allows an organizer to fully detail the event they want to create, the dates, capacity, pricing, poster, geolocation, tags, and create QR code"
+-create events
+-set dates
+-set capacity
+-set pricing
+-set poster
+-set geolocation
+-set tags
+-create qr code
 
 
 Organizer/manage/allEvents
 "Allows organizers to manage their events including exporting a CSV for waitlist and confirmed list"
+-export CSV
 
 
 /admin
@@ -36,11 +62,17 @@ Organizer/manage/allEvents
 
 /admin/events
 "allows admins to manage events and see flagged ones and to determine whether to remove them or not"
+-browse events
+-remove events
 
 
 /admin/profiles
 "Allows admins to manage and view users and remove harmful users"
+-browse users
+-remove users
 
 
 /admin/images
 "allows admins to browse through potentially harmful event images and choose whether or not to remove them"
+-browse event posters
+-remove event posters
