@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@android:drawable/dialog_holo_light_frame">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding"
+        android:gravity="center">
+
+        <!-- App Logo/Icon -->
+        <ImageView
+            android:layout_width="@dimen/icon_xl"
+            android:layout_height="@dimen/icon_xl"
+            android:layout_marginTop="@dimen/spacing_xxl"
+            android:layout_marginBottom="@dimen/spacing_lg"
+            android:src="@android:drawable/ic_menu_my_calendar"
+            android:contentDescription="@string/app_name"
+            app:tint="@color/primary_blue" />
+
+        <!-- App Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textAppearance="@style/TextAppearance.App.Headline1"
+            android:textAlignment="center"
+            android:layout_marginBottom="@dimen/spacing_sm" />
+
+        <!-- Subtitle -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fair and accessible event registration for everyone"
+            android:textAppearance="@style/TextAppearance.App.Body"
+            android:textColor="@color/text_secondary"
+            android:textAlignment="center"
+            android:layout_marginBottom="@dimen/spacing_xxl" />
+
+        <!-- Role Selection Cards -->
+
+        <!-- Entrant Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/entrantCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_lg"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardElevation="@dimen/elevation_md"
+            app:cardCornerRadius="@dimen/radius_lg">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_xl">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/spacing_md">
+
+                    <View
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="@color/background_blue_50" />
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_md"
+                        android:layout_height="@dimen/icon_md"
+                        android:layout_marginStart="-36dp"
+                        android:src="@android:drawable/ic_menu_agenda"
+                        android:contentDescription="@string/role_entrant"
+                        app:tint="@color/primary_blue" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/spacing_md"
+                        android:text="@string/role_entrant"
+                        android:textAppearance="@style/TextAppearance.App.Headline3" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Browse events, join waiting lists, and manage your registrations"
+                    android:textAppearance="@style/TextAppearance.App.Body"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="@dimen/spacing_md" />
+
+                <Button
+                    android:id="@+id/btnEnterAsEntrant"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/enter_as_entrant"
+                    app:backgroundTint="@color/primary_blue" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Organizer Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/organizerCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_lg"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardElevation="@dimen/elevation_md"
+            app:cardCornerRadius="@dimen/radius_lg">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_xl">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/spacing_md">
+
+                    <View
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="@color/background_green_50" />
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_md"
+                        android:layout_height="@dimen/icon_md"
+                        android:layout_marginStart="-36dp"
+                        android:src="@android:drawable/ic_menu_edit"
+                        android:contentDescription="@string/role_organizer"
+                        app:tint="@color/secondary_green" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/spacing_md"
+                        android:text="@string/role_organizer"
+                        android:textAppearance="@style/TextAppearance.App.Headline3" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Create events, manage waiting lists, and conduct lottery draws"
+                    android:textAppearance="@style/TextAppearance.App.Body"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="@dimen/spacing_md" />
+
+                <Button
+                    android:id="@+id/btnEnterAsOrganizer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/enter_as_organizer"
+                    app:backgroundTint="@color/secondary_green" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Admin Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/adminCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_xl"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardElevation="@dimen/elevation_md"
+            app:cardCornerRadius="@dimen/radius_lg">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_xl">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/spacing_md">
+
+                    <View
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@android:drawable/dialog_holo_light_frame"
+                        android:backgroundTint="@color/background_purple_50" />
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_md"
+                        android:layout_height="@dimen/icon_md"
+                        android:layout_marginStart="-36dp"
+                        android:src="@android:drawable/ic_menu_manage"
+                        android:contentDescription="@string/role_administrator"
+                        app:tint="@color/secondary_purple" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/spacing_md"
+                        android:text="@string/role_administrator"
+                        android:textAppearance="@style/TextAppearance.App.Headline3" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Manage events, profiles, and monitor system activity"
+                    android:textAppearance="@style/TextAppearance.App.Body"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginBottom="@dimen/spacing_md" />
+
+                <Button
+                    android:id="@+id/btnEnterAsAdmin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/enter_as_admin"
+                    app:backgroundTint="@color/secondary_purple" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme -->
+    <style name="Base.Theme.EventLotterySystem" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorPrimaryVariant">@color/primary_blue_dark</item>
+        <item name="colorOnPrimary">@color/text_white</item>
+        
+        <!-- Secondary colors -->
+        <item name="colorSecondary">@color/secondary_purple</item>
+        <item name="colorSecondaryVariant">@color/secondary_purple</item>
+        <item name="colorOnSecondary">@color/text_white</item>
+        
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/background_white</item>
+        <item name="colorSurface">@color/background_white</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/primary_blue</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+    </style>
+
+    <style name="Theme.EventLotterySystem" parent="Base.Theme.EventLotterySystem" />
+
+    <!-- Button Styles -->
+    <style name="Widget.App.Button" parent="Widget.Material3.Button">
+        <item name="android:textSize">@dimen/text_base</item>
+        <item name="android:paddingStart">@dimen/button_padding_horizontal</item>
+        <item name="android:paddingEnd">@dimen/button_padding_horizontal</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+    </style>
+
+    <style name="Widget.App.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textSize">@dimen/text_base</item>
+        <item name="android:paddingStart">@dimen/button_padding_horizontal</item>
+        <item name="android:paddingEnd">@dimen/button_padding_horizontal</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="cornerRadius">@dimen/radius_md</item>
+    </style>
+
+    <style name="Widget.App.Button.Small" parent="Widget.Material3.Button">
+        <item name="android:textSize">@dimen/text_sm</item>
+        <item name="android:paddingStart">@dimen/spacing_md</item>
+        <item name="android:paddingEnd">@dimen/spacing_md</item>
+        <item name="android:minHeight">@dimen/button_height_small</item>
+        <item name="cornerRadius">@dimen/radius_sm</item>
+    </style>
+
+    <!-- Card Styles -->
+    <style name="Widget.App.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardElevation">@dimen/card_elevation</item>
+        <item name="cardCornerRadius">@dimen/card_radius</item>
+        <item name="contentPadding">@dimen/card_padding</item>
+    </style>
+
+    <!-- Text Styles -->
+    <style name="TextAppearance.App.Headline1" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:textSize">@dimen/text_4xl</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.App.Headline2" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">@dimen/text_3xl</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.App.Headline3" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">@dimen/text_2xl</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.App.Title" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">@dimen/text_xl</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.App.Body" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">@dimen/text_base</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.App.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">@dimen/text_sm</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <style name="TextAppearance.App.Caption" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">@dimen/text_xs</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+
+    <!-- Chip/Badge Styles -->
+    <style name="Widget.App.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="chipBackgroundColor">@color/background_blue_50</item>
+        <item name="chipStrokeColor">@color/border_blue_200</item>
+        <item name="chipStrokeWidth">@dimen/border_thin</item>
+        <item name="android:textColor">@color/text_blue_900</item>
+    </style>
+
+    <!-- Input Field Styles -->
+    <style name="Widget.App.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/primary_blue</item>
+        <item name="hintTextColor">@color/text_secondary</item>
+    </style>
+
+    <!-- Bottom Navigation -->
+    <style name="Widget.App.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/primary_blue</item>
+        <item name="itemTextColor">@color/primary_blue</item>
+        <item name="android:background">@color/background_white</item>
+        <item name="elevation">@dimen/elevation_md</item>
+    </style>
+</resources>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_md"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardElevation="@dimen/elevation_sm"
+    app:cardCornerRadius="@dimen/radius_lg"
+    app:strokeWidth="@dimen/border_medium"
+    app:strokeColor="@color/border_gray_200">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/card_padding">
+
+        <!-- Event Name -->
+        <TextView
+            android:id="@+id/eventNameText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.Title"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/statusBadge"
+            tools:text="Summer Basketball Tournament" />
+
+        <!-- Status Badge -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/statusBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_white"
+            app:chipBackgroundColor="@color/status_open_green"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Open" />
+
+        <!-- Date and Time -->
+        <LinearLayout
+            android:id="@+id/dateTimeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/eventNameText">
+
+            <ImageView
+                android:layout_width="@dimen/icon_sm"
+                android:layout_height="@dimen/icon_sm"
+                android:src="@android:drawable/ic_menu_my_calendar"
+                android:contentDescription="@string/event_date"
+                app:tint="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/dateTimeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:textAppearance="@style/TextAppearance.App.BodySmall"
+                tools:text="June 15, 2026 • 2:00 PM - 6:00 PM" />
+
+        </LinearLayout>
+
+        <!-- Location -->
+        <LinearLayout
+            android:id="@+id/locationLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/dateTimeLayout">
+
+            <ImageView
+                android:layout_width="@dimen/icon_sm"
+                android:layout_height="@dimen/icon_sm"
+                android:src="@android:drawable/ic_dialog_map"
+                android:contentDescription="@string/location"
+                app:tint="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/locationText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:textAppearance="@style/TextAppearance.App.BodySmall"
+                tools:text="Community Center Arena" />
+
+        </LinearLayout>
+
+        <!-- Waitlist Count -->
+        <LinearLayout
+            android:id="@+id/waitlistLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/locationLayout">
+
+            <ImageView
+                android:layout_width="@dimen/icon_sm"
+                android:layout_height="@dimen/icon_sm"
+                android:src="@android:drawable/ic_menu_agenda"
+                android:contentDescription="@string/capacity"
+                app:tint="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/waitlistCountText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:textAppearance="@style/TextAppearance.App.BodySmall"
+                tools:text="28 / 50 on waiting list" />
+
+        </LinearLayout>
+
+        <!-- Tag Chips and Geolocation Badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/waitlistLayout">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/tagChips"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:chipSpacingHorizontal="@dimen/spacing_xs">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/tag1"
+                    style="@style/Widget.Material3.Chip.Assist.Elevated"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Sports" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/tag2"
+                    style="@style/Widget.Material3.Chip.Assist.Elevated"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Tournament" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/geolocationBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:chipBackgroundColor="@color/background_orange_50"
+                android:textColor="@color/text_orange_900"
+                app:chipStrokeColor="@color/border_orange_200"
+                tools:text="Within 10km"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
