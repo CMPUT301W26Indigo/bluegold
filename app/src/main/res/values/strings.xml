@@ -2,13 +2,13 @@
 <resources>
     <!-- App Name -->
     <string name="app_name">Event Lottery System</string>
-    
+
     <!-- Main Navigation -->
     <string name="nav_events">Events</string>
     <string name="nav_my_events">My Events</string>
     <string name="nav_notifications">Notifications</string>
     <string name="nav_profile">Profile</string>
-    
+
     <!-- Role Selection -->
     <string name="role_entrant">Entrant</string>
     <string name="role_organizer">Organizer</string>
@@ -16,7 +16,7 @@
     <string name="enter_as_entrant">Enter as Entrant</string>
     <string name="enter_as_organizer">Enter as Organizer</string>
     <string name="enter_as_admin">Enter as Admin</string>
-    
+
     <!-- Entrant Screens -->
     <string name="browse_events_title">Browse Events</string>
     <string name="search_events_hint">Search events by name or description…</string>
@@ -26,7 +26,7 @@
     <string name="my_events_title">My Events</string>
     <string name="notifications_title">Notifications</string>
     <string name="profile_title">My Profile</string>
-    
+
     <!-- Event Status -->
     <string name="status_open">Registration Open</string>
     <string name="status_closed">Registration Closed</string>
@@ -34,7 +34,7 @@
     <string name="status_selected">Selected</string>
     <string name="status_confirmed">Confirmed</string>
     <string name="status_lottery_drawn">Lottery Drawn</string>
-    
+
     <!-- Event Details -->
     <string name="join_waiting_list">Join Waiting List</string>
     <string name="leave_waiting_list">Leave Waiting List</string>
@@ -46,13 +46,13 @@
     <string name="description">Description</string>
     <string name="waitlist_count">%1$d / %2$d on waiting list</string>
     <string name="spots_available">%1$d spots available</string>
-    
+
     <!-- My Events Tabs -->
     <string name="tab_waiting">Waiting (%1$d)</string>
     <string name="tab_selected">Selected (%1$d)</string>
     <string name="tab_confirmed">Confirmed (%1$d)</string>
     <string name="tab_history">History (%1$d)</string>
-    
+
     <!-- Lottery Status -->
     <string name="lottery_status">Lottery Status:</string>
     <string name="waiting_for_draw">Waiting for lottery draw on %1$s</string>
@@ -61,7 +61,7 @@
     <string name="confirm_attendance">Confirm Attendance</string>
     <string name="decline">Decline</string>
     <string name="response_needed_by">Response needed by: %1$s</string>
-    
+
     <!-- Notifications -->
     <string name="unread_count">%1$d Unread</string>
     <string name="notification_selected_title">You\'ve Been Selected!</string>
@@ -70,7 +70,7 @@
     <string name="notification_not_selected_msg">Unfortunately, you were not selected for %1$s. You\'ve been added to the replacement pool.</string>
     <string name="notification_event_update">Event Update</string>
     <string name="view_event">View Event</string>
-    
+
     <!-- Profile -->
     <string name="change_photo">Change Photo</string>
     <string name="full_name">Full Name</string>
@@ -84,7 +84,7 @@
     <string name="email_notifications">Email Notifications</string>
     <string name="email_notifications_desc">Event reminders and updates</string>
     <string name="save_changes">Save Changes</string>
-    
+
     <!-- Organizer Screens -->
     <string name="my_events_organizer">My Events</string>
     <string name="create_new_event">Create New Event</string>
@@ -96,7 +96,7 @@
     <string name="view_qr">View QR</string>
     <string name="export_csv">Export CSV</string>
     <string name="draw_lottery">Draw Lottery</string>
-    
+
     <!-- Create Event -->
     <string name="create_event_title">Create New Event</string>
     <string name="event_name">Event Name *</string>
@@ -123,14 +123,14 @@
     <string name="free_events_note">Leave as 0 for free events</string>
     <string name="cancel">Cancel</string>
     <string name="create_event_generate_qr">Create Event &amp; Generate QR</string>
-    
+
     <!-- Manage Event -->
     <string name="overview">Overview</string>
     <string name="total_capacity">Total Capacity</string>
     <string name="entrant_locations">Entrant Locations</string>
     <string name="distance_away">%1$.1f km away</string>
     <string name="coordinates">Coordinates: %1$f, %2$f</string>
-    
+
     <!-- Lottery Draw -->
     <string name="lottery_draw_title">Lottery Draw</string>
     <string name="draw_configuration">Draw Configuration</string>
@@ -146,7 +146,7 @@
     <string name="lottery_info_2">• All entrants have equal probability of being selected</string>
     <string name="lottery_info_3">• Selected entrants will be notified immediately</string>
     <string name="lottery_info_4">• Lottery results are logged and cannot be modified</string>
-    
+
     <!-- Confirmed Entrants -->
     <string name="confirmed_entrants_title">Confirmed Entrants</string>
     <string name="total_confirmed">Total Confirmed</string>
@@ -155,7 +155,7 @@
     <string name="send_notification_to_all">Send Notification to All Confirmed</string>
     <string name="enter_message">Enter message to send to all confirmed entrants…</string>
     <string name="send_notification">Send Notification</string>
-    
+
     <!-- Admin Screens -->
     <string name="admin_dashboard_title">Admin Dashboard</string>
     <string name="items_require_attention">%1$d Items Require Attention</string>
@@ -169,7 +169,7 @@
     <string name="manage_users">Manage Users</string>
     <string name="review_images">Review Images</string>
     <string name="recent_activity">Recent Activity</string>
-    
+
     <!-- Manage Events (Admin) -->
     <string name="manage_events_title">Manage Events</string>
     <string name="search_events">Search events…</string>
@@ -181,7 +181,7 @@
     <string name="view_details">View Details</string>
     <string name="dismiss_flags">Dismiss Flags</string>
     <string name="remove_event">Remove Event</string>
-    
+
     <!-- Review Images (Admin) -->
     <string name="review_images_title">Review Event Images</string>
     <string name="all_images">All Images</string>
@@ -191,7 +191,7 @@
     <string name="dismiss">Dismiss</string>
     <string name="remove">Remove</string>
     <string name="recent_uploads">Recent Uploads</string>
-    
+
     <!-- Manage Users (Admin) -->
     <string name="manage_users_title">Manage Users</string>
     <string name="search_users">Search by name, email, or phone…</string>
@@ -205,13 +205,13 @@
     <string name="remove_user">Remove User</string>
     <string name="events_joined">%1$d events joined</string>
     <string name="events_created">%1$d events created</string>
-    
+
     <!-- Common -->
     <string name="active">Active</string>
     <string name="hours_ago">%1$d hours ago</string>
     <string name="days_ago">%1$d days ago</string>
     <string name="at_time">at %1$s</string>
-    
+
     <!-- Tags -->
     <string name="tag_sports">Sports</string>
     <string name="tag_music">Music</string>
@@ -220,10 +220,52 @@
     <string name="tag_outdoor">Outdoor</string>
     <string name="tag_tournament">Tournament</string>
     <string name="tag_workshop">Workshop</string>
-    
+
     <!-- Error Messages -->
     <string name="error_network">Network error. Please check your connection.</string>
     <string name="error_generic">Something went wrong. Please try again.</string>
     <string name="error_location_permission">Location permission required for this event.</string>
     <string name="error_outside_radius">You are outside the required radius for this event.</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="lorem_ipsum">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
+        volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
+        dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad
+        litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend
+        diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a,
+        ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
+        Suspendisse interdum ornare ante. Aliquam nec cursus lorem. Morbi id magna felis. Vivamus
+        egestas, est a condimentum egestas, turpis nisl iaculis ipsum, in dictum tellus dolor sed
+        neque. Morbi tellus erat, dapibus ut sem a, iaculis tincidunt dui. Interdum et malesuada
+        fames ac ante ipsum primis in faucibus. Curabitur et eros porttitor, ultricies urna vitae,
+        molestie nibh. Phasellus at commodo eros, non aliquet metus. Sed maximus nisl nec dolor
+        bibendum, vel congue leo egestas.\n\n
+        Sed interdum tortor nibh, in sagittis risus mollis quis. Curabitur mi odio, condimentum sit
+        amet auctor at, mollis non turpis. Nullam pretium libero vestibulum, finibus orci vel,
+        molestie quam. Fusce blandit tincidunt nulla, quis sollicitudin libero facilisis et. Integer
+        interdum nunc ligula, et fermentum metus hendrerit id. Vestibulum lectus felis, dictum at
+        lacinia sit amet, tristique id quam. Cras eu consequat dui. Suspendisse sodales nunc ligula,
+        in lobortis sem porta sed. Integer id ultrices magna, in luctus elit. Sed a pellentesque
+        est.\n\n
+        Aenean nunc velit, lacinia sed dolor sed, ultrices viverra nulla. Etiam a venenatis nibh.
+        Morbi laoreet, tortor sed facilisis varius, nibh orci rhoncus nulla, id elementum leo dui
+        non lorem. Nam mollis ipsum quis auctor varius. Quisque elementum eu libero sed commodo. In
+        eros nisl, imperdiet vel imperdiet et, scelerisque a mauris. Pellentesque varius ex nunc,
+        quis imperdiet eros placerat ac. Duis finibus orci et est auctor tincidunt. Sed non viverra
+        ipsum. Nunc quis augue egestas, cursus lorem at, molestie sem. Morbi a consectetur ipsum, a
+        placerat diam. Etiam vulputate dignissim convallis. Integer faucibus mauris sit amet finibus
+        convallis.\n\n
+        Phasellus in aliquet mi. Pellentesque habitant morbi tristique senectus et netus et
+        malesuada fames ac turpis egestas. In volutpat arcu ut felis sagittis, in finibus massa
+        gravida. Pellentesque id tellus orci. Integer dictum, lorem sed efficitur ullamcorper,
+        libero justo consectetur ipsum, in mollis nisl ex sed nisl. Donec maximus ullamcorper
+        sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus
+        libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
+        vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
+    </string>
 </resources>

@@ -2,18 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.eventlottery">
-
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-    <!-- Camera feature (optional for devices without camera) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- Camera feature (optional for devices without camera) -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -28,7 +26,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EventLotterySystem"
         tools:targetApi="31">
-
+        <activity
+            android:name=".ui.admin.Whatisinthesethings"
+            android:exported="false"
+            android:theme="@style/Theme.EventLotterySystem" />
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
@@ -36,114 +37,92 @@
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- Entrant Activities -->
+        </activity> <!-- Entrant Activities -->
         <activity
             android:name=".ui.entrant.BrowseEventsActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/browse_events_title" />
-
+            android:label="@string/browse_events_title"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.entrant.EventDetailsActivity"
             android:exported="false"
+            android:label="@string/event_details_title"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.EventLotterySystem"
-            android:label="@string/event_details_title" />
-
+            android:theme="@style/Theme.EventLotterySystem" />
         <activity
             android:name=".ui.entrant.MyEventsActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/my_events_title" />
-
+            android:label="@string/my_events_title"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.entrant.NotificationsActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/notifications_title" />
-
+            android:label="@string/notifications_title"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.entrant.ProfileActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/profile_title" />
-
-        <!-- Organizer Activities -->
+            android:label="@string/profile_title"
+            android:screenOrientation="portrait" /> <!-- Organizer Activities -->
         <activity
             android:name=".ui.organizer.OrganizerDashboardActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/my_events_organizer" />
-
+            android:label="@string/my_events_organizer"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.organizer.CreateEventActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/create_event_title" />
-
+            android:label="@string/create_event_title"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.organizer.ManageEventActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/manage_event" />
-
+            android:label="@string/manage_event"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.organizer.DrawLotteryActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/lottery_draw_title" />
-
-        <!-- Admin Activities -->
+            android:label="@string/lottery_draw_title"
+            android:screenOrientation="portrait" /> <!-- Admin Activities -->
         <activity
             android:name=".ui.admin.AdminDashboardActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/admin_dashboard_title" />
-
+            android:label="@string/admin_dashboard_title"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.admin.ManageEventsActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/manage_events_title" />
-
+            android:label="@string/manage_events_title"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.admin.ReviewImagesActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/review_images_title" />
-
+            android:label="@string/review_images_title"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.admin.ManageUsersActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="@string/manage_users_title" />
-
-        <!-- QR Code Scanner Activity -->
+            android:label="@string/manage_users_title"
+            android:screenOrientation="portrait" /> <!-- QR Code Scanner Activity -->
         <activity
             android:name=".ui.qr.QRScannerActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:label="Scan QR Code" />
-
-        <!-- Firebase Cloud Messaging Service (if using Firebase) -->
+            android:label="Scan QR Code"
+            android:screenOrientation="portrait" /> <!-- Firebase Cloud Messaging Service (if using Firebase) -->
         <service
             android:name=".services.FCMService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
-        </service>
-
-        <!-- Location Service -->
+        </service> <!-- Location Service -->
         <service
             android:name=".services.LocationService"
             android:exported="false"
             android:foregroundServiceType="location" />
-
     </application>
 
 </manifest>
