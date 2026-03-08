@@ -17,6 +17,7 @@
         android:required="false" />
 
     <application
+        android:name=".EventLotteryApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -26,6 +27,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EventLotterySystem"
         tools:targetApi="31">
+
+        <!-- Handle Android 16 Resizability Override for Large Screens -->
+        <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true" />
+
         <activity
             android:name=".ui.admin.Whatisinthesethings"
             android:exported="false"
@@ -34,7 +39,8 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -45,73 +51,87 @@
             android:name=".ui.entrant.BrowseEventsActivity"
             android:exported="false"
             android:label="@string/browse_events_title"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.entrant.EventDetailsActivity"
             android:exported="false"
             android:label="@string/event_details_title"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.EventLotterySystem" />
+            android:theme="@style/Theme.EventLotterySystem"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.entrant.MyEventsActivity"
             android:exported="false"
             android:label="@string/my_events_title"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.entrant.NotificationsActivity"
             android:exported="false"
             android:label="@string/notifications_title"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.entrant.ProfileActivity"
             android:exported="false"
             android:label="@string/profile_title"
-            android:screenOrientation="portrait" /> <!-- Organizer Activities -->
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" /> <!-- Organizer Activities -->
         <activity
             android:name=".ui.organizer.OrganizerDashboardActivity"
             android:exported="false"
             android:label="@string/my_events_organizer"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.organizer.CreateEventActivity"
             android:exported="false"
             android:label="@string/create_event_title"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.organizer.ManageEventActivity"
             android:exported="false"
             android:label="@string/manage_event"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.organizer.DrawLotteryActivity"
             android:exported="false"
             android:label="@string/lottery_draw_title"
-            android:screenOrientation="portrait" /> <!-- Admin Activities -->
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" /> <!-- Admin Activities -->
         <activity
             android:name=".ui.admin.AdminDashboardActivity"
             android:exported="false"
             android:label="@string/admin_dashboard_title"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.admin.ManageEventsActivity"
             android:exported="false"
             android:label="@string/manage_events_title"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.admin.ReviewImagesActivity"
             android:exported="false"
             android:label="@string/review_images_title"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.admin.ManageUsersActivity"
             android:exported="false"
             android:label="@string/manage_users_title"
-            android:screenOrientation="portrait" /> <!-- QR Code Scanner Activity -->
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" /> <!-- QR Code Scanner Activity -->
         <activity
             android:name=".ui.qr.QRScannerActivity"
             android:exported="false"
             android:label="Scan QR Code"
-            android:screenOrientation="portrait" /> <!-- Firebase Cloud Messaging Service (if using Firebase) -->
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" /> <!-- Firebase Cloud Messaging Service (if using Firebase) -->
         <service
             android:name=".services.FCMService"
             android:exported="false">

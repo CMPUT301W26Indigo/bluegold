@@ -1,10 +1,14 @@
 package com.eventlottery.ui.admin;
 
-import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityAdminDashboardBinding;
 
+/**
+ * Activity hosting AdminDashboardFragment.
+ * Part of the 'View' in MVC.
+ */
 public class AdminDashboardActivity extends AppCompatActivity {
 
     private ActivityAdminDashboardBinding binding;
@@ -15,21 +19,17 @@ public class AdminDashboardActivity extends AppCompatActivity {
         binding = ActivityAdminDashboardBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setupNavigation();
-    }
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            binding.toolbar.setNavigationOnClickListener(v -> finish());
+        }
 
-    private void setupNavigation() {
-        binding.cardManageEvents.setOnClickListener(v -> {
-            startActivity(new Intent(this, ManageEventsActivity.class));
-        });
-
-        binding.cardManageUsers.setOnClickListener(v -> {
-            startActivity(new Intent(this, ManageUsersActivity.class));
-        });
-
-        binding.cardReviewImages.setOnClickListener(v -> {
-            startActivity(new Intent(this, ReviewImagesActivity.class));
-        });
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new AdminDashboardFragment())
+                    .commit();
+        }
     }
 
     @Override
