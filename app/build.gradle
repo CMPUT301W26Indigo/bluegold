@@ -115,6 +115,9 @@ dependencies {
     // CSV Export
     implementation 'com.opencsv:opencsv:5.9'
 
+    // Validator
+    implementation 'commons-validator:commons-validator:1.9.0'
+
     // Work Manager (for background tasks)
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
 
