@@ -1,4 +1,4 @@
-package com.eventlottery;
+package com.eventlottery.data.models;
 
 public class ValidatePhone {
     private String phoneNumber;
