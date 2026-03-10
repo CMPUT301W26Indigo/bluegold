@@ -8,17 +8,21 @@ public class Attendee {
     private String name;
     private String email;
     private String phoneNumber;
-    private String location;
+    private String address;
     private String deviceID;
     private ArrayList<AttendeeEventHistory> eventHistory;
     private ArrayList<String> waitListed;
+    private boolean notification;
 
     public Attendee() {
         this.name = null;
         this.email = null;
         this.phoneNumber = null;
-        this.location = null;
+        this.address = null;
         this.deviceID = null;
+        this.notification = true;
+        this.eventHistory = new ArrayList<AttendeeEventHistory>();
+        this.waitListed = new ArrayList<String>();
 
     }
 
@@ -88,6 +92,10 @@ public class Attendee {
 
     public ArrayList<String> getWaitListed() {
         return waitListed;
+    }
+
+    public void setNotification(boolean notification) {
+        this.notification = notification;
     }
 
 
