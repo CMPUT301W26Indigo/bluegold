@@ -1,4 +1,4 @@
-package com.eventlottery.ui.adapters;
+package com.eventlottery.view.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,14 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * EventAdapter - RecyclerView adapter for displaying event cards
- * 
- * Displays event information in a card layout with:
- * - Event name and status badge
- * - Date, time, location
- * - Waitlist count
- * - Tags
- * - Geolocation badge (if enabled)
+ * EventAdapter - View component in MVC.
+ * Responsible for rendering Event models into the UI.
  */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
     
@@ -70,92 +64,39 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         }
         
         void bind(Event event, OnEventClickListener listener) {
-            // Set event name
             binding.eventNameText.setText(event.getName());
             
-            // Set status badge
-            binding.statusBadge.setText(getStatusText(event.getStatus()));
-            binding.statusBadge.setChipBackgroundColorResource(
-                getStatusColor(event.getStatus())
-            );
+            // Note: In a full MVC, some of this formatting logic might move to the Model or a Presenter
+            binding.statusBadge.setText(event.getStatus());
             
-            // Set date and time
             String dateTime = String.format("%s • %s", event.getDate(), event.getTime());
             binding.dateTimeText.setText(dateTime);
-            
-            // Set location
             binding.locationText.setText(event.getLocation());
             
-            // Set waitlist count
-            String waitlistText;
-            if (event.getWaitlistLimit() != null) {
-                waitlistText = String.format("%d / %d on waiting list", 
-                    event.getWaitlistCount(), event.getWaitlistLimit());
-            } else {
-                waitlistText = String.format("%d on waiting list", 
-                    event.getWaitlistCount());
-            }
+            String waitlistText = event.getWaitlistLimit() != null 
+                ? String.format("%d / %d on waiting list", event.getWaitlistCount(), event.getWaitlistLimit())
+                : String.format("%d on waiting list", event.getWaitlistCount());
             binding.waitlistCountText.setText(waitlistText);
             
-            // Set tags
             binding.tagChips.removeAllViews();
             for (String tag : event.getTags()) {
                 Chip chip = new Chip(binding.getRoot().getContext());
                 chip.setText(tag);
-                chip.setChipBackgroundColorResource(R.color.background_blue_50);
-                chip.setTextColor(binding.getRoot().getContext()
-                    .getColor(R.color.text_blue_900));
                 binding.tagChips.addView(chip);
             }
             
-            // Show geolocation badge if enabled
             if (event.isGeolocationEnabled() && event.getGeolocationRadius() != null) {
                 binding.geolocationBadge.setVisibility(View.VISIBLE);
-                binding.geolocationBadge.setText(
-                    String.format("Within %dkm", event.getGeolocationRadius())
-                );
+                binding.geolocationBadge.setText(String.format("Within %dkm", event.getGeolocationRadius()));
             } else {
                 binding.geolocationBadge.setVisibility(View.GONE);
             }
             
-            // Set click listener
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onEventClick(event);
                 }
             });
-        }
-        
-        private String getStatusText(String status) {
-            if (status == null) return "Unknown";
-            switch (status) {
-                case "open":
-                    return "Open";
-                case "closed":
-                    return "Closed";
-                case "lottery_drawn":
-                    return "Lottery Drawn";
-                case "completed":
-                    return "Completed";
-                default:
-                    return status;
-            }
-        }
-        
-        private int getStatusColor(String status) {
-            if (status == null) return R.color.status_closed_gray;
-            switch (status) {
-                case "open":
-                    return R.color.status_open_green;
-                case "closed":
-                    return R.color.status_closed_gray;
-                case "lottery_drawn":
-                    return R.color.status_waiting_yellow;
-                case "completed":
-                    return R.color.status_closed_gray;
-                default:
-                    return R.color.status_closed_gray;
-            }
         }
     }
 }
