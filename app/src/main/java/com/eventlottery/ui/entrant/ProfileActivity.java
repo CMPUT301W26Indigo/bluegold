@@ -2,8 +2,13 @@ package com.eventlottery.ui.entrant;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityProfileBinding;
 
+/**
+ * Activity hosting the ProfileFragment.
+ * Part of the 'View' in MVC, acts as a container.
+ */
 public class ProfileActivity extends AppCompatActivity {
 
     private ActivityProfileBinding binding;
@@ -14,20 +19,17 @@ public class ProfileActivity extends AppCompatActivity {
         binding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setupUI();
-    }
-
-    private void setupUI() {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
 
-        binding.btnSaveChanges.setOnClickListener(v -> {
-            // Logic to save profile changes
-            finish();
-        });
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new ProfileFragment())
+                    .commit();
+        }
     }
 
     @Override

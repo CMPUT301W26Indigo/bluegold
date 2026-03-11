@@ -1,9 +1,10 @@
 package com.eventlottery.ui.entrant;
 
+import android.os.Build;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import com.eventlottery.R;
-import com.eventlottery.data.models.Event;
+import com.eventlottery.model.Event;
 
 /**
  * EventDetailsActivity
@@ -35,7 +36,15 @@ public class EventDetailsActivity extends AppCompatActivity {
         
         // Get event from Intent
         eventId = getIntent().getStringExtra("EVENT_ID");
-        event = getIntent().getParcelableExtra("EVENT");
+        
+        // Use type-safe getParcelableExtra for API 33+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            event = getIntent().getParcelableExtra("EVENT", Event.class);
+        } else {
+            // Suppress warning for older APIs as it's unavoidable there
+            //noinspection deprecation
+            event = getIntent().getParcelableExtra("EVENT");
+        }
         
         // TODO: Setup views and load event data
         setupToolbar();
