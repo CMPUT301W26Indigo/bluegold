@@ -2,6 +2,11 @@ package com.eventlottery.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +44,7 @@ public class Event implements Parcelable {
     private long updatedAt;
     private boolean isFlagged;
     private int flagCount;
-    private GuestList guestlists;
+    //private GuestList guestlists;
 
     // Default constructor
     public Event() {
@@ -72,7 +77,7 @@ public class Event implements Parcelable {
         this.updatedAt = System.currentTimeMillis();
         this.isFlagged = false;
         this.flagCount = 0;
-        this.guestlists = new GuestList();
+        //this.guestlists = new GuestList();
     }
 
     // Full constructor
@@ -381,11 +386,24 @@ public class Event implements Parcelable {
     public void generateQrCode() {
 
     }
+    public void exportCSV() {
+         try{
+             FileWriter file = new FileWriter("final_list.csv");
+             PrintWriter write = new PrintWriter(file);
+             for (String attendeeInfo: GuestList.attendeeArray) {
+                 write.println(attendeeInfo);
+             }
+             write.close();
+         }
+         catch(IOException exe) {
+             System.out.println("Cannot export file");
+         }
+    }
+    public void addAttendee(){
 
-    public void removeUnconfirmed() {
+    }
+    public void removeUser() {
 
     }
 
 }
-
-
