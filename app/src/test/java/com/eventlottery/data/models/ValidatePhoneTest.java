@@ -7,7 +7,7 @@ public class ValidatePhoneTest {
 
     @Test
     public void testValidPhoneNumber() {
-        assertTrue("A 10-digit phone number should be valid", ValidatePhone.isValidPhoneNumber("1234567890"));
+        assertTrue("A 10-digit  phone number should be valid", ValidatePhone.isValidPhoneNumber("1234567890"));
     }
 
     @Test
