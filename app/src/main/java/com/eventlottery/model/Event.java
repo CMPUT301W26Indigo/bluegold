@@ -20,30 +20,99 @@ public class Event implements Parcelable {
     private String location;
     private String locationAddress;
     private int capacity;
-    private Integer waitlistLimit;
+    private Integer waitlistLimit; // Nullable - null means unlimited
     private int waitlistCount;
     private int confirmedCount;
     private List<String> tags;
     private String posterImageUrl;
     private boolean geolocationEnabled;
-    private Integer geolocationRadius;
-    private Double geolocationLat;
-    private Double geolocationLng;
+    private Integer geolocationRadius; // Nullable - in kilometers (1-500)
+    private Double geolocationLat; // Nullable
+    private Double geolocationLng; // Nullable
     private double price;
-    private String status;
+    private String status; // "open", "closed", "lottery_drawn", "completed"
     private long registrationOpens;
     private long registrationCloses;
-    private Long lotteryDrawDate;
+    private Long lotteryDrawDate; // Nullable
     private String qrCodeUrl;
     private long createdAt;
     private long updatedAt;
     private boolean isFlagged;
     private int flagCount;
 
+    // Default constructor
     public Event() {
+        this.id = "";
+        this.name = "";
+        this.description = "";
+        this.organizerId = "";
+        this.date = "";
+        this.time = "";
+        this.endTime = "";
+        this.location = "";
+        this.locationAddress = "";
+        this.capacity = 0;
+        this.waitlistLimit = null;
+        this.waitlistCount = 0;
+        this.confirmedCount = 0;
         this.tags = new ArrayList<>();
+        this.posterImageUrl = null;
+        this.geolocationEnabled = false;
+        this.geolocationRadius = null;
+        this.geolocationLat = null;
+        this.geolocationLng = null;
+        this.price = 0.0;
+        this.status = "open";
+        this.registrationOpens = 0L;
+        this.registrationCloses = 0L;
+        this.lotteryDrawDate = null;
+        this.qrCodeUrl = null;
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
+        this.isFlagged = false;
+        this.flagCount = 0;
+    }
+
+    // Full constructor
+    public Event(String id, String name, String description, String organizerId,
+                 String date, String time, String endTime, String location,
+                 String locationAddress, int capacity, Integer waitlistLimit,
+                 int waitlistCount, int confirmedCount, List<String> tags,
+                 String posterImageUrl, boolean geolocationEnabled,
+                 Integer geolocationRadius, Double geolocationLat,
+                 Double geolocationLng, double price, String status,
+                 long registrationOpens, long registrationCloses,
+                 Long lotteryDrawDate, String qrCodeUrl, long createdAt,
+                 long updatedAt, boolean isFlagged, int flagCount) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.organizerId = organizerId;
+        this.date = date;
+        this.time = time;
+        this.endTime = endTime;
+        this.location = location;
+        this.locationAddress = locationAddress;
+        this.capacity = capacity;
+        this.waitlistLimit = waitlistLimit;
+        this.waitlistCount = waitlistCount;
+        this.confirmedCount = confirmedCount;
+        this.tags = tags != null ? tags : new ArrayList<>();
+        this.posterImageUrl = posterImageUrl;
+        this.geolocationEnabled = geolocationEnabled;
+        this.geolocationRadius = geolocationRadius;
+        this.geolocationLat = geolocationLat;
+        this.geolocationLng = geolocationLng;
+        this.price = price;
+        this.status = status;
+        this.registrationOpens = registrationOpens;
+        this.registrationCloses = registrationCloses;
+        this.lotteryDrawDate = lotteryDrawDate;
+        this.qrCodeUrl = qrCodeUrl;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.isFlagged = isFlagged;
+        this.flagCount = flagCount;
     }
 
     protected Event(Parcel in) {
@@ -173,6 +242,79 @@ public class Event implements Parcelable {
         }
     };
 
+    // Business Logic Methods
+
+    /**
+     * Check if the event is currently accepting registrations
+     */
+    public boolean isRegistrationOpen() {
+        long currentTime = System.currentTimeMillis();
+        return "open".equals(status) && 
+               currentTime >= registrationOpens && 
+               currentTime <= registrationCloses &&
+               !isWaitlistFull();
+    }
+
+    /**
+     * Check if waitlist is full
+     */
+    public boolean isWaitlistFull() {
+        if (waitlistLimit == null) {
+            return false; // Unlimited waitlist
+        }
+        return waitlistCount >= waitlistLimit;
+    }
+
+    /**
+     * Get available spots for confirmation
+     */
+    public int getAvailableSpots() {
+        return Math.max(0, capacity - confirmedCount);
+    }
+
+    /**
+     * Get formatted price string
+     */
+    public String getFormattedPrice() {
+        if (price == 0.0) {
+            return "Free";
+        } else {
+            return String.format("$%.2f", price);
+        }
+    }
+
+    /**
+     * Check if user location is within geolocation radius
+     */
+    public boolean isWithinGeolocationRadius(double userLat, double userLng) {
+        if (!geolocationEnabled || geolocationLat == null || 
+            geolocationLng == null || geolocationRadius == null) {
+            return true; // No geolocation restriction
+        }
+        
+        double distance = calculateDistance(userLat, userLng, 
+                                           geolocationLat, geolocationLng);
+        return distance <= geolocationRadius;
+    }
+
+    /**
+     * Calculate distance between two coordinates in kilometers using Haversine formula
+     */
+    private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+        final double EARTH_RADIUS_KM = 6371.0;
+        
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lng2 - lng1);
+        
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                   Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        
+        return EARTH_RADIUS_KM * c;
+    }
+
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -232,13 +374,4 @@ public class Event implements Parcelable {
     public void setFlagged(boolean flagged) { isFlagged = flagged; }
     public int getFlagCount() { return flagCount; }
     public void setFlagCount(int flagCount) { this.flagCount = flagCount; }
-
-    // Helper methods
-    public boolean isWaitlistFull() {
-        return waitlistLimit != null && waitlistCount >= waitlistLimit;
-    }
-
-    public String getFormattedPrice() {
-        return price == 0.0 ? "Free" : String.format("$%.2f", price);
-    }
 }
