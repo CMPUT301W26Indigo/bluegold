@@ -31,8 +31,7 @@ public class Attendee {
     }
 
     public void setEmail(String email) {
-        ValidateEmail validateEmail = new ValidateEmail(email);
-        if (validateEmail.isValidEmail(email)) {
+        if (ValidateEmail.isValidEmail(email)) {
             this.email = email;
         } else {
             throw new IllegalArgumentException("Invalid email format");
@@ -52,8 +51,7 @@ public class Attendee {
     }
 
     public void setPhoneNumber(String phoneNumber) {
-        ValidatePhone validatePhone = new ValidatePhone(phoneNumber);
-        if (validatePhone.isValidPhoneNumber(phoneNumber)) {
+        if (ValidatePhone.isValidPhoneNumber(phoneNumber)) {
             this.phoneNumber = phoneNumber;
         } else {
             throw new IllegalArgumentException("Invalid phone number format");
@@ -98,7 +96,19 @@ public class Attendee {
         this.notification = notification;
     }
 
+    public boolean getNotification() {
+        return notification;
+    }
 
+    public String getAddress() {
+        return address;
+    }
 
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
+    public void setAttendeeID(String deviceID) {
+        this.deviceID = deviceID;
+    }
 }
