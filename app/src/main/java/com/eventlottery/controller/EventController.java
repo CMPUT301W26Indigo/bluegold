@@ -84,4 +84,7 @@ public class EventController {
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
     }
+
+    // Call functions that create and present url
+
 }

@@ -39,6 +39,7 @@ public class Event implements Parcelable {
     private long updatedAt;
     private boolean isFlagged;
     private int flagCount;
+    private GuestList guestlists;
 
     // Default constructor
     public Event() {
@@ -71,6 +72,7 @@ public class Event implements Parcelable {
         this.updatedAt = System.currentTimeMillis();
         this.isFlagged = false;
         this.flagCount = 0;
+        this.guestlists = new GuestList();
     }
 
     // Full constructor
@@ -374,4 +376,16 @@ public class Event implements Parcelable {
     public void setFlagged(boolean flagged) { isFlagged = flagged; }
     public int getFlagCount() { return flagCount; }
     public void setFlagCount(int flagCount) { this.flagCount = flagCount; }
+
+
+    public void generateQrCode() {
+
+    }
+
+    public void removeUnconfirmed() {
+
+    }
+
 }
+
+
