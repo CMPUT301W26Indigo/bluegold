@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Event data model representing an event in the lottery system
@@ -42,6 +43,9 @@ public class Event implements Parcelable {
     private long updatedAt;
     private boolean isFlagged;
     private int flagCount;
+
+    private Waitlist waitlist;
+    private GuestList guestList;
     
     // Default constructor
     public Event() {
@@ -552,4 +556,54 @@ public class Event implements Parcelable {
     public void setFlagCount(int flagCount) {
         this.flagCount = flagCount;
     }
+
+    public void setWaitlist(Waitlist waitlist) {
+        this.waitlist = waitlist;
+    }
+
+    public void setGuestList(GuestList guestList) {
+        this.guestList = guestList;
+    }
+
+    public Waitlist getWaitlist() {
+        return waitlist;
+    }
+
+    public GuestList getGuestList() {
+        return guestList;
+    }
+
+    // Lottery System if not specified a max num of guests to select
+    public void LotterySystem() {
+        int count = Math.min(waitlist.getWaitlistCount(), guestList.getListLimit());
+        while (waitlist.getWaitlistCount() > 0 && count > 0 && guestList.getListCount() < guestList.getListLimit() + 1) {
+            Random random = new Random();
+            int randomIndex = random.nextInt(waitlist.getAttendeeIds().size());
+            String attendeeId = waitlist.getAttendeeIds().get(randomIndex);
+
+            guestList.addGuestAttendee(attendeeId);
+            waitlist.removeAttendee(attendeeId);
+            count--;
+            Notification notification = new Notification("You have been selected!", attendeeId, id);
+            notification.sendNotification();
+        }
+    }
+
+    // Lottery System if specified a max num of guests to select
+    public void LotterySystem(int lotteryLimit) {
+        int tempCount = Math.min(waitlist.getWaitlistCount(), guestList.getListLimit());
+        int count = Math.min(tempCount, lotteryLimit);
+        while (waitlist.getWaitlistCount() > 0 && count > 0 && guestList.getListCount() < guestList.getListLimit() + 1) {
+            Random random = new Random();
+            int randomIndex = random.nextInt(waitlist.getAttendeeIds().size());
+            String attendeeId = waitlist.getAttendeeIds().get(randomIndex);
+
+            guestList.addGuestAttendee(attendeeId);
+            waitlist.removeAttendee(attendeeId);
+            count--;
+            Notification notification = new Notification("You have been selected!", attendeeId, id);
+            notification.sendNotification();
+        }
+    }
+
 }
