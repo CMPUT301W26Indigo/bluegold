@@ -1,5 +1,7 @@
 package com.eventlottery.ui.qr;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -39,10 +41,14 @@ public class QRScannerActivity extends AppCompatActivity {
     ActivityResultLauncher<ScanOptions> barLauncher =
             registerForActivityResult(new ScanContract(), result -> {
                 if (result.getContents() != null) {
+                    String scannedURL = result.getContents();
                     new AlertDialog.Builder(QRScannerActivity.this)
                             .setTitle("Result")
-                            .setMessage(result.getContents())
-                            .setPositiveButton("OK", (dialog, which) -> finish())
+                            .setMessage(scannedURL)
+                            .setPositiveButton("View Event Details",
+                                    (dialog, which) -> goToEvent(scannedURL))
+                            .setNegativeButton("Cancel",
+                                    (dialog, which) -> finish())
                             .show();
                 } else {
                     finish();  // User cancelled
@@ -61,5 +67,11 @@ public class QRScannerActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         binding = null;
+    }
+
+    private void goToEvent(String scannedURL) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(scannedURL));
+        startActivity(intent);
+        finish();
     }
 }
