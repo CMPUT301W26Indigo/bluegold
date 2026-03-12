@@ -1,4 +1,4 @@
-package com.eventlottery.data.models;
+package com.eventlottery.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;

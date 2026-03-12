@@ -1,4 +1,4 @@
-package com.eventlottery.data.models;
+package com.eventlottery.model;
 import org.apache.commons.validator.routines.EmailValidator;
 
 public class ValidateEmail {
