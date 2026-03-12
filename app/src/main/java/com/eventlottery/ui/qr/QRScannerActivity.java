@@ -30,6 +30,8 @@ public class QRScannerActivity extends AppCompatActivity {
         options.setPrompt("Scan QR Code");
         options.setBeepEnabled(true);
         options.setOrientationLocked(true);
+        options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
+        options.setCaptureActivity(CaptureAct.class);
 
         barLauncher.launch(options);
     }

@@ -130,6 +130,10 @@
             android:label="Scan QR Code"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
+        <activity android:name=".ui.qr.CaptureAct"
+            android:screenOrientation="portrait"
+            android:theme="@style/zxing_CaptureTheme"
+            android:exported="false" />
         <!-- Firebase Cloud Messaging Service (if using Firebase) -->
         <service
             android:name=".services.FCMService"
