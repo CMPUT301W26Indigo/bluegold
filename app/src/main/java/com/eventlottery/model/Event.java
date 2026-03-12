@@ -1,7 +1,15 @@
 package com.eventlottery.model;
 
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -313,6 +321,32 @@ public class Event implements Parcelable {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         
         return EARTH_RADIUS_KM * c;
+    }
+
+    /*
+    * Generates QR Code once the create button is pressed
+    * */
+    private void generateQR() {
+        // Credit for basis of code: https://youtu.be/n8HdrLYL9DA?si=42nC-Wwzbn5_1wUU
+        // Add this code to the activity/fragment that houses the button that generates events
+        // btn_generate = findViewById(R.id.[BUTTON THAT GENERATES EVENT]);
+        // qr_display = findViewById(R.id.[IMAGE THAT WILL HOLD THE QR CODE]);
+        // btn_generate.SetOnClickListener(v -> {
+        //   generateQR();
+        // });
+        //Dummy text for testing
+        String text = "Welcome to the Event Details Page!";
+        MultiFormatWriter writer = new MultiFormatWriter();
+        try {
+            BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, 400, 400);
+            BarcodeEncoder encoder = new BarcodeEncoder();
+            Bitmap bitmap = encoder.createBitmap(matrix);
+            //qr_display.setImageBitmap(bitmap);
+        } catch (WriterException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
     }
 
     // Getters and Setters

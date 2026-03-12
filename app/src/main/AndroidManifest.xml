@@ -27,15 +27,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EventLotterySystem"
         tools:targetApi="31">
-
         <!-- Handle Android 16 Resizability Override for Large Screens -->
-        <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true" />
+        <property
+            android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
+            android:value="true" />
 
-        <activity
-            android:name=".ui.admin.Whatisinthesethings"
-            android:exported="false"
-            android:theme="@style/Theme.EventLotterySystem" />
-        <!-- Main Activity -->
+         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -125,13 +122,17 @@
             android:exported="false"
             android:label="@string/manage_users_title"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" /> <!-- QR Code Scanner Activity -->
+            tools:ignore="LockedOrientationActivity" />
+        <!-- QR Code Scanner Activity -->
         <activity
             android:name=".ui.qr.QRScannerActivity"
             android:exported="false"
             android:label="Scan QR Code"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" /> <!-- Firebase Cloud Messaging Service (if using Firebase) -->
+            android:stateNotNeeded="true"
+            android:theme="@style/zxing_CaptureTheme"
+            tools:ignore="LockedOrientationActivity" />
+        <!-- Firebase Cloud Messaging Service (if using Firebase) -->
         <service
             android:name=".services.FCMService"
             android:exported="false">

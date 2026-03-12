@@ -60,7 +60,7 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.6.2")
 
     // QR Scanning
-    implementation(libs.zxing.android.embedded)
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
@@ -71,6 +71,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
+    implementation(libs.activity)
 
     // Testing
     testImplementation(libs.junit)
