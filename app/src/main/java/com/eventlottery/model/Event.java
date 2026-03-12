@@ -1,7 +1,12 @@
-package com.eventlottery.data.models;
+package com.eventlottery.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.eventlottery.data.models.GuestList;
+import com.eventlottery.data.models.Notification;
+import com.eventlottery.data.models.Waitlist;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -601,7 +606,7 @@ public class Event implements Parcelable {
             guestList.addGuestAttendee(attendeeId);
             waitlist.removeAttendee(attendeeId);
             count--;
-            Notification notification = new Notification("You have been selected!", attendeeId, id);
+            com.eventlottery.data.models.Notification notification = new Notification("You have been selected!", attendeeId, id);
             notification.sendNotification();
         }
     }

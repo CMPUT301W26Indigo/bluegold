@@ -407,6 +407,7 @@
                 android:padding="@dimen/spacing_xl">
 
                 <ImageView
+                    android:id="@+id/posterImageView"
                     android:layout_width="@dimen/icon_xl"
                     android:layout_height="@dimen/icon_xl"
                     android:src="@android:drawable/ic_menu_upload"
@@ -415,6 +416,7 @@
                     android:layout_marginBottom="@dimen/spacing_sm" />
 
                 <TextView
+                    android:id="@+id/uploadTitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/upload_event_poster"
@@ -422,6 +424,7 @@
                     android:layout_marginBottom="@dimen/spacing_xs" />
 
                 <TextView
+                    android:id="@+id/uploadSubtitleText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/image_format"
