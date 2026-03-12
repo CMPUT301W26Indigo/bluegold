@@ -1,4 +1,4 @@
-package com.eventlottery.data.models;
+package com.eventlottery.model;
 import android.content.Context;
 import android.provider.Settings;
 
