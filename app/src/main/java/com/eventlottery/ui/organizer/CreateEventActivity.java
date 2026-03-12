@@ -1,6 +1,8 @@
 package com.eventlottery.ui.organizer;
 
 import android.os.Bundle;
+import android.view.View;
+
 import androidx.appcompat.app.AppCompatActivity;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
 
@@ -15,6 +17,7 @@ public class CreateEventActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setupUI();
+
     }
 
     private void setupUI() {

@@ -16,6 +16,10 @@ import com.eventlottery.databinding.FragmentBrowseEventsBinding;
 import com.eventlottery.model.Event;
 import com.eventlottery.ui.adapters.EventAdapter;
 import com.google.android.material.chip.Chip;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +33,8 @@ public class BrowseEventsFragment extends Fragment {
     private EventAdapter eventAdapter;
     private EventController eventController;
     private List<Event> allEvents = new ArrayList<>();
+    private FirebaseFirestore db;
+
 
     @Nullable
     @Override
@@ -137,4 +143,24 @@ public class BrowseEventsFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+    private void loadJoinableEvents() {
+        long now = System.currentTimeMillis();
+
+        db.collection("events")
+                .whereEqualTo("status", "open")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Event> joinable = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        Event event = doc.toObject(Event.class);
+                        if (now >= event.getRegistrationOpens() && now <= event.getRegistrationCloses()) {
+                            joinable.add(event);
+                        }
+                    }
+                    eventAdapter.submitList(joinable);
+                });
+    }
+
+
 }
