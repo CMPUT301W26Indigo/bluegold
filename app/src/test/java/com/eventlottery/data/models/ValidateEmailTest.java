@@ -7,6 +7,8 @@ import com.eventlottery.model.ValidateEmail;
 import com.eventlottery.model.ValidateEmail;
 
 
+import com.eventlottery.model.ValidateEmail;
+
 public class ValidateEmailTest {
 
     @Test

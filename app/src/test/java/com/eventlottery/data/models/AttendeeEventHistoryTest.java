@@ -7,6 +7,8 @@ import com.eventlottery.model.AttendeeEventHistory;
 import com.eventlottery.model.AttendeeEventHistory;
 
 
+import com.eventlottery.model.AttendeeEventHistory;
+
 public class AttendeeEventHistoryTest {
 
     @Test

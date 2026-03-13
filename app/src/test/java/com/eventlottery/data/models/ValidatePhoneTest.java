@@ -7,6 +7,8 @@ import com.eventlottery.model.ValidatePhone;
 import com.eventlottery.model.ValidatePhone;
 
 
+import com.eventlottery.model.ValidatePhone;
+
 public class ValidatePhoneTest {
 
     @Test

@@ -275,4 +275,64 @@ public class Event {
     public void removeTag(String tag) {
         tags.remove(tag);
     }
+
+    /**
+     * Exports a list of confirmed attendees in CSV format.
+     *
+     * Names containing commas are automatically wrapped in quotes to maintain formatting
+     *
+     * @param confirmedAttendees ArrayList of Attendee objects who confirmed attendance
+     * @return String containing CSV
+     *
+     * @see Attendee
+     */
+    public String exportToCSV(ArrayList<Attendee> confirmedAttendees) {
+        StringBuilder csv = new StringBuilder();
+
+        csv.append("Name,Email,Phone,Status\n");
+
+        for (Attendee attendee : confirmedAttendees) {
+
+            // Handle commas in names by wrapping in quotes
+            String name = attendee.getName();
+            if (name != null && name.contains(",")) {
+                name = "\"" + name + "\"";
+            }
+
+            csv.append(name != null ? name : "").append(",")
+                    .append(attendee.getEmail() != null ? attendee.getEmail() : "").append(",")
+                    .append(attendee.getPhoneNumber() != null ? attendee.getPhoneNumber() : "").append(",")
+                    .append("Confirmed\n");
+        }
+
+        return csv.toString();
+
+    }
+    public void addAttendee(){
+
+    }
+    public void removeUser() {
+
+    }
+
+    /**
+     * Sets the guest list for an event.
+     *
+     * @param guestList the GuestList object containing attendee status
+     */
+    public void setGuestList(GuestList guestList) {
+        this.guestList = guestList;
+    }
+
+
+    /**
+     * Sets the waitlist for an event.
+     *
+     * @param waitlist the Waitlist object containing interested attendees
+     */
+    public void setWaitlist(Waitlist waitlist) {
+        this.waitlist = waitlist;
+    }
+
+
 }

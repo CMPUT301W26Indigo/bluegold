@@ -89,6 +89,9 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
+    implementation(libs.activity)
+    implementation(libs.espresso.core)
+    implementation(libs.ext.junit)
 
 
     // Below this comment is all dependencies from the build.gradle file.
