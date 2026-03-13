@@ -5,8 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.eventlottery.R;
-import com.eventlottery.model.Event;
+
+import com.eventlottery.model.EventTemp;
 import com.eventlottery.databinding.ItemEventCardBinding;
 import com.google.android.material.chip.Chip;
 import java.util.ArrayList;
@@ -18,11 +18,11 @@ import java.util.List;
  */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
     
-    private List<Event> events;
+    private List<EventTemp> events;
     private OnEventClickListener listener;
     
     public interface OnEventClickListener {
-        void onEventClick(Event event);
+        void onEventClick(EventTemp event);
     }
     
     public EventAdapter(OnEventClickListener listener) {
@@ -30,7 +30,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         this.listener = listener;
     }
     
-    public void submitList(List<Event> newEvents) {
+    public void submitList(List<EventTemp> newEvents) {
         this.events = newEvents;
         notifyDataSetChanged();
     }
@@ -46,7 +46,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        Event event = events.get(position);
+        EventTemp event = events.get(position);
         holder.bind(event, listener);
     }
     
@@ -63,7 +63,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             this.binding = binding;
         }
         
-        void bind(Event event, OnEventClickListener listener) {
+        void bind(EventTemp event, OnEventClickListener listener) {
             binding.eventNameText.setText(event.getName());
             
             // Note: In a full MVC, some of this formatting logic might move to the Model or a Presenter
