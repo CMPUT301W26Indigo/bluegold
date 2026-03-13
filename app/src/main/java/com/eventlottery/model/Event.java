@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * Event data model representing an event in the lottery system
+ * Event data model representing an event
  *
  * This class represents all properties and methods for an Event in the system.
  * It includes geolocation validation, waitlist management, and lottery functionality.
@@ -78,7 +78,6 @@ public class Event {
     }
 
     // Getters and Setters
-
     public void setId(String id) {
         this.id = id;
     }
@@ -149,7 +148,6 @@ public class Event {
     public void setGeolocationEnabled(boolean geolocationEnabled) {
         this.geolocationEnabled = geolocationEnabled;
     }
-
     public Integer getGeolocationRadius() {
         return geolocationRadius;
     }
@@ -207,6 +205,13 @@ public class Event {
     }
 
     // Lottery System if not specified a max num of guests to select
+
+    /**
+     * Lottery System if not specified a max num of guests to select
+     * Randomly selects guests from the waitlist and adds them to the guest list.
+     * Sends notifications to the selected guests.
+     * @return void
+     */
     public void LotterySystem() {
         Integer limit = guestList.getListLimit();
         int count = (limit != null) ? Math.min(waitlist.getWaitlistCount(), limit) : waitlist.getWaitlistCount();
@@ -225,7 +230,12 @@ public class Event {
         }
     }
 
-    // Lottery System if specified a max num of guests to select
+    /**
+     * Lottery System if a max num of guests to select is specified
+     * Randomly selects guests from the waitlist and adds them to the guest list.
+     * Sends notifications to the selected guests.
+     * @return void
+     */
     public void LotterySystem(int lotteryLimit) {
         Integer limit = guestList.getListLimit();
         int tempCount = (limit != null) ? Math.min(waitlist.getWaitlistCount(), limit) : waitlist.getWaitlistCount();

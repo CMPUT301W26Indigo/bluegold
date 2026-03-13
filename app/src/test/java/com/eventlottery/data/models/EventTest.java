@@ -1,6 +1,7 @@
 package com.eventlottery.data.models;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
@@ -13,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class EventTest {
     private Event event;
@@ -205,5 +207,75 @@ public class EventTest {
 
         assertEquals(8, waitlist.getWaitlistCount().intValue());
         assertEquals(10, guestList.getListCount().intValue());
+    }
+
+    @Test
+    public void testLotterySystemWithSpecifiedMax() {
+        Waitlist waitlist = new Waitlist("event-1", null);
+        GuestList guestList = new GuestList("event-1", 10); // Give it a limit so LotterySystem knows how many to pick
+        waitlist.addAttendee("attendee-1");
+        waitlist.addAttendee("attendee-2");
+        waitlist.addAttendee("attendee-3");
+        waitlist.addAttendee("attendee-4");
+        waitlist.addAttendee("attendee-5");
+        waitlist.addAttendee("attendee-6");
+        waitlist.addAttendee("attendee-7");
+        waitlist.addAttendee("attendee-8");
+        waitlist.addAttendee("attendee-9");
+        waitlist.addAttendee("attendee-10");
+        waitlist.addAttendee("attendee-11");
+        waitlist.addAttendee("attendee-12");
+        waitlist.addAttendee("attendee-13");
+        waitlist.addAttendee("attendee-14");
+        waitlist.addAttendee("attendee-15");
+        waitlist.addAttendee("attendee-16");
+        waitlist.addAttendee("attendee-17");
+        waitlist.addAttendee("attendee-18");
+
+        event.setWaitlist(waitlist);
+        event.setGuestList(guestList);
+
+        event.LotterySystem(4);
+
+        assertEquals(14, waitlist.getWaitlistCount().intValue());
+        assertEquals(4, guestList.getListCount().intValue());
+    }
+
+    @Test
+    public void testRandomLotterySelection() {
+        // To test randomness, we run two identical setups and compare results.
+        // With 100 people and 10 spots, the chance of getting the same selection is extremely low.
+        int waitlistSize = 100;
+        int capacity = 10;
+
+        ArrayList<String> selection1 = runLotteryAndGetSelection(waitlistSize, capacity);
+        ArrayList<String> selection2 = runLotteryAndGetSelection(waitlistSize, capacity);
+
+        // Verify that the two runs didn't produce the exact same list of attendees in the same order
+        assertNotEquals("Lottery should produce different results across different runs", selection1, selection2);
+    }
+
+    /**
+     * Helper method to setup an event, fill its waitlist, and run the lottery.
+     */
+    private ArrayList<String> runLotteryAndGetSelection(int waitlistSize, int capacity) {
+        Event testEvent = new Event();
+        Waitlist waitlist = new Waitlist("event-test", null);
+        GuestList guestList = new GuestList("event-test", capacity);
+
+        for (int i = 0; i < waitlistSize; i++) {
+            waitlist.addAttendee("attendee-" + i);
+        }
+
+        testEvent.setWaitlist(waitlist);
+        testEvent.setGuestList(guestList);
+        testEvent.LotterySystem();
+
+        ArrayList<String> selection = new ArrayList<>();
+        // Extract attendee IDs from the GuestList (which stores them in HashMaps)
+        for (HashMap<String, String> guestMap : guestList.getAttendeeIds()) {
+            selection.addAll(guestMap.keySet());
+        }
+        return selection;
     }
 }
