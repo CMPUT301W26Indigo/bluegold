@@ -40,6 +40,12 @@ public class OrganizerDashboardFragment extends Fragment {
         eventController = new EventController();
         setupRecyclerView();
         setupListeners();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reload events every time the dashboard is shown
         loadOrganizerEvents();
     }
 
@@ -56,7 +62,7 @@ public class OrganizerDashboardFragment extends Fragment {
     }
 
     private void loadOrganizerEvents() {
-        // In a real app, we would filter by organizerId
+        // todo filter by organizerId
         eventController.getAllEvents(new EventController.OnEventsLoadedListener() {
             @Override
             public void onEventsLoaded(List<EventTemp> events) {

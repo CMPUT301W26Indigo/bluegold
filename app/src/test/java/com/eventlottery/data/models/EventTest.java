@@ -14,6 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.List;
+import com.eventlottery.model.Event;
 import java.util.HashMap;
 
 public class EventTest {

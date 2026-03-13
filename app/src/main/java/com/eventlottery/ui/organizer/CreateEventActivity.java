@@ -114,6 +114,7 @@ public class CreateEventActivity extends AppCompatActivity {
         binding.registrationOpensEditText.setOnClickListener(v -> {
             MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                     .setTitleText("Select Registration Open Date")
+                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
                     .build();
             datePicker.addOnPositiveButtonClickListener(selection -> {
                 registrationOpensTime = selection;
@@ -126,6 +127,7 @@ public class CreateEventActivity extends AppCompatActivity {
         binding.registrationClosesEditText.setOnClickListener(v -> {
             MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                     .setTitleText("Select Registration Close Date")
+                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
                     .build();
             datePicker.addOnPositiveButtonClickListener(selection -> {
                 registrationClosesTime = selection;
@@ -139,12 +141,16 @@ public class CreateEventActivity extends AppCompatActivity {
             binding.waitlistLimitLayout.setEnabled(isChecked);
         });
 
+        binding.geolocationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            binding.radiusEditText.setEnabled(isChecked);
+            binding.radiusLayout.setEnabled(isChecked);
+        });
+
 
         binding.browseFilesButton.setOnClickListener(v -> {
             imagePickerLauncher.launch("image/*");
         });
 
-        limitWaitlist = binding.waitlistLimitSwitch.isChecked();
 
         binding.createEventButton.setOnClickListener(v -> {
             EventTemp event = new EventTemp();
@@ -174,6 +180,7 @@ public class CreateEventActivity extends AppCompatActivity {
                 event.setCapacity(0);
             }
 
+            limitWaitlist = binding.waitlistLimitSwitch.isChecked();
             event.setWaitlistLimit(limitWaitlist ? 1 : 0);
             if (limitWaitlist) {
                 try {
@@ -182,6 +189,7 @@ public class CreateEventActivity extends AppCompatActivity {
                     event.setWaitlistLimit(null);
                 }
             }
+
             
             event.setLocation(binding.locationEditText.getText().toString());
             event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());
