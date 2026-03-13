@@ -14,15 +14,13 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 
 import com.eventlottery.controller.EventController;
-import com.eventlottery.model.Event;
+import com.eventlottery.model.EventTemp;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
-
-import org.apache.commons.collections4.Get;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -136,6 +134,7 @@ public class CreateEventActivity extends AppCompatActivity {
         binding.registrationOpensEditText.setOnClickListener(v -> {
             MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                     .setTitleText("Select Registration Open Date")
+                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
                     .build();
             datePicker.addOnPositiveButtonClickListener(selection -> {
                 registrationOpensTime = selection;
@@ -148,6 +147,7 @@ public class CreateEventActivity extends AppCompatActivity {
         binding.registrationClosesEditText.setOnClickListener(v -> {
             MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                     .setTitleText("Select Registration Close Date")
+                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
                     .build();
             datePicker.addOnPositiveButtonClickListener(selection -> {
                 registrationClosesTime = selection;
@@ -161,15 +161,19 @@ public class CreateEventActivity extends AppCompatActivity {
             binding.waitlistLimitLayout.setEnabled(isChecked);
         });
 
+        binding.geolocationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            binding.radiusEditText.setEnabled(isChecked);
+            binding.radiusLayout.setEnabled(isChecked);
+        });
+
 
         binding.browseFilesButton.setOnClickListener(v -> {
             imagePickerLauncher.launch("image/*");
         });
 
-        limitWaitlist = binding.waitlistLimitSwitch.isChecked();
 
         binding.createEventButton.setOnClickListener(v -> {
-            Event event = new Event();
+            EventTemp event = new EventTemp();
             event.setName(binding.eventNameEditText.getText().toString());
             event.setDescription(binding.descriptionEditText.getText().toString());
             event.setDate(binding.eventDateEditText.getText().toString());
@@ -196,6 +200,7 @@ public class CreateEventActivity extends AppCompatActivity {
                 event.setCapacity(0);
             }
 
+            limitWaitlist = binding.waitlistLimitSwitch.isChecked();
             event.setWaitlistLimit(limitWaitlist ? 1 : 0);
             if (limitWaitlist) {
                 try {
@@ -204,6 +209,7 @@ public class CreateEventActivity extends AppCompatActivity {
                     event.setWaitlistLimit(null);
                 }
             }
+
             
             event.setLocation(binding.locationEditText.getText().toString());
             event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());

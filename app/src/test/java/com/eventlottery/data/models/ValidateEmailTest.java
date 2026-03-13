@@ -2,6 +2,10 @@ package com.eventlottery.data.models;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+import com.eventlottery.model.ValidateEmail;
+
+import com.eventlottery.model.ValidateEmail;
+
 
 import com.eventlottery.model.ValidateEmail;
 
