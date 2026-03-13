@@ -1,5 +1,6 @@
 package com.eventlottery.model;
 
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -7,14 +8,24 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
- * Event data model representing an event in the lottery system.
- * Part of the 'Model' in MVC.
+ * Event data model representing an event in the lottery system
+ * 
+ * This class represents all properties and methods for an Event in the system.
+ * It includes geolocation validation, waitlist management, and lottery functionality.
  */
 public class Event implements Parcelable {
+    
     private String id;
     private String name;
     private String description;
@@ -46,6 +57,9 @@ public class Event implements Parcelable {
     private int flagCount;
     //private GuestList guestlists;
 
+    private Waitlist waitlist;
+    private GuestList guestList;
+    
     // Default constructor
     public Event() {
         this.id = "";
@@ -79,7 +93,7 @@ public class Event implements Parcelable {
         this.flagCount = 0;
         //this.guestlists = new GuestList();
     }
-
+    
     // Full constructor
     public Event(String id, String name, String description, String organizerId,
                  String date, String time, String endTime, String location,
@@ -121,7 +135,8 @@ public class Event implements Parcelable {
         this.isFlagged = isFlagged;
         this.flagCount = flagCount;
     }
-
+    
+    // Parcelable constructor
     protected Event(Parcel in) {
         id = in.readString();
         name = in.readString();
@@ -173,7 +188,7 @@ public class Event implements Parcelable {
         isFlagged = in.readByte() != 0;
         flagCount = in.readInt();
     }
-
+    
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
@@ -231,37 +246,72 @@ public class Event implements Parcelable {
         dest.writeByte((byte) (isFlagged ? 1 : 0));
         dest.writeInt(flagCount);
     }
-
+    
     @Override
     public int describeContents() {
         return 0;
     }
-
+    
     public static final Creator<Event> CREATOR = new Creator<Event>() {
         @Override
         public Event createFromParcel(Parcel in) {
             return new Event(in);
         }
-
+        
         @Override
         public Event[] newArray(int size) {
             return new Event[size];
         }
     };
 
-    // Business Logic Methods
+    /*
+     * Generates QR Code once the create button is pressed
+     * */
+    private Bitmap generateQR() {
+        // Credit for basis of code: https://youtu.be/n8HdrLYL9DA?si=42nC-Wwzbn5_1wUU
+        // TODO: Add this code to the activity/fragment that houses the button that generates events
+        // btn_generate = findViewById(R.id.[BUTTON THAT GENERATES EVENT]);
+        // btn_generate.SetOnClickListener(v -> {
+        //   generateQR();
+        // });
+        // TODO: Add a spot somewhere that displays QR Codes for events
+        // qr_display = findViewById(R.id.[IMAGE THAT WILL HOLD THE QR CODE]);
+        // TODO: Test generation using following dummy text
+        //String text = "Welcome to the Event Details Page!";
 
+        // TODO: Verify that this URL is correct. If not, change it. May need to change this to work with Firestore
+        String deepLink = "eventlottery://event/" + this.getId();
+
+        MultiFormatWriter writer = new MultiFormatWriter();
+        try {
+            BitMatrix matrix = writer.encode(deepLink,
+                    BarcodeFormat.QR_CODE,
+                    400,
+                    400);
+
+            BarcodeEncoder encoder = new BarcodeEncoder();
+            //qr_display.setImageBitmap(bitmap);
+
+            return encoder.createBitmap(matrix);
+        } catch (WriterException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Business Logic Methods
+    
     /**
      * Check if the event is currently accepting registrations
      */
     public boolean isRegistrationOpen() {
         long currentTime = System.currentTimeMillis();
-        return "open".equals(status) && 
-               currentTime >= registrationOpens && 
-               currentTime <= registrationCloses &&
-               !isWaitlistFull();
+        return "open".equals(status) &&
+                currentTime >= registrationOpens &&
+                currentTime <= registrationCloses &&
+                !isWaitlistFull();
     }
-
+    
     /**
      * Check if waitlist is full
      */
@@ -271,14 +321,14 @@ public class Event implements Parcelable {
         }
         return waitlistCount >= waitlistLimit;
     }
-
+    
     /**
-     * Get available spots for confirmation
+     * Get available spots on waitlist
      */
     public int getAvailableSpots() {
         return Math.max(0, capacity - confirmedCount);
     }
-
+    
     /**
      * Get formatted price string
      */
@@ -289,39 +339,39 @@ public class Event implements Parcelable {
             return String.format("$%.2f", price);
         }
     }
-
+    
     /**
      * Check if user location is within geolocation radius
      */
     public boolean isWithinGeolocationRadius(double userLat, double userLng) {
-        if (!geolocationEnabled || geolocationLat == null || 
-            geolocationLng == null || geolocationRadius == null) {
+        if (!geolocationEnabled || geolocationLat == null ||
+                geolocationLng == null || geolocationRadius == null) {
             return true; // No geolocation restriction
         }
-        
-        double distance = calculateDistance(userLat, userLng, 
-                                           geolocationLat, geolocationLng);
+
+        double distance = calculateDistance(userLat, userLng,
+                geolocationLat, geolocationLng);
         return distance <= geolocationRadius;
     }
-
+    
     /**
      * Calculate distance between two coordinates in kilometers using Haversine formula
      */
     private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
         final double EARTH_RADIUS_KM = 6371.0;
-        
+
         double dLat = Math.toRadians(lat2 - lat1);
         double dLng = Math.toRadians(lng2 - lng1);
-        
+
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                   Math.sin(dLng / 2) * Math.sin(dLng / 2);
-        
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        
+
         return EARTH_RADIUS_KM * c;
     }
-
+    
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
