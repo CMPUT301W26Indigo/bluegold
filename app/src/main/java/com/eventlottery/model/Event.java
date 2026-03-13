@@ -184,16 +184,8 @@ public class Event {
         return waitlist;
     }
 
-    public void setWaitlist(Waitlist waitlist) {
-        this.waitlist = waitlist;
-    }
-
     public GuestList getGuestList() {
         return guestList;
-    }
-
-    public void setGuestList(GuestList guestList) {
-        this.guestList = guestList;
     }
 
     public boolean isRecurringEvent() {
