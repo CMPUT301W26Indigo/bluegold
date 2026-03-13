@@ -12,6 +12,10 @@ import com.eventlottery.databinding.ActivityQrScannerBinding;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 
+/**
+ * Opens the camera to scan QR Codes.
+ * Upon scanning a valid QR Code, user can choose to be taken to the specific event page.
+ */
 public class QRScannerActivity extends AppCompatActivity {
 
     private ActivityQrScannerBinding binding;
@@ -27,6 +31,9 @@ public class QRScannerActivity extends AppCompatActivity {
         scanCode();
     }
 
+    /**
+     * Opens the camera with a QR scanner and waits for one to come into the frame
+     */
     private void scanCode() {
         ScanOptions options = new ScanOptions();
         options.setPrompt("Scan QR Code");
@@ -38,6 +45,9 @@ public class QRScannerActivity extends AppCompatActivity {
         barLauncher.launch(options);
     }
 
+    /**
+     * When a QR is scanned, opens a prompt that allows the user to either go to the event page or cancel
+     */
     ActivityResultLauncher<ScanOptions> barLauncher =
             registerForActivityResult(new ScanContract(), result -> {
                 if (result.getContents() != null) {
@@ -55,6 +65,9 @@ public class QRScannerActivity extends AppCompatActivity {
                 }
             });
 
+    /**
+     * Sets up UI
+     */
     private void setupUI() {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
@@ -63,12 +76,19 @@ public class QRScannerActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Hands any functions upon destruction of activity
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
         binding = null;
     }
 
+    /**
+     * Goes to the respective event details page when user confirms the scan.
+     * @param scannedURL
+     */
     private void goToEvent(String scannedURL) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(scannedURL));
         startActivity(intent);

@@ -1,11 +1,21 @@
 package com.eventlottery.model;
 
+import android.graphics.Bitmap;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
 
 /**
  * Event data model representing an event
- *
+ * <p>
  * This class represents all properties and methods for an Event in the system.
  * It includes geolocation validation, waitlist management, and lottery functionality.
  */
@@ -89,6 +99,7 @@ public class Event {
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -148,6 +159,7 @@ public class Event {
     public void setGeolocationEnabled(boolean geolocationEnabled) {
         this.geolocationEnabled = geolocationEnabled;
     }
+
     public Integer getGeolocationRadius() {
         return geolocationRadius;
     }
@@ -202,7 +214,58 @@ public class Event {
      * Lottery System if not specified a max num of guests to select
      * Randomly selects guests from the waitlist and adds them to the guest list.
      * Sends notifications to the selected guests.
+     *
      * @return void
+     * <p>
+     * public static final Creator<Event> CREATOR = new Creator<Event>() {
+     * @Override public Event createFromParcel(Parcel in) {
+     * return new Event(in);
+     * }
+     * @Override public Event[] newArray(int size) {
+     * return new Event[size];
+     * }
+     * };
+     * <p>
+     * /*
+     * Generates QR Code once the create button is pressed
+     *
+     */
+    public Bitmap generateQR() {
+        // Credit for basis of code: https://youtu.be/n8HdrLYL9DA?si=42nC-Wwzbn5_1wUU
+        // TODO: Add this code to the activity/fragment that houses the button that generates events
+        // btn_generate = findViewById(R.id.[BUTTON THAT GENERATES EVENT]);
+        // btn_generate.SetOnClickListener(v -> {
+        //   generateQR();
+        // });
+        // TODO: Add a spot somewhere that displays QR Codes for events
+        // qr_display = findViewById(R.id.[IMAGE THAT WILL HOLD THE QR CODE]);
+        // TODO: Test generation using following dummy text
+        //String text = "Welcome to the Event Details Page!";
+
+        // TODO: Verify that this URL is correct. If not, change it. May need to change this to work with Firestore
+        String deepLink = "eventlottery://event/" + this.getId();
+
+        MultiFormatWriter writer = new MultiFormatWriter();
+        try {
+            BitMatrix matrix = writer.encode(deepLink,
+                    BarcodeFormat.QR_CODE,
+                    400,
+                    400);
+
+            BarcodeEncoder encoder = new BarcodeEncoder();
+            //qr_display.setImageBitmap(bitmap);
+
+            return encoder.createBitmap(matrix);
+        } catch (WriterException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Business Logic Methods
+
+    /**
+     * Check if the event is currently accepting registrations
      */
     public void LotterySystem() {
         Integer limit = guestList.getListLimit();
@@ -226,6 +289,7 @@ public class Event {
      * Lottery System if a max num of guests to select is specified
      * Randomly selects guests from the waitlist and adds them to the guest list.
      * Sends notifications to the selected guests.
+     *
      * @return void
      */
     public void LotterySystem(int lotteryLimit) {
@@ -260,10 +324,20 @@ public class Event {
         return Math.max(0, guestList.getListLimit() - guestList.getListCount());
     }
 
+    /**
+     * Adds a tag to an event
+     *
+     * @param tag
+     */
     public void addTag(String tag) {
         tags.add(tag);
     }
 
+    /**
+     * Removes a tag from an event
+     *
+     * @param tag
+     */
     public void removeTag(String tag) {
         tags.remove(tag);
     }
