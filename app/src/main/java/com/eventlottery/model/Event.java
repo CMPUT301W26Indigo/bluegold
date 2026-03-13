@@ -4,6 +4,10 @@ import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
@@ -51,6 +55,7 @@ public class Event implements Parcelable {
     private long updatedAt;
     private boolean isFlagged;
     private int flagCount;
+    //private GuestList guestlists;
 
     private Waitlist waitlist;
     private GuestList guestList;
@@ -86,6 +91,7 @@ public class Event implements Parcelable {
         this.updatedAt = System.currentTimeMillis();
         this.isFlagged = false;
         this.flagCount = 0;
+        //this.guestlists = new GuestList();
     }
     
     // Full constructor
@@ -367,235 +373,87 @@ public class Event implements Parcelable {
     }
     
     // Getters and Setters
-    public String getId() {
-        return id;
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getOrganizerId() { return organizerId; }
+    public void setOrganizerId(String organizerId) { this.organizerId = organizerId; }
+    public String getDate() { return date; }
+    public void setDate(String date) { this.date = date; }
+    public String getTime() { return time; }
+    public void setTime(String time) { this.time = time; }
+    public String getEndTime() { return endTime; }
+    public void setEndTime(String endTime) { this.endTime = endTime; }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+    public String getLocationAddress() { return locationAddress; }
+    public void setLocationAddress(String locationAddress) { this.locationAddress = locationAddress; }
+    public int getCapacity() { return capacity; }
+    public void setCapacity(int capacity) { this.capacity = capacity; }
+    public Integer getWaitlistLimit() { return waitlistLimit; }
+    public void setWaitlistLimit(Integer waitlistLimit) { this.waitlistLimit = waitlistLimit; }
+    public int getWaitlistCount() { return waitlistCount; }
+    public void setWaitlistCount(int waitlistCount) { this.waitlistCount = waitlistCount; }
+    public int getConfirmedCount() { return confirmedCount; }
+    public void setConfirmedCount(int confirmedCount) { this.confirmedCount = confirmedCount; }
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
+    public String getPosterImageUrl() { return posterImageUrl; }
+    public void setPosterImageUrl(String posterImageUrl) { this.posterImageUrl = posterImageUrl; }
+    public boolean isGeolocationEnabled() { return geolocationEnabled; }
+    public void setGeolocationEnabled(boolean geolocationEnabled) { this.geolocationEnabled = geolocationEnabled; }
+    public Integer getGeolocationRadius() { return geolocationRadius; }
+    public void setGeolocationRadius(Integer geolocationRadius) { this.geolocationRadius = geolocationRadius; }
+    public Double getGeolocationLat() { return geolocationLat; }
+    public void setGeolocationLat(Double geolocationLat) { this.geolocationLat = geolocationLat; }
+    public Double getGeolocationLng() { return geolocationLng; }
+    public void setGeolocationLng(Double geolocationLng) { this.geolocationLng = geolocationLng; }
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public long getRegistrationOpens() { return registrationOpens; }
+    public void setRegistrationOpens(long registrationOpens) { this.registrationOpens = registrationOpens; }
+    public long getRegistrationCloses() { return registrationCloses; }
+    public void setRegistrationCloses(long registrationCloses) { this.registrationCloses = registrationCloses; }
+    public Long getLotteryDrawDate() { return lotteryDrawDate; }
+    public void setLotteryDrawDate(Long lotteryDrawDate) { this.lotteryDrawDate = lotteryDrawDate; }
+    public String getQrCodeUrl() { return qrCodeUrl; }
+    public void setQrCodeUrl(String qrCodeUrl) { this.qrCodeUrl = qrCodeUrl; }
+    public long getCreatedAt() { return createdAt; }
+    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+    public long getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
+    public boolean isFlagged() { return isFlagged; }
+    public void setFlagged(boolean flagged) { isFlagged = flagged; }
+    public int getFlagCount() { return flagCount; }
+    public void setFlagCount(int flagCount) { this.flagCount = flagCount; }
+
+
+    public void generateQrCode() {
+
+    }
+    public void exportCSV() {
+         try{
+             FileWriter file = new FileWriter("final_list.csv");
+             PrintWriter write = new PrintWriter(file);
+             for (String attendeeInfo: GuestList.attendeeArray) {
+                 write.println(attendeeInfo);
+             }
+             write.close();
+         }
+         catch(IOException exe) {
+             System.out.println("Cannot export file");
+         }
+    }
+    public void addAttendee(){
+
+    }
+    public void removeUser() {
+
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getOrganizerId() {
-        return organizerId;
-    }
-
-    public void setOrganizerId(String organizerId) {
-        this.organizerId = organizerId;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public String getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public String getLocationAddress() {
-        return locationAddress;
-    }
-
-    public void setLocationAddress(String locationAddress) {
-        this.locationAddress = locationAddress;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-
-    public Integer getWaitlistLimit() {
-        return waitlistLimit;
-    }
-
-    public void setWaitlistLimit(Integer waitlistLimit) {
-        this.waitlistLimit = waitlistLimit;
-    }
-
-    public int getWaitlistCount() {
-        return waitlistCount;
-    }
-
-    public void setWaitlistCount(int waitlistCount) {
-        this.waitlistCount = waitlistCount;
-    }
-
-    public int getConfirmedCount() {
-        return confirmedCount;
-    }
-
-    public void setConfirmedCount(int confirmedCount) {
-        this.confirmedCount = confirmedCount;
-    }
-
-    public List<String> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
-
-    public String getPosterImageUrl() {
-        return posterImageUrl;
-    }
-
-    public void setPosterImageUrl(String posterImageUrl) {
-        this.posterImageUrl = posterImageUrl;
-    }
-
-    public boolean isGeolocationEnabled() {
-        return geolocationEnabled;
-    }
-
-    public void setGeolocationEnabled(boolean geolocationEnabled) {
-        this.geolocationEnabled = geolocationEnabled;
-    }
-
-    public Integer getGeolocationRadius() {
-        return geolocationRadius;
-    }
-
-    public void setGeolocationRadius(Integer geolocationRadius) {
-        this.geolocationRadius = geolocationRadius;
-    }
-
-    public Double getGeolocationLat() {
-        return geolocationLat;
-    }
-
-    public void setGeolocationLat(Double geolocationLat) {
-        this.geolocationLat = geolocationLat;
-    }
-
-    public Double getGeolocationLng() {
-        return geolocationLng;
-    }
-
-    public void setGeolocationLng(Double geolocationLng) {
-        this.geolocationLng = geolocationLng;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public long getRegistrationOpens() {
-        return registrationOpens;
-    }
-
-    public void setRegistrationOpens(long registrationOpens) {
-        this.registrationOpens = registrationOpens;
-    }
-
-    public long getRegistrationCloses() {
-        return registrationCloses;
-    }
-
-    public void setRegistrationCloses(long registrationCloses) {
-        this.registrationCloses = registrationCloses;
-    }
-
-    public Long getLotteryDrawDate() {
-        return lotteryDrawDate;
-    }
-
-    public void setLotteryDrawDate(Long lotteryDrawDate) {
-        this.lotteryDrawDate = lotteryDrawDate;
-    }
-
-    public String getQrCodeUrl() {
-        return qrCodeUrl;
-    }
-
-    public void setQrCodeUrl(String qrCodeUrl) {
-        this.qrCodeUrl = qrCodeUrl;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(long updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public boolean isFlagged() {
-        return isFlagged;
-    }
-
-    public void setFlagged(boolean flagged) {
-        isFlagged = flagged;
-    }
-
-    public int getFlagCount() {
-        return flagCount;
-    }
-
-    public void setFlagCount(int flagCount) {
-        this.flagCount = flagCount;
-    }
 }

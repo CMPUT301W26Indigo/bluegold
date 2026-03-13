@@ -76,6 +76,7 @@ public class CreateEventActivity extends AppCompatActivity {
         } */
 
         setupUI();
+
     }
 
     private void setupUI() {
