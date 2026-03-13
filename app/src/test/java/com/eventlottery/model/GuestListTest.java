@@ -73,4 +73,58 @@ public class GuestListTest {
         HashMap<String, String> attendeeMap = attendees.get(0);
         assertEquals("maybe", attendeeMap.get(attendeeId));
     }
+    @Test
+    public void testCancelEntrants_ChangesMaybeAndDeclined() {
+        String user1 = "user1";
+        String user2 = "user2";
+
+        guestList.addGuestAttendee(user1); // default "maybe"
+        guestList.addGuestAttendee(user2);
+
+        guestList.changeAttendeeStatus(user2, "declined");
+
+        guestList.cancelEntrants();
+
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+
+        assertEquals("cancelled", attendees.get(0).get(user1));
+        assertEquals("cancelled", attendees.get(1).get(user2));
+    }
+
+    @Test
+    public void testCancelEntrants_DoesNotChangeAccepted() {
+        String user1 = "user1";
+
+        guestList.addGuestAttendee(user1);
+        guestList.changeAttendeeStatus(user1, "accepted");
+
+        guestList.cancelEntrants();
+
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+
+        assertEquals("accepted", attendees.get(0).get(user1));
+    }
+
+    @Test
+    public void testCancelEntrants_MixedStatuses() {
+        String user1 = "user1";
+        String user2 = "user2";
+        String user3 = "user3";
+
+        guestList.addGuestAttendee(user1); // maybe
+        guestList.addGuestAttendee(user2);
+        guestList.addGuestAttendee(user3);
+
+        guestList.changeAttendeeStatus(user2, "declined");
+        guestList.changeAttendeeStatus(user3, "accepted");
+
+        guestList.cancelEntrants();
+
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+
+        assertEquals("cancelled", attendees.get(0).get(user1));
+        assertEquals("cancelled", attendees.get(1).get(user2));
+        assertEquals("accepted", attendees.get(2).get(user3));
+    }
+
 }

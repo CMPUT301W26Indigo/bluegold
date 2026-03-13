@@ -121,7 +121,35 @@ public class ManageEventActivity extends AppCompatActivity {
     }
 
     private void getCancelledList() {
-        // find all the attendees on the guestlist with the cancelled status
+        db.collection("events").document(eventId)
+                .collection("guestList")
+                .whereEqualTo("status", "cancelled")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+
+                    ArrayList<String> cancelledUsers = new ArrayList<>();
+
+                    if (queryDocumentSnapshots.isEmpty()) {
+                        Toast.makeText(this, "No cancelled entrants", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        String userId = doc.getId();
+                        cancelledUsers.add(userId);
+                    }
+
+                    Toast.makeText(this,
+                            cancelledUsers.size() + " cancelled entrants found",
+                            Toast.LENGTH_SHORT).show();
+
+                    // If needed later, you now have the cancelled user IDs
+                    // Example: send notifications, display list, etc.
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this,
+                                "Error fetching cancelled entrants",
+                                Toast.LENGTH_SHORT).show());
     }
 
 }
