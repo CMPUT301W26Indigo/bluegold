@@ -146,7 +146,6 @@ public class CreateEventActivity extends AppCompatActivity {
             imagePickerLauncher.launch("image/*");
         });
 
-        limitWaitlist = binding.waitlistLimitSwitch.isChecked();
 
         binding.createEventButton.setOnClickListener(v -> {
             Event event = new Event();
@@ -184,6 +183,7 @@ public class CreateEventActivity extends AppCompatActivity {
                     event.setWaitlistLimit(null);
                 }
             }
+            limitWaitlist = binding.waitlistLimitSwitch.isChecked();
             
             event.setLocation(binding.locationEditText.getText().toString());
             event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());

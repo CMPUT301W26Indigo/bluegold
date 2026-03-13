@@ -16,6 +16,9 @@ public class OrganizerDashboardActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Initialize Firebase before any UI or Fragment transactions
+        com.google.firebase.FirebaseApp.initializeApp(this);
+        
         binding = ActivityOrganizerDashboardBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
