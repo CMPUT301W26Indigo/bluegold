@@ -1,7 +1,10 @@
 package com.eventlottery.model;
 
 import android.content.Context;
-import android.provider.Settings;import java.util.ArrayList;
+import android.provider.Settings;
+import com.google.firebase.installations.FirebaseInstallations;
+import com.google.android.gms.tasks.Task;
+import java.util.ArrayList;
 
 /**
  * Represents an Attendee in the Event Lottery System.
@@ -99,12 +102,22 @@ public class Attendee {
      * @return The unique Android ID string.
      */
     public static String getDeviceId(Context context) {
-        String id = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        return id;
+        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
     /**
-     * Gets the attendee's unique ID (typically the device ID).
+     * Asynchronously retrieves the unique Firebase Installation ID.
+     * This ID is unique to the app installation on the device and remains consistent
+     * unless the app is uninstalled or the device is factory reset.
+     *
+     * @return A Task that will resolve to the Firebase Installation ID.
+     */
+    public static Task<String> getFirebaseId() {
+        return FirebaseInstallations.getInstance().getId();
+    }
+
+    /**
+     * Gets the attendee's unique ID (typically the device ID or Firebase ID).
      * @return The attendee ID.
      */
     public String getAttendeeID() {
@@ -179,7 +192,7 @@ public class Attendee {
     /**
      * Sets the attendee's physical address.
      * @param address The address to set.
-     * @todo throw Illegal arguemnt exception for invalid format and ensure that address can be cconverted to lat long coordinnates
+     * @todo Throw IllegalArgumentException for invalid format and ensure it can be converted to coordinates.
      */
     public void setAddress(String address) {
         this.address = address;
@@ -187,10 +200,9 @@ public class Attendee {
 
     /**
      * Sets the attendee's unique ID.
-     * @param deviceID The ID to set (usually the device ID).
-     * @todo connect to firebase to get unique installation ID
+     * @param id The ID to set (e.g., the Firebase Installation ID).
      */
-    public void setAttendeeID(String deviceID) {
-        this.deviceID = deviceID;
+    public void setAttendeeID(String id) {
+        this.deviceID = id;
     }
 }
