@@ -11,9 +11,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.FragmentOrganizerDashboardBinding;
-import com.eventlottery.model.Event;
+import com.eventlottery.model.EventTemp;
 import com.eventlottery.ui.adapters.EventAdapter;
-import java.util.ArrayList;
+
 import java.util.List;
 
 /**
@@ -59,7 +59,7 @@ public class OrganizerDashboardFragment extends Fragment {
         // In a real app, we would filter by organizerId
         eventController.getAllEvents(new EventController.OnEventsLoadedListener() {
             @Override
-            public void onEventsLoaded(List<Event> events) {
+            public void onEventsLoaded(List<EventTemp> events) {
                 // For now, showing all events
                 eventAdapter.submitList(events);
             }
@@ -71,7 +71,7 @@ public class OrganizerDashboardFragment extends Fragment {
         });
     }
 
-    private void navigateToManageEvent(Event event) {
+    private void navigateToManageEvent(EventTemp event) {
         // Intent to manage event activity
     }
 

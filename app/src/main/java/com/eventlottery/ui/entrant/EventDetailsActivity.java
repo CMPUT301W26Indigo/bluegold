@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import com.eventlottery.R;
-import com.eventlottery.model.Event;
+import com.eventlottery.model.EventTemp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
@@ -30,7 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
  */
 public class EventDetailsActivity extends AppCompatActivity {
     
-    private Event event;
+    private EventTemp event;
     private String eventId;
     private TextView tvEventName, tvDescription, tvWaitlistCount;
     private Button btnJoinWaitlist;
@@ -50,7 +50,7 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         // Use type-safe getParcelableExtra for API 33+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            event = getIntent().getParcelableExtra("EVENT", Event.class);
+            event = getIntent().getParcelableExtra("EVENT", EventTemp.class);
         } else {
             // Suppress warning for older APIs as it's unavoidable there
             //noinspection deprecation

@@ -14,15 +14,13 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 
 import com.eventlottery.controller.EventController;
-import com.eventlottery.model.Event;
+import com.eventlottery.model.EventTemp;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
 
 import com.google.android.material.chip.Chip;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
-
-import org.apache.commons.collections4.Get;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,7 +147,7 @@ public class CreateEventActivity extends AppCompatActivity {
         limitWaitlist = binding.waitlistLimitSwitch.isChecked();
 
         binding.createEventButton.setOnClickListener(v -> {
-            Event event = new Event();
+            EventTemp event = new EventTemp();
             event.setName(binding.eventNameEditText.getText().toString());
             event.setDescription(binding.descriptionEditText.getText().toString());
             event.setDate(binding.eventDateEditText.getText().toString());

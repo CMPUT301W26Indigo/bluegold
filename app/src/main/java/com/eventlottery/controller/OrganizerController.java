@@ -1,6 +1,6 @@
 package com.eventlottery.controller;
 
-import com.eventlottery.model.Event;
+import com.eventlottery.model.EventTemp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
@@ -30,14 +30,14 @@ public class OrganizerController {
     /**
      * Fetches events created by a specific organizer.
      */
-    public void getOrganizerEvents(String organizerId, OnDataLoadedListener<Event> listener) {
+    public void getOrganizerEvents(String organizerId, OnDataLoadedListener<EventTemp> listener) {
         db.collection("events")
                 .whereEqualTo("organizerId", organizerId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Event> events = new ArrayList<>();
+                    List<EventTemp> events = new ArrayList<>();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        Event event = document.toObject(Event.class);
+                        EventTemp event = document.toObject(EventTemp.class);
                         event.setId(document.getId());
                         events.add(event);
                     }
