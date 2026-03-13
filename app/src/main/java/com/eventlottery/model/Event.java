@@ -1,11 +1,21 @@
 package com.eventlottery.model;
 
+import android.graphics.Bitmap;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
 
 /**
  * Event data model representing an event
- *
+ * <p>
  * This class represents all properties and methods for an Event in the system.
  * It includes geolocation validation, waitlist management, and lottery functionality.
  */
@@ -89,6 +99,7 @@ public class Event {
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -148,6 +159,7 @@ public class Event {
     public void setGeolocationEnabled(boolean geolocationEnabled) {
         this.geolocationEnabled = geolocationEnabled;
     }
+
     public Integer getGeolocationRadius() {
         return geolocationRadius;
     }
@@ -210,23 +222,22 @@ public class Event {
      * Lottery System if not specified a max num of guests to select
      * Randomly selects guests from the waitlist and adds them to the guest list.
      * Sends notifications to the selected guests.
+     *
      * @return void
-    
-    public static final Creator<Event> CREATOR = new Creator<Event>() {
-        @Override
-        public Event createFromParcel(Parcel in) {
-            return new Event(in);
-        }
-        
-        @Override
-        public Event[] newArray(int size) {
-            return new Event[size];
-        }
-    };
-
-    /*
+     * <p>
+     * public static final Creator<Event> CREATOR = new Creator<Event>() {
+     * @Override public Event createFromParcel(Parcel in) {
+     * return new Event(in);
+     * }
+     * @Override public Event[] newArray(int size) {
+     * return new Event[size];
+     * }
+     * };
+     * <p>
+     * /*
      * Generates QR Code once the create button is pressed
-     * */
+     *
+     */
     public Bitmap generateQR() {
         // Credit for basis of code: https://youtu.be/n8HdrLYL9DA?si=42nC-Wwzbn5_1wUU
         // TODO: Add this code to the activity/fragment that houses the button that generates events
@@ -260,7 +271,7 @@ public class Event {
     }
 
     // Business Logic Methods
-    
+
     /**
      * Check if the event is currently accepting registrations
      */
@@ -286,6 +297,7 @@ public class Event {
      * Lottery System if a max num of guests to select is specified
      * Randomly selects guests from the waitlist and adds them to the guest list.
      * Sends notifications to the selected guests.
+     *
      * @return void
      */
     public void LotterySystem(int lotteryLimit) {
@@ -320,10 +332,20 @@ public class Event {
         return Math.max(0, guestList.getListLimit() - guestList.getListCount());
     }
 
+    /**
+     * Adds a tag to an event
+     *
+     * @param tag
+     */
     public void addTag(String tag) {
         tags.add(tag);
     }
 
+    /**
+     * Removes a tag from an event
+     *
+     * @param tag
+     */
     public void removeTag(String tag) {
         tags.remove(tag);
     }

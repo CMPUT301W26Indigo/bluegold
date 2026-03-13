@@ -120,6 +120,8 @@ public class ManageEventActivity extends AppCompatActivity {
         }
     }
 
-
+    private void getCancelledList() {
+        // find all the attendees on the guestlist with the cancelled status
+    }
 
 }
