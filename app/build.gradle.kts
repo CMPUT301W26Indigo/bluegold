@@ -40,6 +40,15 @@ android {
         viewBinding = true
         dataBinding = true
     }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/LICENSE.md"
+            excludes += "/META-INF/NOTICE.md"
+            excludes += "/META-INF/LICENSE-notice.md"
+        }
+    }
 }
 
 dependencies {
@@ -67,17 +76,20 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
 
+    // Testing
+    implementation(libs.activity)
+    implementation(libs.espresso.core)
+    implementation(libs.ext.junit)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
+
     // The rest of the Firebase dependencies are from the Figma transfer
     // These files may or may not be necessary.
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
-    implementation(libs.activity)
 
-    // Testing
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
 
     // Below this comment is all dependencies from the build.gradle file.
     // These may be ones generated from the Figma transfer and may not be
