@@ -12,12 +12,16 @@ import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
- * Event data model representing an event in the lottery system.
- * Part of the 'Model' in MVC.
+ * Event data model representing an event in the lottery system
+ * 
+ * This class represents all properties and methods for an Event in the system.
+ * It includes geolocation validation, waitlist management, and lottery functionality.
  */
 public class Event implements Parcelable {
+    
     private String id;
     private String name;
     private String description;
@@ -48,6 +52,9 @@ public class Event implements Parcelable {
     private boolean isFlagged;
     private int flagCount;
 
+    private Waitlist waitlist;
+    private GuestList guestList;
+    
     // Default constructor
     public Event() {
         this.id = "";
@@ -80,7 +87,7 @@ public class Event implements Parcelable {
         this.isFlagged = false;
         this.flagCount = 0;
     }
-
+    
     // Full constructor
     public Event(String id, String name, String description, String organizerId,
                  String date, String time, String endTime, String location,
@@ -122,7 +129,8 @@ public class Event implements Parcelable {
         this.isFlagged = isFlagged;
         this.flagCount = flagCount;
     }
-
+    
+    // Parcelable constructor
     protected Event(Parcel in) {
         id = in.readString();
         name = in.readString();
@@ -174,7 +182,7 @@ public class Event implements Parcelable {
         isFlagged = in.readByte() != 0;
         flagCount = in.readInt();
     }
-
+    
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
@@ -232,18 +240,18 @@ public class Event implements Parcelable {
         dest.writeByte((byte) (isFlagged ? 1 : 0));
         dest.writeInt(flagCount);
     }
-
+    
     @Override
     public int describeContents() {
         return 0;
     }
-
+    
     public static final Creator<Event> CREATOR = new Creator<Event>() {
         @Override
         public Event createFromParcel(Parcel in) {
             return new Event(in);
         }
-
+        
         @Override
         public Event[] newArray(int size) {
             return new Event[size];
@@ -286,7 +294,7 @@ public class Event implements Parcelable {
     }
 
     // Business Logic Methods
-
+    
     /**
      * Check if the event is currently accepting registrations
      */
@@ -297,7 +305,7 @@ public class Event implements Parcelable {
                 currentTime <= registrationCloses &&
                 !isWaitlistFull();
     }
-
+    
     /**
      * Check if waitlist is full
      */
@@ -307,14 +315,14 @@ public class Event implements Parcelable {
         }
         return waitlistCount >= waitlistLimit;
     }
-
+    
     /**
-     * Get available spots for confirmation
+     * Get available spots on waitlist
      */
     public int getAvailableSpots() {
         return Math.max(0, capacity - confirmedCount);
     }
-
+    
     /**
      * Get formatted price string
      */
@@ -325,7 +333,7 @@ public class Event implements Parcelable {
             return String.format("$%.2f", price);
         }
     }
-
+    
     /**
      * Check if user location is within geolocation radius
      */
@@ -339,7 +347,7 @@ public class Event implements Parcelable {
                 geolocationLat, geolocationLng);
         return distance <= geolocationRadius;
     }
-
+    
     /**
      * Calculate distance between two coordinates in kilometers using Haversine formula
      */
@@ -357,7 +365,7 @@ public class Event implements Parcelable {
 
         return EARTH_RADIUS_KM * c;
     }
-
+    
     // Getters and Setters
     public String getId() {
         return id;
