@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.FragmentOrganizerDashboardBinding;
+import com.eventlottery.model.Event;
 import com.eventlottery.model.EventTemp;
 import com.eventlottery.ui.adapters.EventAdapter;
 
@@ -103,7 +104,7 @@ public class OrganizerDashboardFragment extends Fragment {
      * Navigates to the manage event activity
      * @param event event to be navigated to
      */
-    private void navigateToManageEvent(Event event) {
+    private void navigateToManageEvent(EventTemp event) {
         // Intent to manage event activity
     }
 
