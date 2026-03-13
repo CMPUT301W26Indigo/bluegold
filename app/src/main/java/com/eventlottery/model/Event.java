@@ -262,11 +262,133 @@ public class Event {
     public boolean waitlistIsFull() {
         return waitlist.isWaitlistFull();
     }
+    
+    // Getters and Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getOrganizerId() { return organizerId; }
+    public void setOrganizerId(String organizerId) { this.organizerId = organizerId; }
+    public String getDate() { return date; }
+    public void setDate(String date) { this.date = date; }
+    public String getTime() { return time; }
+    public void setTime(String time) { this.time = time; }
+    public String getEndTime() { return endTime; }
+    public void setEndTime(String endTime) { this.endTime = endTime; }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+    public String getLocationAddress() { return locationAddress; }
+    public void setLocationAddress(String locationAddress) { this.locationAddress = locationAddress; }
+    public int getCapacity() { return capacity; }
+    public void setCapacity(int capacity) { this.capacity = capacity; }
+    public Integer getWaitlistLimit() { return waitlistLimit; }
+    public void setWaitlistLimit(Integer waitlistLimit) { this.waitlistLimit = waitlistLimit; }
+    public int getWaitlistCount() { return waitlistCount; }
+    public void setWaitlistCount(int waitlistCount) { this.waitlistCount = waitlistCount; }
+    public int getConfirmedCount() { return confirmedCount; }
+    public void setConfirmedCount(int confirmedCount) { this.confirmedCount = confirmedCount; }
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
+    public String getPosterImageUrl() { return posterImageUrl; }
+    public void setPosterImageUrl(String posterImageUrl) { this.posterImageUrl = posterImageUrl; }
+    public boolean isGeolocationEnabled() { return geolocationEnabled; }
+    public void setGeolocationEnabled(boolean geolocationEnabled) { this.geolocationEnabled = geolocationEnabled; }
+    public Integer getGeolocationRadius() { return geolocationRadius; }
+    public void setGeolocationRadius(Integer geolocationRadius) { this.geolocationRadius = geolocationRadius; }
+    public Double getGeolocationLat() { return geolocationLat; }
+    public void setGeolocationLat(Double geolocationLat) { this.geolocationLat = geolocationLat; }
+    public Double getGeolocationLng() { return geolocationLng; }
+    public void setGeolocationLng(Double geolocationLng) { this.geolocationLng = geolocationLng; }
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public long getRegistrationOpens() { return registrationOpens; }
+    public void setRegistrationOpens(long registrationOpens) { this.registrationOpens = registrationOpens; }
+    public long getRegistrationCloses() { return registrationCloses; }
+    public void setRegistrationCloses(long registrationCloses) { this.registrationCloses = registrationCloses; }
+    public Long getLotteryDrawDate() { return lotteryDrawDate; }
+    public void setLotteryDrawDate(Long lotteryDrawDate) { this.lotteryDrawDate = lotteryDrawDate; }
+    public String getQrCodeUrl() { return qrCodeUrl; }
+    public void setQrCodeUrl(String qrCodeUrl) { this.qrCodeUrl = qrCodeUrl; }
+    public long getCreatedAt() { return createdAt; }
+    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+    public long getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
+    public boolean isFlagged() { return isFlagged; }
+    public void setFlagged(boolean flagged) { isFlagged = flagged; }
+    public int getFlagCount() { return flagCount; }
+    public void setFlagCount(int flagCount) { this.flagCount = flagCount; }
+
+
+    public void generateQrCode() {
+
+    }
+
+    /**
+     * Exports a list of confirmed attendees in CSV format.
+     *
+     * Names containing commas are automatically wrapped in quotes to maintain formatting
+     *
+     * @param confirmedAttendees ArrayList of Attendee objects who confirmed attendance
+     * @return String containing CSV
+     *
+     * @see Attendee
+     */
+    public String exportToCSV(ArrayList<Attendee> confirmedAttendees) {
+        StringBuilder csv = new StringBuilder();
+
+        csv.append("Name,Email,Phone,Status\n");
+
+        for (Attendee attendee : confirmedAttendees) {
+
+            // Handle commas in names by wrapping in quotes
+            String name = attendee.getName();
+            if (name != null && name.contains(",")) {
+                name = "\"" + name + "\"";
+            }
+
+            csv.append(name != null ? name : "").append(",")
+                    .append(attendee.getEmail() != null ? attendee.getEmail() : "").append(",")
+                    .append(attendee.getPhoneNumber() != null ? attendee.getPhoneNumber() : "").append(",")
+                    .append("Confirmed\n");
+        }
+
+        return csv.toString();
+
+    }
+    public void addAttendee(){
+
+    }
+    public void removeUser() {
 
     public int getAvailableSpots() {
         if (guestList.getListLimit() == null) return Integer.MAX_VALUE;
         return Math.max(0, guestList.getListLimit() - guestList.getListCount());
     }
+
+    /**
+     * Sets the guest list for an event.
+     *
+     * @param guestList the GuestList object containing attendee status
+     */
+    public void setGuestList(GuestList guestList) {
+        this.guestList = guestList;
+    }
+
+
+    /**
+     * Sets the waitlist for an event.
+     *
+     * @param waitlist the Waitlist object containing interested attendees
+     */
+    public void setWaitlist(Waitlist waitlist) {
+        this.waitlist = waitlist;
+    }
+
 
     public void addTag(String tag) {
         tags.add(tag);
