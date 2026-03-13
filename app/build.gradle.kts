@@ -73,6 +73,8 @@ dependencies {
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
     implementation(libs.activity)
+    implementation(libs.espresso.core)
+    implementation(libs.ext.junit)
 
     // Testing
     testImplementation(libs.junit)

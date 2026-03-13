@@ -437,18 +437,27 @@ public class Event implements Parcelable {
     public void generateQrCode() {
 
     }
-    public void exportCSV() {
-         try{
-             FileWriter file = new FileWriter("final_list.csv");
-             PrintWriter write = new PrintWriter(file);
-//             for (String attendeeInfo: GuestList.attendeeArray) {
-//                 write.println(attendeeInfo);
-//             }
-             write.close();
-         }
-         catch(IOException exe) {
-             System.out.println("Cannot export file");
-         }
+    public String exportToCSV(ArrayList<Attendee> confirmedAttendees) {
+        StringBuilder csv = new StringBuilder();
+
+        csv.append("Name,Email,Phone,Status\n");
+
+        for (Attendee attendee : confirmedAttendees) {
+
+            // Handle commas in names by wrapping in quotes
+            String name = attendee.getName();
+            if (name != null && name.contains(",")) {
+                name = "\"" + name + "\"";
+            }
+
+            csv.append(name != null ? name : "").append(",")
+                    .append(attendee.getEmail() != null ? attendee.getEmail() : "").append(",")
+                    .append(attendee.getPhoneNumber() != null ? attendee.getPhoneNumber() : "").append(",")
+                    .append("Confirmed\n");
+        }
+
+        return csv.toString();
+
     }
     public void addAttendee(){
 
@@ -456,5 +465,14 @@ public class Event implements Parcelable {
     public void removeUser() {
 
     }
+
+    public void setGuestList(GuestList guestList) {
+        this.guestList = guestList;
+    }
+
+    public void setWaitlist(Waitlist waitlist) {
+        this.waitlist = waitlist;
+    }
+
 
 }

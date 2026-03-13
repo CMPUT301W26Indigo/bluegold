@@ -4,18 +4,32 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import com.eventlottery.model.Attendee;
+import com.eventlottery.model.Event;
+import com.eventlottery.model.GuestList;
+import com.eventlottery.model.Waitlist;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class EventTest {
 
     private Event event;
+    private GuestList guestList;
+    private Waitlist waitlist;
 
     @Before
     public void setUp() {
         event = new Event();
         event.setId("test_id");
         event.setName("Test Event");
+
+        guestList = new GuestList("test_id");
+        event.setGuestList(guestList);
+
+        waitlist = new Waitlist("test_id");
+        event.setWaitlist(waitlist);
     }
 
     @Test
@@ -125,4 +139,118 @@ public class EventTest {
         assertTrue(fullEvent.isGeolocationEnabled());
         assertEquals(10.5, fullEvent.getPrice(), 0.001);
     }
+
+    // Test for viewing list of invited entrants
+    @Test
+    public void testGuestListHasInvitedAttendees() {
+        guestList.addGuestAttendee("John");
+        guestList.addGuestAttendee("Fortnite");
+        guestList.addGuestAttendee("LeagueofLegends");
+
+        guestList.changeAttendeeStatus("John", "invited");
+        guestList.changeAttendeeStatus("Fortnite", "invited");
+        guestList.changeAttendeeStatus("LeagueofLegends", "confirmed");
+
+        ArrayList<HashMap<String, String>> attendeeIds = guestList.getAttendeeIds();
+
+        // Count how many have "invited" status
+        int invitedCount = 0;
+        for (HashMap<String, String> attendee : attendeeIds) {
+            for (String status : attendee.values()) {
+                if ("invited".equals(status)) {
+                    invitedCount++;
+                }
+            }
+        }
+
+        assertEquals(2, invitedCount);
+    }
+
+    // Test for CSV export
+    @Test
+    public void testExportToCSV() {
+        ArrayList<Attendee> attendees = new ArrayList<Attendee>();
+
+        Attendee a1 = new Attendee();
+        a1.setName("Fort Nite");
+        a1.setEmail("epic@gmail.com");
+        a1.setPhoneNumber("1234567890");
+        attendees.add(a1);
+
+        Attendee a2 = new Attendee();
+        a2.setName("Sauce Awesome");
+        a2.setEmail("awesome@gmail.com");
+        a2.setPhoneNumber("0987654321");
+        attendees.add(a2);
+
+        String csv = event.exportToCSV(attendees);
+
+        assertTrue(csv.contains("Fort Nite,epic@gmail.com,1234567890,Confirmed"));
+        assertTrue(csv.contains("Sauce Awesome,awesome@gmail.com,0987654321,Confirmed"));
+    }
+
+    // Test for Waitlist count
+    @Test
+    public void testWaitlistCount() {
+        assertEquals(0, waitlist.getWaitlistCount().intValue());
+
+        waitlist.addAttendee("Gurt");
+        waitlist.addAttendee("Yo");
+
+        assertEquals(2, waitlist.getWaitlistCount().intValue());
+    }
+
+    // Test for Confirmed entrants
+    @Test
+    public void testGuestListHasConfirmedAttendees() {
+        guestList.addGuestAttendee("Yo");
+        guestList.addGuestAttendee("Gurt");
+        guestList.addGuestAttendee("SixSeven");
+
+        guestList.changeAttendeeStatus("Yo", "confirmed");
+        guestList.changeAttendeeStatus("Gurt", "invited");
+        guestList.changeAttendeeStatus("SixSeven", "confirmed");
+
+        ArrayList<HashMap<String, String>> attendeeIds = guestList.getAttendeeIds();
+
+        // Count how many have "confirmed" status
+        int confirmedCount = 0;
+        for (HashMap<String, String> attendee : attendeeIds) {
+            for (String status : attendee.values()) {
+                if ("confirmed".equals(status)) {
+                    confirmedCount++;
+                }
+            }
+        }
+
+        assertEquals(2, confirmedCount);
+    }
+
+    // Test for Joinable events (registration open check)
+    @Test
+    public void testIsRegistrationOpen() {
+        long now = System.currentTimeMillis();
+        long yesterday = now - 86400000; // Millisepconds in a day
+        long tomorrow = now + 86400000;
+
+        event.setStatus("open");
+        event.setRegistrationOpens(yesterday);
+        event.setRegistrationCloses(tomorrow);
+
+        assertTrue(event.isRegistrationOpen());
+    }
+
+    // Test to see if geolocation in within bounds
+    @Test
+    public void testGeolocationWithinRadius() {
+        event.setGeolocationEnabled(true);
+        event.setGeolocationLat(20.0);
+        event.setGeolocationLng(-40.0);
+        event.setGeolocationRadius(10);
+
+        assertTrue(event.isWithinGeolocationRadius(20.0, -40.0));
+        assertFalse(event.isWithinGeolocationRadius(70.0, -100.0));
+    }
+
+
 }
