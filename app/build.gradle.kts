@@ -60,7 +60,7 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.6.2")
 
     // QR Scanning
-    implementation(libs.zxing.android.embedded)
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
@@ -72,6 +72,7 @@ dependencies {
 //    implementation("com.google.firebase:firebase-firestore")
 //    implementation("com.google.firebase:firebase-storage")
 //    implementation("com.google.firebase:firebase-messaging")
+//    implementation(libs.activity)
 
     // Testing
     testImplementation(libs.junit)
@@ -81,7 +82,7 @@ dependencies {
     // Below this comment is all dependencies from the build.gradle file.
     // These may be ones generated from the Figma transfer and may not be
     // necessary.
-//
+
 //    implementation("androidx.core:core-ktx:1.12.0")
 //    implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
 //    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")

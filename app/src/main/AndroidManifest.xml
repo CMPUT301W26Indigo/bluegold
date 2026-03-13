@@ -27,14 +27,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EventLotterySystem"
         tools:targetApi="31">
-
         <!-- Handle Android 16 Resizability Override for Large Screens -->
-        <property android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY" android:value="true" />
+        <property
+            android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
+            android:value="true" />
 
-        <activity
-            android:name=".ui.admin.Whatisinthesethings"
-            android:exported="false"
-            android:theme="@style/Theme.EventLotterySystem" />
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
@@ -55,11 +52,22 @@
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.entrant.EventDetailsActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/event_details_title"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.EventLotterySystem"
-            tools:ignore="LockedOrientationActivity" />
+            tools:ignore="LockedOrientationActivity">
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="eventlottery.app"
+                    android:pathPrefix="/event"
+                    android:scheme="https" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ui.entrant.MyEventsActivity"
             android:exported="false"
@@ -125,13 +133,20 @@
             android:exported="false"
             android:label="@string/manage_users_title"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" /> <!-- QR Code Scanner Activity -->
+            tools:ignore="LockedOrientationActivity" />
+        <!-- QR Code Scanner Activity -->
         <activity
             android:name=".ui.qr.QRScannerActivity"
             android:exported="false"
             android:label="Scan QR Code"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" /> <!-- Firebase Cloud Messaging Service (if using Firebase) -->
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ui.qr.CaptureAct"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/zxing_CaptureTheme" />
+        <!-- Firebase Cloud Messaging Service (if using Firebase) -->
         <service
             android:name=".services.FCMService"
             android:exported="false">

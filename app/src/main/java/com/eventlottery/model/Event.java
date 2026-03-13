@@ -1,9 +1,21 @@
 package com.eventlottery.model;
 
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -44,6 +56,7 @@ public class Event implements Parcelable {
     private long updatedAt;
     private boolean isFlagged;
     private int flagCount;
+    //private GuestList guestlists;
 
     private Waitlist waitlist;
     private GuestList guestList;
@@ -79,6 +92,7 @@ public class Event implements Parcelable {
         this.updatedAt = System.currentTimeMillis();
         this.isFlagged = false;
         this.flagCount = 0;
+        //this.guestlists = new GuestList();
     }
     
     // Full constructor
@@ -250,7 +264,42 @@ public class Event implements Parcelable {
             return new Event[size];
         }
     };
-    
+
+    /*
+     * Generates QR Code once the create button is pressed
+     * */
+    private Bitmap generateQR() {
+        // Credit for basis of code: https://youtu.be/n8HdrLYL9DA?si=42nC-Wwzbn5_1wUU
+        // TODO: Add this code to the activity/fragment that houses the button that generates events
+        // btn_generate = findViewById(R.id.[BUTTON THAT GENERATES EVENT]);
+        // btn_generate.SetOnClickListener(v -> {
+        //   generateQR();
+        // });
+        // TODO: Add a spot somewhere that displays QR Codes for events
+        // qr_display = findViewById(R.id.[IMAGE THAT WILL HOLD THE QR CODE]);
+        // TODO: Test generation using following dummy text
+        //String text = "Welcome to the Event Details Page!";
+
+        // TODO: Verify that this URL is correct. If not, change it. May need to change this to work with Firestore
+        String deepLink = "eventlottery://event/" + this.getId();
+
+        MultiFormatWriter writer = new MultiFormatWriter();
+        try {
+            BitMatrix matrix = writer.encode(deepLink,
+                    BarcodeFormat.QR_CODE,
+                    400,
+                    400);
+
+            BarcodeEncoder encoder = new BarcodeEncoder();
+            //qr_display.setImageBitmap(bitmap);
+
+            return encoder.createBitmap(matrix);
+        } catch (WriterException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
     // Business Logic Methods
     
     /**
@@ -258,10 +307,10 @@ public class Event implements Parcelable {
      */
     public boolean isRegistrationOpen() {
         long currentTime = System.currentTimeMillis();
-        return "open".equals(status) && 
-               currentTime >= registrationOpens && 
-               currentTime <= registrationCloses &&
-               !isWaitlistFull();
+        return "open".equals(status) &&
+                currentTime >= registrationOpens &&
+                currentTime <= registrationCloses &&
+                !isWaitlistFull();
     }
     
     /**
@@ -296,13 +345,13 @@ public class Event implements Parcelable {
      * Check if user location is within geolocation radius
      */
     public boolean isWithinGeolocationRadius(double userLat, double userLng) {
-        if (!geolocationEnabled || geolocationLat == null || 
-            geolocationLng == null || geolocationRadius == null) {
+        if (!geolocationEnabled || geolocationLat == null ||
+                geolocationLng == null || geolocationRadius == null) {
             return true; // No geolocation restriction
         }
-        
-        double distance = calculateDistance(userLat, userLng, 
-                                           geolocationLat, geolocationLng);
+
+        double distance = calculateDistance(userLat, userLng,
+                geolocationLat, geolocationLng);
         return distance <= geolocationRadius;
     }
     
@@ -311,300 +360,101 @@ public class Event implements Parcelable {
      */
     private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
         final double EARTH_RADIUS_KM = 6371.0;
-        
+
         double dLat = Math.toRadians(lat2 - lat1);
         double dLng = Math.toRadians(lng2 - lng1);
-        
+
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                   Math.sin(dLng / 2) * Math.sin(dLng / 2);
-        
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        
+
         return EARTH_RADIUS_KM * c;
     }
     
     // Getters and Setters
-    
-    public String getId() {
-        return id;
-    }
-    
-    public void setId(String id) {
-        this.id = id;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public String getDescription() {
-        return description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    public String getOrganizerId() {
-        return organizerId;
-    }
-    
-    public void setOrganizerId(String organizerId) {
-        this.organizerId = organizerId;
-    }
-    
-    public String getDate() {
-        return date;
-    }
-    
-    public void setDate(String date) {
-        this.date = date;
-    }
-    
-    public String getTime() {
-        return time;
-    }
-    
-    public void setTime(String time) {
-        this.time = time;
-    }
-    
-    public String getEndTime() {
-        return endTime;
-    }
-    
-    public void setEndTime(String endTime) {
-        this.endTime = endTime;
-    }
-    
-    public String getLocation() {
-        return location;
-    }
-    
-    public void setLocation(String location) {
-        this.location = location;
-    }
-    
-    public String getLocationAddress() {
-        return locationAddress;
-    }
-    
-    public void setLocationAddress(String locationAddress) {
-        this.locationAddress = locationAddress;
-    }
-    
-    public int getCapacity() {
-        return capacity;
-    }
-    
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-    
-    public Integer getWaitlistLimit() {
-        return waitlistLimit;
-    }
-    
-    public void setWaitlistLimit(Integer waitlistLimit) {
-        this.waitlistLimit = waitlistLimit;
-    }
-    
-    public int getWaitlistCount() {
-        return waitlistCount;
-    }
-    
-    public void setWaitlistCount(int waitlistCount) {
-        this.waitlistCount = waitlistCount;
-    }
-    
-    public int getConfirmedCount() {
-        return confirmedCount;
-    }
-    
-    public void setConfirmedCount(int confirmedCount) {
-        this.confirmedCount = confirmedCount;
-    }
-    
-    public List<String> getTags() {
-        return tags;
-    }
-    
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
-    
-    public String getPosterImageUrl() {
-        return posterImageUrl;
-    }
-    
-    public void setPosterImageUrl(String posterImageUrl) {
-        this.posterImageUrl = posterImageUrl;
-    }
-    
-    public boolean isGeolocationEnabled() {
-        return geolocationEnabled;
-    }
-    
-    public void setGeolocationEnabled(boolean geolocationEnabled) {
-        this.geolocationEnabled = geolocationEnabled;
-    }
-    
-    public Integer getGeolocationRadius() {
-        return geolocationRadius;
-    }
-    
-    public void setGeolocationRadius(Integer geolocationRadius) {
-        this.geolocationRadius = geolocationRadius;
-    }
-    
-    public Double getGeolocationLat() {
-        return geolocationLat;
-    }
-    
-    public void setGeolocationLat(Double geolocationLat) {
-        this.geolocationLat = geolocationLat;
-    }
-    
-    public Double getGeolocationLng() {
-        return geolocationLng;
-    }
-    
-    public void setGeolocationLng(Double geolocationLng) {
-        this.geolocationLng = geolocationLng;
-    }
-    
-    public double getPrice() {
-        return price;
-    }
-    
-    public void setPrice(double price) {
-        this.price = price;
-    }
-    
-    public String getStatus() {
-        return status;
-    }
-    
-    public void setStatus(String status) {
-        this.status = status;
-    }
-    
-    public long getRegistrationOpens() {
-        return registrationOpens;
-    }
-    
-    public void setRegistrationOpens(long registrationOpens) {
-        this.registrationOpens = registrationOpens;
-    }
-    
-    public long getRegistrationCloses() {
-        return registrationCloses;
-    }
-    
-    public void setRegistrationCloses(long registrationCloses) {
-        this.registrationCloses = registrationCloses;
-    }
-    
-    public Long getLotteryDrawDate() {
-        return lotteryDrawDate;
-    }
-    
-    public void setLotteryDrawDate(Long lotteryDrawDate) {
-        this.lotteryDrawDate = lotteryDrawDate;
-    }
-    
-    public String getQrCodeUrl() {
-        return qrCodeUrl;
-    }
-    
-    public void setQrCodeUrl(String qrCodeUrl) {
-        this.qrCodeUrl = qrCodeUrl;
-    }
-    
-    public long getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(long createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(long updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    
-    public boolean isFlagged() {
-        return isFlagged;
-    }
-    
-    public void setFlagged(boolean flagged) {
-        isFlagged = flagged;
-    }
-    
-    public int getFlagCount() {
-        return flagCount;
-    }
-    
-    public void setFlagCount(int flagCount) {
-        this.flagCount = flagCount;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getOrganizerId() { return organizerId; }
+    public void setOrganizerId(String organizerId) { this.organizerId = organizerId; }
+    public String getDate() { return date; }
+    public void setDate(String date) { this.date = date; }
+    public String getTime() { return time; }
+    public void setTime(String time) { this.time = time; }
+    public String getEndTime() { return endTime; }
+    public void setEndTime(String endTime) { this.endTime = endTime; }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+    public String getLocationAddress() { return locationAddress; }
+    public void setLocationAddress(String locationAddress) { this.locationAddress = locationAddress; }
+    public int getCapacity() { return capacity; }
+    public void setCapacity(int capacity) { this.capacity = capacity; }
+    public Integer getWaitlistLimit() { return waitlistLimit; }
+    public void setWaitlistLimit(Integer waitlistLimit) { this.waitlistLimit = waitlistLimit; }
+    public int getWaitlistCount() { return waitlistCount; }
+    public void setWaitlistCount(int waitlistCount) { this.waitlistCount = waitlistCount; }
+    public int getConfirmedCount() { return confirmedCount; }
+    public void setConfirmedCount(int confirmedCount) { this.confirmedCount = confirmedCount; }
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
+    public String getPosterImageUrl() { return posterImageUrl; }
+    public void setPosterImageUrl(String posterImageUrl) { this.posterImageUrl = posterImageUrl; }
+    public boolean isGeolocationEnabled() { return geolocationEnabled; }
+    public void setGeolocationEnabled(boolean geolocationEnabled) { this.geolocationEnabled = geolocationEnabled; }
+    public Integer getGeolocationRadius() { return geolocationRadius; }
+    public void setGeolocationRadius(Integer geolocationRadius) { this.geolocationRadius = geolocationRadius; }
+    public Double getGeolocationLat() { return geolocationLat; }
+    public void setGeolocationLat(Double geolocationLat) { this.geolocationLat = geolocationLat; }
+    public Double getGeolocationLng() { return geolocationLng; }
+    public void setGeolocationLng(Double geolocationLng) { this.geolocationLng = geolocationLng; }
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public long getRegistrationOpens() { return registrationOpens; }
+    public void setRegistrationOpens(long registrationOpens) { this.registrationOpens = registrationOpens; }
+    public long getRegistrationCloses() { return registrationCloses; }
+    public void setRegistrationCloses(long registrationCloses) { this.registrationCloses = registrationCloses; }
+    public Long getLotteryDrawDate() { return lotteryDrawDate; }
+    public void setLotteryDrawDate(Long lotteryDrawDate) { this.lotteryDrawDate = lotteryDrawDate; }
+    public String getQrCodeUrl() { return qrCodeUrl; }
+    public void setQrCodeUrl(String qrCodeUrl) { this.qrCodeUrl = qrCodeUrl; }
+    public long getCreatedAt() { return createdAt; }
+    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+    public long getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
+    public boolean isFlagged() { return isFlagged; }
+    public void setFlagged(boolean flagged) { isFlagged = flagged; }
+    public int getFlagCount() { return flagCount; }
+    public void setFlagCount(int flagCount) { this.flagCount = flagCount; }
 
-    public void setWaitlist(Waitlist waitlist) {
-        this.waitlist = waitlist;
+
+    public void generateQrCode() {
+
     }
-
-    public void setGuestList(GuestList guestList) {
-        this.guestList = guestList;
+    public void exportCSV() {
+         try{
+             FileWriter file = new FileWriter("final_list.csv");
+             PrintWriter write = new PrintWriter(file);
+//             for (String attendeeInfo: GuestList.attendeeArray) {
+//                 write.println(attendeeInfo);
+//             }
+             write.close();
+         }
+         catch(IOException exe) {
+             System.out.println("Cannot export file");
+         }
     }
+    public void addAttendee(){
 
-    public Waitlist getWaitlist() {
-        return waitlist;
     }
+    public void removeUser() {
 
-    public GuestList getGuestList() {
-        return guestList;
-    }
-
-    // Lottery System if not specified a max num of guests to select
-    public void LotterySystem() {
-        int count = Math.min(waitlist.getWaitlistCount(), guestList.getListLimit());
-        while (waitlist.getWaitlistCount() > 0 && count > 0 && guestList.getListCount() < guestList.getListLimit() + 1) {
-            Random random = new Random();
-            int randomIndex = random.nextInt(waitlist.getAttendeeIds().size());
-            String attendeeId = waitlist.getAttendeeIds().get(randomIndex);
-
-            guestList.addGuestAttendee(attendeeId);
-            waitlist.removeAttendee(attendeeId);
-            count--;
-            Notification notification = new Notification("You have been selected!", attendeeId, id);
-            notification.sendNotification();
-        }
-    }
-
-    // Lottery System if specified a max num of guests to select
-    public void LotterySystem(int lotteryLimit) {
-        int tempCount = Math.min(waitlist.getWaitlistCount(), guestList.getListLimit());
-        int count = Math.min(tempCount, lotteryLimit);
-        while (waitlist.getWaitlistCount() > 0 && count > 0 && guestList.getListCount() < guestList.getListLimit() + 1) {
-            Random random = new Random();
-            int randomIndex = random.nextInt(waitlist.getAttendeeIds().size());
-            String attendeeId = waitlist.getAttendeeIds().get(randomIndex);
-
-            guestList.addGuestAttendee(attendeeId);
-            waitlist.removeAttendee(attendeeId);
-            count--;
-            Notification notification = new Notification("You have been selected!", attendeeId, id);
-            notification.sendNotification();
-        }
     }
 
 }

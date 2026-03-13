@@ -7,6 +7,7 @@ import com.eventlottery.databinding.ActivityMainBinding;
 import com.eventlottery.ui.entrant.BrowseEventsActivity;
 import com.eventlottery.ui.organizer.OrganizerDashboardActivity;
 import com.eventlottery.ui.admin.AdminDashboardActivity;
+import com.google.firebase.FirebaseApp;
 
 /**
  * MainActivity - Role Selection Screen
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseApp.initializeApp(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         
@@ -50,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     
     private void navigateToOrganizerFlow() {
         Intent intent = new Intent(this, OrganizerDashboardActivity.class);
+        //intent.putExtra("ORGANIZERID",userId);
         startActivity(intent);
     }
     

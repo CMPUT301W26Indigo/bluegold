@@ -1,49 +1,77 @@
 package com.eventlottery.ui.qr;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import com.journeyapps.barcodescanner.CaptureManager;
+
 import com.eventlottery.databinding.ActivityQrScannerBinding;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 
 public class QRScannerActivity extends AppCompatActivity {
 
-    private CaptureManager capture;
     private ActivityQrScannerBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         binding = ActivityQrScannerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        capture = new CaptureManager(this, binding.zxingBarcodeScanner);
-        capture.initializeFromIntent(getIntent(), savedInstanceState);
-        capture.decode();
+        setupUI();
+        scanCode();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        capture.onResume();
+    private void scanCode() {
+        ScanOptions options = new ScanOptions();
+        options.setPrompt("Scan QR Code");
+        options.setBeepEnabled(true);
+        options.setOrientationLocked(true);
+        options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
+        options.setCaptureActivity(CaptureAct.class);
+
+        barLauncher.launch(options);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        capture.onPause();
+    ActivityResultLauncher<ScanOptions> barLauncher =
+            registerForActivityResult(new ScanContract(), result -> {
+                if (result.getContents() != null) {
+                    String scannedURL = result.getContents();
+                    new AlertDialog.Builder(QRScannerActivity.this)
+                            .setTitle("Result")
+                            .setMessage(scannedURL)
+                            .setPositiveButton("View Event Details",
+                                    (dialog, which) -> goToEvent(scannedURL))
+                            .setNegativeButton("Cancel",
+                                    (dialog, which) -> finish())
+                            .show();
+                } else {
+                    finish();  // User cancelled
+                }
+            });
+
+    private void setupUI() {
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            binding.toolbar.setNavigationOnClickListener(v -> finish());
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        capture.onDestroy();
         binding = null;
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        capture.onSaveInstanceState(outState);
+    private void goToEvent(String scannedURL) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(scannedURL));
+        startActivity(intent);
+        finish();
     }
 }

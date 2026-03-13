@@ -2,9 +2,13 @@ package com.eventlottery.ui.entrant;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.widget.Button;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import com.eventlottery.R;
 import com.eventlottery.model.Event;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * EventDetailsActivity
@@ -28,15 +32,22 @@ public class EventDetailsActivity extends AppCompatActivity {
     
     private Event event;
     private String eventId;
+    private TextView tvEventName, tvDescription, tvWaitlistCount;
+    private Button btnJoinWaitlist;
+    private FirebaseFirestore db;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_details);
-        
+
         // Get event from Intent
-        eventId = getIntent().getStringExtra("EVENT_ID");
-        
+        if (getIntent().getData() != null) {
+            eventId = getIntent().getData().getLastPathSegment();  // get ID from QR scan
+        } else {
+            eventId = getIntent().getStringExtra("EVENT_ID");  // get ID normally
+        }
+
         // Use type-safe getParcelableExtra for API 33+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             event = getIntent().getParcelableExtra("EVENT", Event.class);
@@ -45,7 +56,6 @@ public class EventDetailsActivity extends AppCompatActivity {
             //noinspection deprecation
             event = getIntent().getParcelableExtra("EVENT");
         }
-        
         // TODO: Setup views and load event data
         setupToolbar();
         loadEventDetails();
@@ -59,5 +69,13 @@ public class EventDetailsActivity extends AppCompatActivity {
         // TODO: Load event details from database if not passed in Intent
         // TODO: Display event information
         // TODO: Setup join waitlist button
+
+        // JUST ADDED, PLEASE REVIEW
+        db.collection("events").document(eventId)
+                .collection("waitlist")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    tvWaitlistCount.setText("Waiting list: " + querySnapshot.size() + " people");
+                });
     }
 }
