@@ -19,4 +19,9 @@
         android:id="@+id/navigation_profile"
         android:icon="@android:drawable/ic_menu_myplaces"
         android:title="@string/nav_profile" />
+
+    <item
+        android:id="@+id/navigation_scan_qr"
+        android:icon="@android:drawable/ic_menu_camera"
+        android:title="@string/nav_scan_qr" />
 </menu>

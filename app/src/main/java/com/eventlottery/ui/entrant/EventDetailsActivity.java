@@ -33,10 +33,14 @@ public class EventDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_details);
-        
+
         // Get event from Intent
-        eventId = getIntent().getStringExtra("EVENT_ID");
-        
+        if (getIntent().getData() != null) {
+            eventId = getIntent().getData().getLastPathSegment();  // get ID from QR scan
+        } else {
+            eventId = getIntent().getStringExtra("EVENT_ID");  // get ID normally
+        }
+
         // Use type-safe getParcelableExtra for API 33+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             event = getIntent().getParcelableExtra("EVENT", Event.class);
@@ -45,7 +49,6 @@ public class EventDetailsActivity extends AppCompatActivity {
             //noinspection deprecation
             event = getIntent().getParcelableExtra("EVENT");
         }
-        
         // TODO: Setup views and load event data
         setupToolbar();
         loadEventDetails();

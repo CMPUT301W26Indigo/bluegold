@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityBrowseEventsBinding;
+import com.eventlottery.ui.qr.QRScannerActivity;
 
 /**
  * Activity hosting the BrowseEventsFragment.
@@ -45,6 +46,9 @@ public class BrowseEventsActivity extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.navigation_profile) {
                 startActivity(new Intent(this, ProfileActivity.class));
+                return true;
+            } else if (itemId == R.id.navigation_scan_qr) {
+                startActivity(new Intent(this, QRScannerActivity.class));
                 return true;
             }
             return false;
