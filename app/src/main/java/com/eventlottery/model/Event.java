@@ -289,8 +289,7 @@ public class Event {
      * Lottery System if a max num of guests to select is specified
      * Randomly selects guests from the waitlist and adds them to the guest list.
      * Sends notifications to the selected guests.
-     *
-     *
+     * @param lotteryLimit
      */
     public void LotterySystem(int lotteryLimit) {
         Integer limit = guestList.getListLimit();
