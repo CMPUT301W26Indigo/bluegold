@@ -432,11 +432,7 @@ public class Event implements Parcelable {
     public void setFlagged(boolean flagged) { isFlagged = flagged; }
     public int getFlagCount() { return flagCount; }
     public void setFlagCount(int flagCount) { this.flagCount = flagCount; }
-
-
-    public void generateQrCode() {
-
-    }
+    
     public void exportCSV() {
          try{
              FileWriter file = new FileWriter("final_list.csv");
