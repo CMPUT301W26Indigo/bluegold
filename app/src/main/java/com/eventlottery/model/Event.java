@@ -268,7 +268,7 @@ public class Event implements Parcelable {
     /*
      * Generates QR Code once the create button is pressed
      * */
-    private Bitmap generateQR() {
+    public Bitmap generateQR() {
         // Credit for basis of code: https://youtu.be/n8HdrLYL9DA?si=42nC-Wwzbn5_1wUU
         // TODO: Add this code to the activity/fragment that houses the button that generates events
         // btn_generate = findViewById(R.id.[BUTTON THAT GENERATES EVENT]);
