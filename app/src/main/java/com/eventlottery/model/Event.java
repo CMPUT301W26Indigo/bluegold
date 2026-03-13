@@ -15,6 +15,7 @@ import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -440,9 +441,9 @@ public class Event implements Parcelable {
          try{
              FileWriter file = new FileWriter("final_list.csv");
              PrintWriter write = new PrintWriter(file);
-             for (String attendeeInfo: GuestList.attendeeArray) {
-                 write.println(attendeeInfo);
-             }
+//             for (String attendeeInfo: GuestList.attendeeArray) {
+//                 write.println(attendeeInfo);
+//             }
              write.close();
          }
          catch(IOException exe) {
