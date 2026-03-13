@@ -11,6 +11,7 @@ public class Waitlist {
     private ArrayList<String> attendeeIds;
     private Integer waitlistLimit;
     private Integer waitlistCount;
+    private String registrationDeadline;
 
     /**
      * Constructs a Waitlist with a specific capacity limit.
@@ -18,11 +19,12 @@ public class Waitlist {
      * @param eventId       The unique identifier of the event.
      * @param waitlistLimit The maximum number of attendees allowed on the waitlist.
      */
-    public Waitlist(String eventId, Integer waitlistLimit) {
+    public Waitlist(String eventId, Integer waitlistLimit, String registrationDeadline) {
         this.eventId = eventId;
         this.attendeeIds = new ArrayList<String>();
         this.waitlistLimit = waitlistLimit;
         this.waitlistCount = 0;
+        this.registrationDeadline = registrationDeadline;
     }
 
     /**
@@ -30,11 +32,12 @@ public class Waitlist {
      *
      * @param eventId The unique identifier of the event.
      */
-    public Waitlist(String eventId) {
+    public Waitlist(String eventId, String registrationDeadline) {
         this.eventId = eventId;
         this.attendeeIds = new ArrayList<String>();
         this.waitlistLimit = null;
         this.waitlistCount = 0;
+        this.registrationDeadline = registrationDeadline;
     }
 
     /**
@@ -124,5 +127,14 @@ public class Waitlist {
     public boolean findAttendee(String attendeeId) {
         return attendeeIds.contains(attendeeId);
     }
+
+    public String getRegistrationDeadline() {
+        return registrationDeadline;
+    }
+
+    public void setRegistrationDeadline(String registrationDeadline) {
+        this.registrationDeadline = registrationDeadline;
+    }
+
 
 }

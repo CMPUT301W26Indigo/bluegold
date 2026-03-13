@@ -1,6 +1,6 @@
 package com.eventlottery.controller;
 
-import com.eventlottery.model.Event;
+import com.eventlottery.model.EventTemp;
 import com.eventlottery.model.User;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -58,14 +58,14 @@ public class AdminController {
     /**
      * Fetches flagged events for review.
      */
-    public void getFlaggedEvents(OnDataLoadedListener<Event> listener) {
+    public void getFlaggedEvents(OnDataLoadedListener<EventTemp> listener) {
         db.collection("events")
                 .whereEqualTo("isFlagged", true)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Event> events = new ArrayList<>();
+                    List<EventTemp> events = new ArrayList<>();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        Event event = document.toObject(Event.class);
+                        EventTemp event = document.toObject(EventTemp.class);
                         event.setId(document.getId());
                         events.add(event);
                     }
