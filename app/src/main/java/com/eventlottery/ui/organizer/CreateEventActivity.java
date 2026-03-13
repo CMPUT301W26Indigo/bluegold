@@ -27,6 +27,26 @@ import org.apache.commons.collections4.Get;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Handles event creation with geolocation toggle functionality.
+ *
+ * This activity allows organizers to enable or disable
+ * geolocation requirements for their events. When enabled, organizers can set
+ * a radius (1-500km) that entrants must be within to join.
+ *
+ * User stories implemented:
+ * 02.02.03
+ *
+ * Layout file: activity_create_event.xml
+ *
+ * Outstanding issues:
+ * - Geolocation coordinates are hardcoded
+ * - Registration dates are hardcoded
+ *
+ * @see Event
+ * @see com.google.firebase.firestore.FirebaseFirestore
+ */
 public class CreateEventActivity extends AppCompatActivity {
 
     private ActivityCreateEventBinding binding;

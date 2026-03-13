@@ -437,6 +437,17 @@ public class Event implements Parcelable {
     public void generateQrCode() {
 
     }
+
+    /**
+     * Exports a list of confirmed attendees in CSV format.
+     *
+     * Names containing commas are automatically wrapped in quotes to maintain formatting
+     *
+     * @param confirmedAttendees ArrayList of Attendee objects who confirmed attendance
+     * @return String containing CSV
+     *
+     * @see Attendee
+     */
     public String exportToCSV(ArrayList<Attendee> confirmedAttendees) {
         StringBuilder csv = new StringBuilder();
 
@@ -466,10 +477,21 @@ public class Event implements Parcelable {
 
     }
 
+    /**
+     * Sets the guest list for an event.
+     *
+     * @param guestList the GuestList object containing attendee status
+     */
     public void setGuestList(GuestList guestList) {
         this.guestList = guestList;
     }
 
+
+    /**
+     * Sets the waitlist for an event.
+     *
+     * @param waitlist the Waitlist object containing interested attendees
+     */
     public void setWaitlist(Waitlist waitlist) {
         this.waitlist = waitlist;
     }

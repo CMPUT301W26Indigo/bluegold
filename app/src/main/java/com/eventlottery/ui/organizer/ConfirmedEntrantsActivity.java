@@ -10,6 +10,23 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 
+/**
+ * Displays a list of entrants who have confirmed their attendance.
+ *
+ * This activity shows organizers all users with "confirmed" status in the
+ * guest list. It displays the total count and individual names of confirmed entrants.
+ *
+ * User stories implemented:
+ * 02.06.03
+ *
+ * Layout file: activity_confirmed_entrants.xml
+ *
+ * Outstanding issues:
+ * - No export functionality from this screen (currently in ManageEventActivity)
+ *
+ * @see ManageEventActivity
+ * @see com.google.firebase.firestore.FirebaseFirestore
+ */
 public class ConfirmedEntrantsActivity extends AppCompatActivity {
 
     private ListView listView;

@@ -16,6 +16,25 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 
+
+/**
+ * Main management dashboard for organizers to control their events.
+ *
+ * Provides access to organizer functions including viewing invited entrants,
+ * viewing confirmed entrants, and exporting attendee lists to CSV
+ *
+ * User stories implemented:
+ * - 02.06.03
+ * - 02.06.05
+ * - 02.06.01
+ *
+ * Outstanding issues:
+ * - FileProvider needs to be configured in AndroidManifest (?)
+ * - Handle cases where user documents doesn't exist in Firestore
+ *
+ * @see InvitedEntrantsActivity
+ * @see ConfirmedEntrantsActivity
+ */
 public class ManageEventActivity extends AppCompatActivity {
 
     private ActivityManageEventBinding binding;
