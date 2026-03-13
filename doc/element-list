@@ -1,0 +1,16 @@
+com.eventlottery
+com.eventlottery.controller
+com.eventlottery.controller.entrant
+com.eventlottery.data.models
+com.eventlottery.model
+com.eventlottery.services
+com.eventlottery.ui.adapters
+com.eventlottery.ui.admin
+com.eventlottery.ui.entrant
+com.eventlottery.ui.organizer
+com.eventlottery.ui.qr
+com.eventlottery.view.adapter
+com.eventlottery.view.admin
+com.eventlottery.view.entrant
+com.eventlottery.view.qr
+com.example.bluegold

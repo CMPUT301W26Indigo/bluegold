@@ -217,11 +217,11 @@ public class Event {
      *
      * @return void
      * <p>
-     * public static final Creator<Event> CREATOR = new Creator<Event>() {
-     * @Override public Event createFromParcel(Parcel in) {
+     * public static final Creator CREATOR = new Creator() {
+     * Override public Event createFromParcel(Parcel in) {
      * return new Event(in);
      * }
-     * @Override public Event[] newArray(int size) {
+     * Override public Event[] newArray(int size) {
      * return new Event[size];
      * }
      * };
@@ -290,7 +290,7 @@ public class Event {
      * Randomly selects guests from the waitlist and adds them to the guest list.
      * Sends notifications to the selected guests.
      *
-     * @return void
+     *
      */
     public void LotterySystem(int lotteryLimit) {
         Integer limit = guestList.getListLimit();
