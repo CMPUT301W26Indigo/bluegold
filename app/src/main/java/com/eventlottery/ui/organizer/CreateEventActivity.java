@@ -34,15 +34,19 @@ import java.util.List;
  * a radius (1-500km) that entrants must be within to join.
  *
  * User stories implemented:
- * 02.02.03
+ * US 02.02.03
+ * US 02.01.04
+ * US 02.03.01
  *
  * Layout file: activity_create_event.xml
  *
  * Outstanding issues:
  * - Geolocation coordinates are hardcoded
  * - Registration dates are hardcoded
+ * - No Organizer Id
+ * - Some Number only Textbooks accept letters
  *
- * @see Event
+ * @see com.eventlottery.model.Event
  * @see com.google.firebase.firestore.FirebaseFirestore
  */
 public class CreateEventActivity extends AppCompatActivity {

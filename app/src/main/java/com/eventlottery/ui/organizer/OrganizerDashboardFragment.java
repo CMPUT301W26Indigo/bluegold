@@ -104,7 +104,7 @@ public class OrganizerDashboardFragment extends Fragment {
      * Navigates to the manage event activity
      * @param event event to be navigated to
      */
-    private void navigateToManageEvent(Event event) {
+    private void navigateToManageEvent(EventTemp event) {
         // Intent to manage event activity
     }
 
