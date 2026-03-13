@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.FragmentBrowseEventsBinding;
-import com.eventlottery.model.Event;
+import com.eventlottery.model.EventTemp;
 import com.eventlottery.ui.entrant.EventDetailsActivity;
 import com.eventlottery.view.adapter.EventAdapter;
 import com.google.android.material.chip.Chip;
@@ -29,7 +29,7 @@ public class BrowseEventsFragment extends Fragment {
     private FragmentBrowseEventsBinding binding;
     private EventAdapter eventAdapter;
     private EventController eventController;
-    private List<Event> allEvents = new ArrayList<>();
+    private List<EventTemp> allEvents = new ArrayList<>();
 
     @Nullable
     @Override
@@ -86,7 +86,7 @@ public class BrowseEventsFragment extends Fragment {
     private void loadEvents() {
         eventController.getAllEvents(new EventController.OnEventsLoadedListener() {
             @Override
-            public void onEventsLoaded(List<Event> events) {
+            public void onEventsLoaded(List<EventTemp> events) {
                 allEvents = events;
                 eventAdapter.submitList(new ArrayList<>(allEvents));
             }
@@ -99,9 +99,9 @@ public class BrowseEventsFragment extends Fragment {
     }
 
     private void filterEvents(String query) {
-        List<Event> filtered = new ArrayList<>();
+        List<EventTemp> filtered = new ArrayList<>();
         String lowerQuery = query.toLowerCase();
-        for (Event event : allEvents) {
+        for (EventTemp event : allEvents) {
             if (event.getName().toLowerCase().contains(lowerQuery) ||
                 event.getDescription().toLowerCase().contains(lowerQuery)) {
                 filtered.add(event);
@@ -115,8 +115,8 @@ public class BrowseEventsFragment extends Fragment {
             eventAdapter.submitList(new ArrayList<>(allEvents));
             return;
         }
-        List<Event> filtered = new ArrayList<>();
-        for (Event event : allEvents) {
+        List<EventTemp> filtered = new ArrayList<>();
+        for (EventTemp event : allEvents) {
             for (String tag : event.getTags()) {
                 if (tags.contains(tag)) {
                     filtered.add(event);
@@ -127,7 +127,7 @@ public class BrowseEventsFragment extends Fragment {
         eventAdapter.submitList(filtered);
     }
 
-    private void navigateToEventDetails(Event event) {
+    private void navigateToEventDetails(EventTemp event) {
         Intent intent = new Intent(getActivity(), EventDetailsActivity.class);
         intent.putExtra("EVENT", event);
         startActivity(intent);

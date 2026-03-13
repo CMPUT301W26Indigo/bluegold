@@ -20,8 +20,8 @@ public class AttendeeTest {
 
     @Test
     public void testSetName() {
-        attendee.setName("John Doe");
-        assertEquals("John Doe", attendee.getName());
+        attendee.setName("Apex Legends");
+        assertEquals("Apex Legends", attendee.getName());
     }
 
     @Test
@@ -80,13 +80,13 @@ public class AttendeeTest {
 
     @Test
     public void testSetAddress() {
-        attendee.setAddress("123 Main St");
-        assertEquals("123 Main St", attendee.getAddress());
+        attendee.setAddress("Diagon Alley");
+        assertEquals("Diagon Alley", attendee.getAddress());
     }
 
     @Test
     public void testSetAttendeeID() {
-        attendee.setAttendeeID("device123");
-        assertEquals("device123", attendee.getAttendeeID());
+        attendee.setAttendeeID("harry123");
+        assertEquals("harry123", attendee.getAttendeeID());
     }
 }

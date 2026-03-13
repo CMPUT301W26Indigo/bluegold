@@ -13,6 +13,21 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 
+/**
+ * Displays a list of entrants who have been invited but haven't responded yet.
+ *
+ * This activity implements showing organizers all users with "invited" status
+ * in the guest list. It queries Firestore for invited entrants and displays
+ * their names in a list view.
+ *
+ * User stories implemented:
+ * 02.06.01
+ *
+ * Layout file: activity_invited_entrants.xml
+ *
+ * @see ManageEventActivity
+ * @see com.google.firebase.firestore.FirebaseFirestore
+ */
 public class InvitedEntrantsActivity extends AppCompatActivity {
     private ListView listView;
     private ArrayAdapter<String> adapter;

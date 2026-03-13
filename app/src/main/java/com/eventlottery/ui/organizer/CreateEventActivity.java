@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 
 import com.eventlottery.controller.EventController;
-import com.eventlottery.model.Event;
+import com.eventlottery.model.EventTemp;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
 
 import com.google.android.material.chip.Chip;
@@ -22,14 +22,28 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
 
-import org.apache.commons.collections4.Get;
-
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- * This class is the activity that allows organizers to create
- * their events
+ * Handles event creation with geolocation toggle functionality.
+ *
+ * This activity allows organizers to enable or disable
+ * geolocation requirements for their events. When enabled, organizers can set
+ * a radius (1-500km) that entrants must be within to join.
+ *
+ * User stories implemented:
+ * 02.02.03
+ *
+ * Layout file: activity_create_event.xml
+ *
+ * Outstanding issues:
+ * - Geolocation coordinates are hardcoded
+ * - Registration dates are hardcoded
+ *
+ * @see Event
+ * @see com.google.firebase.firestore.FirebaseFirestore
  */
 public class CreateEventActivity extends AppCompatActivity {
 
@@ -177,7 +191,7 @@ public class CreateEventActivity extends AppCompatActivity {
 
         //beginning to create the event and assign its details and push it to the database
         binding.createEventButton.setOnClickListener(v -> {
-            Event event = new Event();
+            EventTemp event = new EventTemp();
             event.setName(binding.eventNameEditText.getText().toString());
             event.setDescription(binding.descriptionEditText.getText().toString());
             event.setDate(binding.eventDateEditText.getText().toString());

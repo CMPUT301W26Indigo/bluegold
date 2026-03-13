@@ -4,6 +4,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import com.eventlottery.model.ValidateEmail;
 
+import com.eventlottery.model.ValidateEmail;
+
+
+import com.eventlottery.model.ValidateEmail;
+
 public class ValidateEmailTest {
 
     @Test
