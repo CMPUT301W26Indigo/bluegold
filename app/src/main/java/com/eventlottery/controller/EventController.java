@@ -7,23 +7,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Controller for Event-related operations.
- * Part of the 'Controller' in MVC.
+ * Deals with database operations for events.
  */
 public class EventController {
     private final FirebaseFirestore db;
     private final String COLLECTION_NAME = "events";
 
+    /**
+     * Interface for handling events loaded from Firestore.
+     */
     public interface OnEventsLoadedListener {
         void onEventsLoaded(List<EventTemp> events);
         void onError(Exception e);
     }
 
+    /**
+     * Interface for handling operations on events.
+     */
     public interface OnEventOperationListener {
         void onSuccess();
         void onError(Exception e);
     }
 
+    /**
+     * Constructor for EventController.
+     */
     public EventController() {
         this.db = FirebaseFirestore.getInstance();
     }
@@ -85,6 +93,6 @@ public class EventController {
                 .addOnFailureListener(listener::onError);
     }
 
-    // Call functions that create and present url
+    // todo Call functions that create and present url
 
 }

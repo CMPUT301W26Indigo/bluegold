@@ -18,9 +18,12 @@ import com.google.firebase.FirebaseApp;
  * - Administrator: Moderate platform content
  */
 public class MainActivity extends AppCompatActivity {
-    
     private ActivityMainBinding binding;
-    
+
+    /**
+     * Called when the activity is first created.
+     * @param savedInstanceState Saved data when the instance was last closed
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,7 +33,10 @@ public class MainActivity extends AppCompatActivity {
         
         setupRoleSelection();
     }
-    
+
+    /**
+     * Sets up the role selection functionality
+     */
     private void setupRoleSelection() {
         // Entrant role selection
         binding.entrantCard.setOnClickListener(v -> navigateToEntrantFlow());
@@ -44,23 +50,35 @@ public class MainActivity extends AppCompatActivity {
         binding.adminCard.setOnClickListener(v -> navigateToAdminFlow());
         binding.btnEnterAsAdmin.setOnClickListener(v -> navigateToAdminFlow());
     }
-    
+
+    /**
+     * Navigates to the entrant flow
+     */
     private void navigateToEntrantFlow() {
         Intent intent = new Intent(this, BrowseEventsActivity.class);
         startActivity(intent);
     }
-    
+
+    /**
+     * Navigates to the organizer flow
+     */
     private void navigateToOrganizerFlow() {
         Intent intent = new Intent(this, OrganizerDashboardActivity.class);
         //intent.putExtra("ORGANIZERID",userId);
         startActivity(intent);
     }
-    
+
+    /**
+     * Navigates to the admin flow
+     */
     private void navigateToAdminFlow() {
         Intent intent = new Intent(this, AdminDashboardActivity.class);
         startActivity(intent);
     }
-    
+
+    /**
+     * Destroys the activity and sets the binding to null
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();

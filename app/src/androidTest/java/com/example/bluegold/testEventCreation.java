@@ -34,34 +34,34 @@ public class testEventCreation {
     @Rule
     public ActivityScenarioRule<OrganizerDashboardActivity> activityRule = new ActivityScenarioRule<OrganizerDashboardActivity>(OrganizerDashboardActivity.class);
 
+    //test for baseline creation of event
     @Test
     public void testingEventCreation() throws InterruptedException {
         Espresso.closeSoftKeyboard();
-        //Thread.sleep(1000);
+
         onView(withId(R.id.btnCreateEvent)).perform(click());
-        //Thread.sleep(10000);
+
         onView(withId(R.id.eventNameEditText)).perform(typeText("Test Event"));
         onView(withId(R.id.descriptionEditText)).perform(typeText("Test Description"));
+
         onView(withId(R.id.eventDateEditText)).perform(click());
         onView(withText("OK")).perform(click());
         onView(withId(R.id.eventTimeEditText)).perform(click());
         onView(withText("OK")).perform(click());
 
         onView(withId(R.id.registrationOpensEditText)).perform(click());
-        //onView(ViewMatchers.withContentDescription(org.hamcrest.Matchers.containsString("15"))).perform(click());
         onView(withText("OK")).perform(click());
         onView(withId(R.id.registrationClosesEditText)).perform(click());
-        //onView(withText("11")).perform(click());
         onView(withText("OK")).perform(click());
 
         onView(withId(R.id.capacityEditText)).perform(typeText("100"));
+
         onView(withId(R.id.waitlistLimitSwitch)).perform(click());
         onView(withId(R.id.waitlistLimitEditText)).perform(typeText("100"));
 
         onView(withId(R.id.geolocationSwitch)).perform(click());
         onView(withId(R.id.locationEditText)).perform(typeText("Test Location"));
         onView(withId(R.id.radiusEditText)).perform(typeText("10"));
-
 
         onView(withId(R.id.chipSports)).perform(scrollTo(),click());
         onView(withId(R.id.chipMusic)).perform(click());
