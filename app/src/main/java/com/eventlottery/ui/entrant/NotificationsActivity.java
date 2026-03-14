@@ -6,7 +6,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.eventlottery.databinding.ActivityNotificationsBinding;
 import com.eventlottery.model.Notification;
 import com.eventlottery.ui.adapters.NotificationAdapter;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Activity for displaying notifications to the attendee.
@@ -15,12 +18,16 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     private ActivityNotificationsBinding binding;
     private NotificationAdapter adapter;
+    private FirebaseFirestore db;
+    private String currentUserId = "mock_user_id"; // TODO: Replace with actual user ID
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityNotificationsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        db = FirebaseFirestore.getInstance();
 
         setupUI();
         loadNotifications();
@@ -41,15 +48,29 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         binding.rvNotifications.setAdapter(adapter);
     }
 
+    /**
+     * Fetches notifications for the current user from Firestore.
+     */
     private void loadNotifications() {
-        // TODO: Replace with actual data loading from Firestore
-        // This is a placeholder to verify the connection
-        adapter.setNotifications(new ArrayList<>());
+        db.collection("notifications")
+                .whereEqualTo("attendeeId", currentUserId)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) return;
+                    if (value != null) {
+                        List<Notification> notifications = new ArrayList<>();
+                        for (QueryDocumentSnapshot doc : value) {
+                            Notification notification = doc.toObject(Notification.class);
+                            notification.setId(doc.getId());
+                            notifications.add(notification);
+                        }
+                        adapter.setNotifications(notifications);
+                    }
+                });
     }
 
     @Override
     public void onNotificationClick(Notification notification) {
-        // TODO: Handle notification click (e.g., show confirmation dialog for invitations)
+        // TODO: Handle notification interaction (out of scope for this branch)
     }
 
     @Override
