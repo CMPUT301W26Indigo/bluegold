@@ -50,4 +50,31 @@ public class UserController {
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
     }
+
+    /**
+     * Deletes a user profile from Firestore.
+     * Before deletion, it calls methods to leave waitlists and
+     * update guest list status to "decline".
+     *
+     * @param userId   The ID of the user to delete.
+     * @param listener The listener for success or error callbacks.
+     */
+    public void deleteUser(String userId, OnUserOperationListener listener) {
+        // TODO: Remove user from waitlist using Waitlist.removeAttendee(userId)
+        // TODO: Set user's status to "declined" in guest list using GuestList.changeAttendeeStatus(userId, "declined")
+
+        // Delete the main user profile
+        db.collection(COLLECTION_NAME).document(userId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    if (listener != null) {
+                        listener.onSuccess();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (listener != null) {
+                        listener.onError(e);
+                    }
+                });
+    }
 }
