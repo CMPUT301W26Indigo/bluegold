@@ -19,7 +19,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     private ActivityNotificationsBinding binding;
     private NotificationAdapter adapter;
     private FirebaseFirestore db;
-    private String currentUserId = "mock_user_id"; // TODO: Replace with actual user ID
+    private String attendeeId = "mock_user_id"; // TODO: Replace with actual attendee ID, getter from the controller
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +53,7 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
      */
     private void loadNotifications() {
         db.collection("notifications")
-                .whereEqualTo("attendeeId", currentUserId)
+                .whereEqualTo("attendeeId", attendeeId)
                 .addSnapshotListener((value, error) -> {
                     if (error != null) return;
                     if (value != null) {
@@ -70,6 +70,15 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
     @Override
     public void onNotificationClick(Notification notification) {
+        // Mark as read if it's not already read
+        if (!notification.isRead()) {
+            notification.setRead(true);
+            
+            // Update in Firestore to persist the "read" state
+            db.collection("notifications").document(notification.getId())
+                    .update("isRead", true);
+        }
+
         // TODO: Handle notification interaction (out of scope for this branch)
     }
 
