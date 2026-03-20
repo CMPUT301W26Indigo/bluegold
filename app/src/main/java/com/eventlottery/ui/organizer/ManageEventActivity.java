@@ -8,7 +8,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
-import com.eventlottery.databinding.ActivityManageEventBinding;
+import com.eventlottery.databinding.ActivityManageEvent1Binding;
+import com.eventlottery.model.Event;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -37,19 +38,28 @@ import java.util.ArrayList;
  */
 public class ManageEventActivity extends AppCompatActivity {
 
-    private ActivityManageEventBinding binding;
+    private ActivityManageEvent1Binding binding;
     private FirebaseFirestore db;
     private String eventId;
     private String eventName;
+    private Event event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityManageEventBinding.inflate(getLayoutInflater());
+        binding = ActivityManageEvent1Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         // Initialize Firebase
         db = FirebaseFirestore.getInstance();
+
+        db.collection("events").document(eventId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        event = documentSnapshot.toObject(Event.class);
+                    }
+                });
 
         eventId = getIntent().getStringExtra("EVENT_ID");
         eventName = getIntent().getStringExtra("EVENT_NAME");
@@ -64,9 +74,11 @@ public class ManageEventActivity extends AppCompatActivity {
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
 
-        binding.btnDrawLottery.setOnClickListener(v -> {
+
+
+        /*binding.btnDrawLottery.setOnClickListener(v -> {
             startActivity(new Intent(this, DrawLotteryActivity.class));
-        });
+        });*/
     }
 
     @Override

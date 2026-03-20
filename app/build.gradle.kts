@@ -81,7 +81,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.espresso.core)
     implementation(libs.ext.junit)
-    implementation(files("C:\\Users\\david\\AppData\\Local\\Android\\Sdk\\platforms\\android-36\\android.jar"))
+    //implementation(files("C:\\Users\\david\\AppData\\Local\\Android\\Sdk\\platforms\\android-36\\android.jar"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

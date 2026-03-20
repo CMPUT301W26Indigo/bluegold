@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 
 import com.eventlottery.controller.EventController;
+import com.eventlottery.model.Event;
 import com.eventlottery.model.EventTemp;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
 
@@ -21,6 +22,8 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +61,10 @@ public class CreateEventActivity extends AppCompatActivity {
     private EventController eventController = new EventController();
     private Uri selectedImageUri;
     private String organizerId;
+    private FirebaseStorage storage = FirebaseStorage.getInstance();
+    private StorageReference storageRef = storage.getReference();
+
+
 
 
     /**
@@ -74,19 +81,42 @@ public class CreateEventActivity extends AppCompatActivity {
                     // Show the image in the ImageView
                     binding.posterImageView.setImageURI(uri);
                     
-                    // Make the ImageView fill the card
+                    // Remove the grey tint so the actual image shows
+                    binding.posterImageView.setImageTintList(null);
+
+                    binding.posterImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    
+                    // Adjust the ImageView to be larger but leave room for the button
                     ViewGroup.LayoutParams params = binding.posterImageView.getLayoutParams();
                     params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                    params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                    params.height = (int) (130 * getResources().getDisplayMetrics().density);
                     binding.posterImageView.setLayoutParams(params);
-                    binding.posterImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     
-                    // Hide the placeholder text and button
+                    // Hide placeholder text but KEEP the button visible
                     binding.uploadTitleText.setVisibility(View.GONE);
                     binding.uploadSubtitleText.setVisibility(View.GONE);
-                    binding.browseFilesButton.setVisibility(View.GONE);
+                    
+                    // Update the button text so the user knows they can change it
+                    binding.browseFilesButton.setText("Change Poster");
                 }
             });
+
+    private void uploadImage(EventTemp event, Uri imageUri) {
+        StorageReference posterRef = storageRef.child("event_posters/" + event.getId() + ".jpg");
+
+        posterRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    posterRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
+                        String publicUrl = downloadUri.toString();
+
+                        event.setPosterImageUrl(publicUrl);
+
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Image Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
 
     /**
      * Called when the activity is first created.
@@ -108,6 +138,8 @@ public class CreateEventActivity extends AppCompatActivity {
         setupUI();
 
     }
+
+
 
     /**
      * Sets up the UI elements and its functionality to work for creating
@@ -224,11 +256,15 @@ public class CreateEventActivity extends AppCompatActivity {
                 }
             }
 
-            
+
             event.setLocation(binding.locationEditText.getText().toString());
             event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());
             if (binding.geolocationSwitch.isChecked()) {
-                event.setGeolocationRadius(Integer.valueOf(binding.radiusEditText.getText().toString()));
+                try {
+                    event.setGeolocationRadius(Integer.valueOf(binding.radiusEditText.getText().toString()));
+                } catch (NumberFormatException e) {
+                    event.setGeolocationRadius(null);
+                }
             }
 
             List<String> selectedTags = new ArrayList<>();
@@ -238,13 +274,7 @@ public class CreateEventActivity extends AppCompatActivity {
             }
             event.setTags(selectedTags);
 
-            try {
-                if (selectedImageUri != null) {
-                    event.setPosterImageUrl(selectedImageUri.toString());
-                }
-            } catch (Exception e) {
-                event.setPosterImageUrl(null);
-            }
+            uploadImage(event, selectedImageUri);
 
             try {
                 event.setPrice(Double.parseDouble(binding.priceEditText.getText().toString()));

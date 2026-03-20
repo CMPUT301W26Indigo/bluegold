@@ -1,6 +1,7 @@
 package com.eventlottery.controller;
 
 import com.eventlottery.model.EventTemp;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
@@ -58,12 +59,10 @@ public class EventController {
      * Adds a new event to Firestore.
      */
     public void addEvent(EventTemp event, OnEventOperationListener listener) {
-        db.collection(COLLECTION_NAME)
-                .add(event)
-                .addOnSuccessListener(documentReference -> {
-                    event.setId(documentReference.getId());
-                    listener.onSuccess();
-                })
+        DocumentReference newDocRef = db.collection(COLLECTION_NAME).document();
+        event.setId(newDocRef.getId());
+        newDocRef.set(event)
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
     }
 
