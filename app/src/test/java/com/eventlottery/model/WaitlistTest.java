@@ -13,7 +13,7 @@ public class WaitlistTest {
 
     @Before
     public void setUp() {
-        waitlist = new Waitlist(TEST_EVENT_ID);
+        waitlist = new Waitlist(TEST_EVENT_ID, 50);
     }
 
     @Test

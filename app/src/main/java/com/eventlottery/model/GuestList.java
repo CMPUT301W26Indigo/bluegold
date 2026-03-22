@@ -2,6 +2,7 @@ package com.eventlottery.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Manages the list of attendees for a specific event.
@@ -100,6 +101,28 @@ public class GuestList {
                 attendee.put(attendeeId, status);
                 return;
             }
+        }
+    }
+
+    /**
+     * Change all entrants who did not sign up for the event to the cancelled status
+     * Cancelled attendees are those who have the declined and maybe statuses.
+     */
+    public void cancelEntrants() {
+        ArrayList<String> toCancel = new ArrayList<>();
+
+        for (HashMap<String, String> attendee : attendeeIds) {
+            for (String key : attendee.keySet()) {
+                String status = attendee.get(key);
+
+                if (status.equals("declined") || status.equals("maybe")) {
+                    toCancel.add(key);
+                }
+            }
+        }
+
+        for (String attendeeId : toCancel) {
+            changeAttendeeStatus(attendeeId, "cancelled");
         }
     }
 }
