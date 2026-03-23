@@ -9,8 +9,6 @@ import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Random;
 
 /**
@@ -32,10 +30,12 @@ public class Event {
     private Integer geolocationRadius; // Nullable - in kilometers (1-500)
     private String status; // "open", "closed", "lottery_drawn", "completed"
     private String qrCodeUrl;
+    private Bitmap qrCode;
     private boolean isFlagged;
     private Waitlist waitlist;
     private GuestList guestList;
     private boolean recurringEvent;
+    private boolean isPrivate;
 
     public Event() {
         this.id = "";
@@ -49,9 +49,10 @@ public class Event {
         this.geolocationEnabled = false;
         this.geolocationRadius = null;
         this.status = "open";
-        this.qrCodeUrl = null;
+        this.qrCodeUrl = "eventlottery://event/" + this.getId();
         this.isFlagged = false;
         this.recurringEvent = false;
+        this.isPrivate = false;
         this.waitlist = new Waitlist("", null); // Use empty strings for defaults
         this.guestList = new GuestList("");
     }
@@ -60,7 +61,7 @@ public class Event {
      * Constructor with all parameters.
      * Use null for eventCapacity or waitlistLimit if they are not restricted.
      */
-    public Event(String id, String name, String description, String organizerId, String date, String time, String location, ArrayList<String> tags, boolean geolocationEnabled, Integer geolocationRadius, String qrCodeUrl, Integer eventCapacity, Integer waitlistLimit, String registrationDeadline, boolean recurringEvent) {
+    public Event(String id, String name, String description, String organizerId, String date, String time, String location, ArrayList<String> tags, boolean geolocationEnabled, Integer geolocationRadius, String qrCodeUrl, Integer eventCapacity, Integer waitlistLimit, String registrationDeadline, boolean recurringEvent, boolean isPrivate) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -75,6 +76,7 @@ public class Event {
         this.qrCodeUrl = qrCodeUrl;
         this.isFlagged = false;
         this.recurringEvent = recurringEvent;
+        this.isPrivate = isPrivate;
 
 
         // Initialize with optional limits
@@ -84,7 +86,7 @@ public class Event {
 
     // Simplified constructor for basic events
     public Event(String id, String name, String description, String organizerId, String date, String time, String location, ArrayList<String> tags, boolean geolocationEnabled, Integer geolocationRadius, String qrCodeUrl) {
-        this(id, name, description, organizerId, date, time, location, tags, geolocationEnabled, geolocationRadius, qrCodeUrl, null, null, null, false);
+        this(id, name, description, organizerId, date, time, location, tags, geolocationEnabled, geolocationRadius, qrCodeUrl, null, null, null, false, false);
     }
 
     // Getters and Setters
@@ -208,6 +210,12 @@ public class Event {
         this.recurringEvent = recurringEvent;
     }
 
+    public boolean getIsPrivate() { return isPrivate; }
+
+    public void setIsPrivate(boolean isPrivate) {
+        this.isPrivate = isPrivate;
+    }
+
     // Lottery System if not specified a max num of guests to select
 
     /**
@@ -243,23 +251,26 @@ public class Event {
         //String text = "Welcome to the Event Details Page!";
 
         // TODO: Verify that this URL is correct. If not, change it. May need to change this to work with Firestore
-        String deepLink = "eventlottery://event/" + this.getId();
+        if (!getIsPrivate()) {
+            String deepLink = getQrCodeUrl();
 
-        MultiFormatWriter writer = new MultiFormatWriter();
-        try {
-            BitMatrix matrix = writer.encode(deepLink,
-                    BarcodeFormat.QR_CODE,
-                    400,
-                    400);
+            MultiFormatWriter writer = new MultiFormatWriter();
+            try {
+                BitMatrix matrix = writer.encode(deepLink,
+                        BarcodeFormat.QR_CODE,
+                        400,
+                        400);
 
-            BarcodeEncoder encoder = new BarcodeEncoder();
-            //qr_display.setImageBitmap(bitmap);
+                BarcodeEncoder encoder = new BarcodeEncoder();
+                //qr_display.setImageBitmap(bitmap);
 
-            return encoder.createBitmap(matrix);
-        } catch (WriterException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+                return encoder.createBitmap(matrix);
+            } catch (WriterException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
         }
+        return null;
     }
 
     // Business Logic Methods

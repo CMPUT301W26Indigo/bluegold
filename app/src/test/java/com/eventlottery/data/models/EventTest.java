@@ -63,10 +63,11 @@ public class EventTest {
         Integer geolocationRadius = 10;
         String qrCodeUrl = "https://example.com/qrcode.png";
         boolean recurringEvent = false;
+        boolean isPrivate = false;
         Integer eventCapacity = 100;
         Integer waitlistLimit = 50;
         String registrationDeadline = "2023-08-20";
-        Event newEvent = new Event(id, name, description, organizerId, date, time, location, tags, geolocationEnabled, geolocationRadius, qrCodeUrl, eventCapacity, waitlistLimit, registrationDeadline, recurringEvent);
+        Event newEvent = new Event(id, name, description, organizerId, date, time, location, tags, geolocationEnabled, geolocationRadius, qrCodeUrl, eventCapacity, waitlistLimit, registrationDeadline, recurringEvent, isPrivate);
         assertNotNull(newEvent);
     }
 
