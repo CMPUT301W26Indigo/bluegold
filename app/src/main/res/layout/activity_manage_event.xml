@@ -2,7 +2,6 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -15,7 +14,6 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:title="@string/manage_event"
             app:titleTextColor="@android:color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -31,18 +29,78 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Stats -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/background_gray_50"
+                android:padding="16dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Event Statistics"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:id="@+id/tvWaitlistCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Waitlist: 0"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tvInvitedCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Invited: 0"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tvConfirmedCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Confirmed: 0"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <!-- Action Buttons -->
+            <Button
+                android:id="@+id/btnViewInvited"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="View Invited Entrants"
+                android:layout_marginBottom="8dp"
+                android:backgroundTint="@color/status_waiting_yellow" />
+
+            <Button
+                android:id="@+id/btnViewConfirmed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="View Confirmed Entrants"
+                android:layout_marginBottom="8dp"
+                android:backgroundTint="@color/status_confirmed_green" />
+
             <Button
                 android:id="@+id/btnDrawLottery"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/draw_lottery"
-                android:layout_marginBottom="16dp" />
+                android:text="Draw Lottery"
+                android:layout_marginBottom="8dp"
+                android:backgroundTint="@color/primary_blue" />
 
             <Button
                 android:id="@+id/btnExportCSV"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/export_csv"
+                android:text="Export CSV"
                 style="@style/Widget.Material3.Button.OutlinedButton" />
 
         </LinearLayout>
