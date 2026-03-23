@@ -270,4 +270,5 @@
     </string>
     <string name="nav_scan_qr">Scan QR</string>
     <string name="qr_scan_btn_text">Scan</string>
+    <string name="view_qr_code">View QR Code</string>
 </resources>

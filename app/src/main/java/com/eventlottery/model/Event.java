@@ -49,7 +49,7 @@ public class Event {
         this.geolocationEnabled = false;
         this.geolocationRadius = null;
         this.status = "open";
-        this.qrCodeUrl = "eventlottery://event/" + this.getId();
+        this.qrCodeUrl = null;
         this.isFlagged = false;
         this.recurringEvent = false;
         this.isPrivate = false;
@@ -186,6 +186,14 @@ public class Event {
         this.qrCodeUrl = qrCodeUrl;
     }
 
+    public Bitmap getQrCode() {
+        return qrCode;
+    }
+
+    public void setQrCode(Bitmap qrCode) {
+        this.qrCode = qrCode;
+    }
+
     public boolean isFlagged() {
         return isFlagged;
     }
@@ -238,41 +246,26 @@ public class Event {
      * Generates QR Code once the create button is pressed
      *
      */
-    public Bitmap generateQR() {
-        // Credit for basis of code: https://youtu.be/n8HdrLYL9DA?si=42nC-Wwzbn5_1wUU
-        // TODO: Add this code to the activity/fragment that houses the button that generates events
-        // btn_generate = findViewById(R.id.[BUTTON THAT GENERATES EVENT]);
-        // btn_generate.SetOnClickListener(v -> {
-        //   generateQR();
-        // });
-        // TODO: Add a spot somewhere that displays QR Codes for events
-        // qr_display = findViewById(R.id.[IMAGE THAT WILL HOLD THE QR CODE]);
-        // TODO: Test generation using following dummy text
-        //String text = "Welcome to the Event Details Page!";
 
-        // TODO: Verify that this URL is correct. If not, change it. May need to change this to work with Firestore
-        if (!getIsPrivate()) {
-            String deepLink = getQrCodeUrl();
+    /**
+     * Static utility method to generate a QR code bitmap from text.
+     * This separates the generation logic from instance-specific data.
+     *
+     * @param content The text/URL to encode.
+     * @return Bitmap of the QR code, or null if generation fails.
+     */
+    public Bitmap generateQRBitmap(String content) {
+        if (content == null || content.isEmpty() || this.isPrivate) return null;
 
-            MultiFormatWriter writer = new MultiFormatWriter();
-            try {
-                BitMatrix matrix = writer.encode(deepLink,
-                        BarcodeFormat.QR_CODE,
-                        400,
-                        400);
-
-                BarcodeEncoder encoder = new BarcodeEncoder();
-                //qr_display.setImageBitmap(bitmap);
-
-                return encoder.createBitmap(matrix);
-            } catch (WriterException e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
+        MultiFormatWriter writer = new MultiFormatWriter();
+        try {
+            BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, 400, 400);
+            return new BarcodeEncoder().createBitmap(matrix);
+        } catch (WriterException e) {
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
-
     // Business Logic Methods
 
     /**

@@ -1,13 +1,16 @@
 package com.eventlottery.ui.entrant;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.eventlottery.R;
 import com.eventlottery.model.EventTemp;
+import com.eventlottery.ui.qr.QRDisplayActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
@@ -59,6 +62,14 @@ public class EventDetailsActivity extends AppCompatActivity {
         // TODO: Setup views and load event data
         setupToolbar();
         loadEventDetails();
+
+        // When the viewQR button is pressed, take us to the QR page
+        Button viewQrButton = findViewById(R.id.viewQrButton);
+        viewQrButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EventDetailsActivity.this, QRDisplayActivity.class);
+            intent.putExtra("EVENT", event);
+            startActivity(intent);
+        });
     }
     
     private void setupToolbar() {
