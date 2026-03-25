@@ -2,7 +2,6 @@ package com.eventlottery.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 /**
  * Manages the list of attendees for a specific event.
@@ -13,6 +12,14 @@ public class GuestList {
     private ArrayList<HashMap<String, String>> attendeeIds;
     private Integer listCount;
     private Integer listLimit;
+
+    /**
+     * Default no-argument constructor required for Firebase Firestore deserialization.
+     */
+    public GuestList() {
+        this.attendeeIds = new ArrayList<>();
+        this.listCount = 0;
+    }
 
     /**
      * Constructs a GuestList with a specific capacity limit.
@@ -49,6 +56,15 @@ public class GuestList {
     }
 
     /**
+     * Sets the unique identifier for the event.
+     *
+     * @param eventId The event ID string.
+     */
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    /**
      * Gets the list of attendees and their current statuses.
      * Each entry is a map where the key is the attendee ID and the value is their status.
      *
@@ -56,6 +72,15 @@ public class GuestList {
      */
     public ArrayList<HashMap<String, String>> getAttendeeIds() {
         return attendeeIds;
+    }
+
+    /**
+     * Sets the list of attendees and their current statuses.
+     *
+     * @param attendeeIds An ArrayList of HashMaps representing attendees.
+     */
+    public void setAttendeeIds(ArrayList<HashMap<String, String>> attendeeIds) {
+        this.attendeeIds = attendeeIds;
     }
 
     /**
@@ -68,12 +93,30 @@ public class GuestList {
     }
 
     /**
+     * Sets the current number of attendees in the list.
+     *
+     * @param listCount The current count of attendees.
+     */
+    public void setListCount(Integer listCount) {
+        this.listCount = listCount;
+    }
+
+    /**
      * Gets the maximum number of attendees allowed for this list.
      *
      * @return The capacity limit, or null if no limit is set.
      */
     public Integer getListLimit() {
         return listLimit;
+    }
+
+    /**
+     * Sets the maximum number of attendees allowed for this list.
+     *
+     * @param listLimit The capacity limit.
+     */
+    public void setListLimit(Integer listLimit) {
+        this.listLimit = listLimit;
     }
 
     /**
