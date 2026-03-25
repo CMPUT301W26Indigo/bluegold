@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
-import com.eventlottery.model.EventTemp;
+import com.eventlottery.model.Event;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
@@ -193,7 +193,7 @@ public class CreateEventActivity extends AppCompatActivity {
 
         //beginning to create the event and assign its details and push it to the database
         binding.createEventButton.setOnClickListener(v -> {
-            EventTemp event = new EventTemp();
+            Event event = new Event();
             event.setName(binding.eventNameEditText.getText().toString());
             event.setDescription(binding.descriptionEditText.getText().toString());
             event.setDate(binding.eventDateEditText.getText().toString());
