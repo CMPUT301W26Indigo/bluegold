@@ -41,7 +41,7 @@ import java.util.List;
  * Outstanding issues:
  * - Geolocation coordinates are hardcoded
  * - Registration dates are hardcoded
- * - No Organizer Id
+ * - No Organizer ID
  * - Some Number only Textbooks accept letters
  *
  * @see com.eventlottery.model.Event
@@ -258,7 +258,7 @@ public class CreateEventActivity extends AppCompatActivity {
                     // Generate the QR code if the event is successful
                     event.setQrCodeUrl("eventlottery://event/" + event.getId());
                     // Are we using event or event temp????
-                    event.setQrCode(event.generateQRBitmap(event.getQrCodeUrl()));
+//                    event.setQrCode(event.generateQRBitmap(event.getQrCodeUrl()));
                     Toast.makeText(CreateEventActivity.this, "Event created successfully", Toast.LENGTH_SHORT).show();
                     finish();
                 }
