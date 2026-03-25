@@ -9,7 +9,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventlottery.R;
-import com.eventlottery.model.EventTemp;
+import com.eventlottery.model.Event;
 import com.eventlottery.ui.qr.QRDisplayActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -33,7 +33,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
  */
 public class EventDetailsActivity extends AppCompatActivity {
     
-    private EventTemp event;
+    private Event event;
     private String eventId;
     private TextView tvEventName, tvDescription, tvWaitlistCount;
     private Button btnJoinWaitlist;
@@ -53,7 +53,7 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         // Use type-safe getParcelableExtra for API 33+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            event = getIntent().getParcelableExtra("EVENT", EventTemp.class);
+            event = getIntent().getParcelableExtra("EVENT", Event.class);
         } else {
             // Suppress warning for older APIs as it's unavoidable there
             //noinspection deprecation
@@ -67,7 +67,8 @@ public class EventDetailsActivity extends AppCompatActivity {
         Button viewQrButton = findViewById(R.id.viewQrButton);
         viewQrButton.setOnClickListener(v -> {
             Intent intent = new Intent(EventDetailsActivity.this, QRDisplayActivity.class);
-            intent.putExtra("EVENT", event);
+            // GO BACK AND FIX THIS LUCIA!!!
+            intent.putExtra("EVENT_ID", event.getId());
             startActivity(intent);
         });
     }

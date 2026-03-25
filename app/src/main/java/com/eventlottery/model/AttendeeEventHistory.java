@@ -9,6 +9,12 @@ public class AttendeeEventHistory {
     private boolean attended;
 
     /**
+     * Default no-argument constructor required for Firebase Firestore deserialization.
+     */
+    public AttendeeEventHistory() {
+    }
+
+    /**
      * Constructs a new AttendeeEventHistory for the given event.
      * Initial attendance status is set to false.
      * @param eventID The unique identifier of the event.
@@ -27,11 +33,27 @@ public class AttendeeEventHistory {
     }
 
     /**
+     * Sets the unique identifier for the event.
+     * @param eventID The event ID.
+     */
+    public void setEventID(String eventID) {
+        this.eventID = eventID;
+    }
+
+    /**
      * Checks whether the attendee attended the event.
      * @return true if the attendee attended, false otherwise.
      */
     public boolean isAttended() {
         return attended;
+    }
+
+    /**
+     * Sets whether the attendee attended the event.
+     * @param attended true if the attendee attended, false otherwise.
+     */
+    public void setAttended(boolean attended) {
+        this.attended = attended;
     }
 
     /**
