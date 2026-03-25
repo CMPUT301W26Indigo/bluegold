@@ -3,6 +3,7 @@ package com.eventlottery.controller;
 import com.eventlottery.model.EventTemp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,7 +93,5 @@ public class EventController {
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
     }
-
-    // todo Call functions that create and present url
 
 }

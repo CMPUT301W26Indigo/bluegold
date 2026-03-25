@@ -12,11 +12,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
-
 import com.eventlottery.controller.EventController;
-import com.eventlottery.model.EventTemp;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
-
+import com.eventlottery.model.EventTemp;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
@@ -43,7 +41,7 @@ import java.util.List;
  * Outstanding issues:
  * - Geolocation coordinates are hardcoded
  * - Registration dates are hardcoded
- * - No Organizer Id
+ * - No Organizer ID
  * - Some Number only Textbooks accept letters
  *
  * @see com.eventlottery.model.Event
@@ -253,9 +251,14 @@ public class CreateEventActivity extends AppCompatActivity {
             }
 
             //adding the event to the database
+            //First generate QRs
             eventController.addEvent(event, new EventController.OnEventOperationListener() {
                 @Override
                 public void onSuccess() {
+                    // Generate the QR code if the event is successful
+                    event.setQrCodeUrl("eventlottery://event/" + event.getId());
+                    // Are we using event or event temp????
+//                    event.setQrCode(event.generateQRBitmap(event.getQrCodeUrl()));
                     Toast.makeText(CreateEventActivity.this, "Event created successfully", Toast.LENGTH_SHORT).show();
                     finish();
                 }

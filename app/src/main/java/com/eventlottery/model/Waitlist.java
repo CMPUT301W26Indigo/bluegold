@@ -32,12 +32,13 @@ public class Waitlist {
      *
      * @param eventId The unique identifier of the event.
      */
-    public Waitlist(String eventId, String registrationDeadline) {
+
+    public Waitlist(String eventId) {
         this.eventId = eventId;
         this.attendeeIds = new ArrayList<String>();
         this.waitlistLimit = null;
         this.waitlistCount = 0;
-        this.registrationDeadline = registrationDeadline;
+        this.registrationDeadline = null;
     }
 
     /**
