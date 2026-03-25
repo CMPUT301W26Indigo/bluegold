@@ -7,16 +7,19 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.FragmentBrowseEventsBinding;
 import com.eventlottery.model.Event;
+import com.eventlottery.ui.adapters.EventAdapter;
 import com.eventlottery.ui.entrant.EventDetailsActivity;
-import com.eventlottery.view.adapter.EventAdapter;
 import com.google.android.material.chip.Chip;
+
 import java.util.ArrayList;
 import java.util.List;
 
