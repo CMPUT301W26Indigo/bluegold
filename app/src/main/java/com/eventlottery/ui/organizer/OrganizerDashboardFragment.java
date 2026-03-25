@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.FragmentOrganizerDashboardBinding;
 import com.eventlottery.model.Event;
-import com.eventlottery.model.EventTemp;
+import com.eventlottery.model.Event;
 import com.eventlottery.ui.adapters.EventAdapter;
 
 import java.util.List;
@@ -67,6 +67,7 @@ public class OrganizerDashboardFragment extends Fragment {
      * Sets up the recycler view for the events
      */
     private void setupRecyclerView() {
+        //GO BACK AND FIX THIS LUCIA!!!
         eventAdapter = new EventAdapter(this::navigateToManageEvent);
         binding.rvOrganizerEvents.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvOrganizerEvents.setAdapter(eventAdapter);
@@ -88,8 +89,9 @@ public class OrganizerDashboardFragment extends Fragment {
         // todo filter by organizerId
         eventController.getAllEvents(new EventController.OnEventsLoadedListener() {
             @Override
-            public void onEventsLoaded(List<EventTemp> events) {
+            public void onEventsLoaded(List<Event> events) {
                 // For now, showing all events
+                // GO BACK AND FIX THIS LUCIA!!!
                 eventAdapter.submitList(events);
             }
 
@@ -104,7 +106,7 @@ public class OrganizerDashboardFragment extends Fragment {
      * Navigates to the manage event activity
      * @param event event to be navigated to
      */
-    private void navigateToManageEvent(EventTemp event) {
+    private void navigateToManageEvent(Event event) {
         // Intent to manage event activity
     }
 
