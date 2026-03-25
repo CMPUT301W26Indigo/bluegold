@@ -130,7 +130,7 @@ public class BrowseEventsFragment extends Fragment {
     private void navigateToEventDetails(Event event) {
         Intent intent = new Intent(getActivity(), EventDetailsActivity.class);
         // GO BACK AND FIX THIS LUCIA!!!
-        intent.putExtra("EVENT", event);
+        intent.putExtra("EVENT_ID", event.getId());
         startActivity(intent);
     }
 

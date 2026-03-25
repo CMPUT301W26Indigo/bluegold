@@ -68,7 +68,7 @@ public class EventDetailsActivity extends AppCompatActivity {
         viewQrButton.setOnClickListener(v -> {
             Intent intent = new Intent(EventDetailsActivity.this, QRDisplayActivity.class);
             // GO BACK AND FIX THIS LUCIA!!!
-            intent.putExtra("EVENT", event);
+            intent.putExtra("EVENT_ID", event.getId());
             startActivity(intent);
         });
     }
