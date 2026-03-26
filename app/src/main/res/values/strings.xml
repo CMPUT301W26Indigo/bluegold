@@ -96,6 +96,11 @@
     <string name="view_qr">View QR</string>
     <string name="export_csv">Export CSV</string>
     <string name="draw_lottery">Draw Lottery</string>
+    <string name="view_invited">View Invited</string>
+    <string name="confirmed_entrants">Confirmed</string>
+
+
+
 
     <!-- Create Event -->
     <string name="create_event_title">Create New Event</string>
