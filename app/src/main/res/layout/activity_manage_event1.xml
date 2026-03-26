@@ -382,15 +382,15 @@
 
     <!-- Join Waiting List Button (Fixed at bottom) -->
     <Button
-        android:id="@+id/joinWaitlistButton"
+        android:id="@+id/exportCSVButton"
         style="@style/Widget.App.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_lg"
         android:layout_gravity="bottom"
-        android:text="@string/join_waiting_list"
-        android:textSize="@dimen/text_lg"
+        android:layout_margin="@dimen/spacing_lg"
         android:paddingVertical="@dimen/spacing_lg"
+        android:text="@string/export_csv"
+        android:textSize="@dimen/text_lg"
         app:backgroundTint="@color/primary_blue" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

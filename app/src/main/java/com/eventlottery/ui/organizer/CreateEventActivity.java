@@ -1,5 +1,6 @@
 package com.eventlottery.ui.organizer;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -77,7 +78,8 @@ public class CreateEventActivity extends AppCompatActivity {
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
                     selectedImageUri = uri;
-                    
+
+                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     // Show the image in the ImageView
                     binding.posterImageView.setImageURI(uri);
                     
@@ -274,7 +276,8 @@ public class CreateEventActivity extends AppCompatActivity {
             }
             event.setTags(selectedTags);
 
-            uploadImage(event, selectedImageUri);
+            //uploadImage(event, selectedImageUri);
+            event.setPosterImageUrl(selectedImageUri.toString());
 
             try {
                 event.setPrice(Double.parseDouble(binding.priceEditText.getText().toString()));

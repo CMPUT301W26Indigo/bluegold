@@ -3,13 +3,16 @@ package com.eventlottery.ui.organizer;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
+import com.bumptech.glide.Glide;
 import com.eventlottery.databinding.ActivityManageEvent1Binding;
 import com.eventlottery.model.Event;
+import com.eventlottery.model.EventTemp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -42,13 +45,15 @@ public class ManageEventActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String eventId;
     private String eventName;
-    private Event event;
+    private EventTemp event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityManageEvent1Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        eventId = getIntent().getStringExtra("EVENT_ID");
 
         // Initialize Firebase
         db = FirebaseFirestore.getInstance();
@@ -57,14 +62,15 @@ public class ManageEventActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        event = documentSnapshot.toObject(Event.class);
+                        event = documentSnapshot.toObject(EventTemp.class);
+                        setupUI();
+                    } else {
+                        Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                        finish();
                     }
                 });
 
-        eventId = getIntent().getStringExtra("EVENT_ID");
-        eventName = getIntent().getStringExtra("EVENT_NAME");
 
-        setupUI();
     }
 
     private void setupUI() {
@@ -73,6 +79,20 @@ public class ManageEventActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
+        Log.d("ManageEvent", "Loading URL: " + event.getPosterImageUrl());
+        if (event.getPosterImageUrl() != null) {
+            Glide.with(this)
+                    .load(event.getPosterImageUrl())
+                    .error(android.R.drawable.stat_notify_error)
+                    .into(binding.eventPosterImage);
+        }
+        binding.eventNameText.setText(event.getName());
+        binding.statusChip.setText(event.getStatus());
+
+        binding.eventDateText.setText(event.getDate());
+        binding.eventTimeText.setText(event.getTime());
+        binding.descriptionText.setText(event.getDescription());
+        binding.locationNameText.setText(event.getLocation());
 
 
 
