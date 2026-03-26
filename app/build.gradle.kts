@@ -77,9 +77,11 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
 
     // Testing
+    implementation("androidx.test.espresso:espresso-intents:3.6.1")
     implementation(libs.activity)
     implementation(libs.espresso.core)
     implementation(libs.ext.junit)
+//    implementation(files("C:\\Users\\david\\AppData\\Local\\Android\\Sdk\\platforms\\android-36\\android.jar"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -89,6 +91,9 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
+    implementation(libs.activity)
+    implementation(libs.espresso.core)
+    implementation(libs.ext.junit)
 
 
     // Below this comment is all dependencies from the build.gradle file.
@@ -125,4 +130,28 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.8")
     androidTestImplementation("io.mockk:mockk-android:1.13.8")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+}
+
+tasks.register<Javadoc>("generateJavadoc") {
+    // 1. Point to your Java source files
+    source = fileTree("src/main/java")
+    
+    // 2. Build the classpath including the Android SDK and all project dependencies
+    val androidJar = files(android.bootClasspath)
+    val projectDependencies = configurations.getByName("debugCompileClasspath")
+    classpath = androidJar + projectDependencies
+
+    // 3. Set output location
+    setDestinationDir(file("${layout.buildDirectory.get()}/outputs/javadoc"))
+
+    // 4. Configure Javadoc options
+    (options as StandardJavadocDocletOptions).apply {
+        addStringOption("Xdoclint:none", "-quiet")
+        links("https://developer.android.com/reference")
+        encoding = "UTF-8"
+        charSet = "UTF-8"
+    }
+    
+    // 5. Exclude auto-generated files
+    exclude("**/R.java", "**/BuildConfig.java")
 }

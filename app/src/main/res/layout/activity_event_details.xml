@@ -372,6 +372,17 @@
                         android:textAppearance="@style/TextAppearance.App.Body"
                         tools:text="Join us for an exciting basketball tournament! Teams will compete in a friendly but competitive environment. All skill levels welcome." />
 
+                    <Button
+                        android:id="@+id/viewQrButton"
+                        style="@style/Widget.App.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/spacing_lg"
+                        android:text="@string/view_qr_code"
+                        android:textSize="@dimen/text_lg"
+                        android:paddingVertical="@dimen/spacing_lg"
+                        app:backgroundTint="@color/primary_blue" />
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -382,7 +393,7 @@
 
     <!-- Join Waiting List Button (Fixed at bottom) -->
     <Button
-        android:id="@+id/joinWaitlistButton"
+        android:id="@+id/btnExportCSV"
         style="@style/Widget.App.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

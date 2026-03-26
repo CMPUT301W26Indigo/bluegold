@@ -5,6 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.eventlottery.R;
 import com.eventlottery.model.Event;
 import com.eventlottery.databinding.ItemEventCardBinding;
@@ -78,6 +80,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             binding.statusBadge.setChipBackgroundColorResource(
                 getStatusColor(event.getStatus())
             );
+
+            //set image
+            if (event.getPosterImageUrl() != null) {
+                Glide.with(binding.getRoot().getContext())
+                    .load(event.getPosterImageUrl())
+                    .into(binding.eventPosterImage);
+            }
             
             // Set date and time
             String dateTime = String.format("%s • %s", event.getDate(), event.getTime());

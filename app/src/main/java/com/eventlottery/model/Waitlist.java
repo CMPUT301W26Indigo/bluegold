@@ -18,6 +18,15 @@ public class Waitlist {
     private ArrayList<String> attendeeIds;
     private Integer waitlistLimit;
     private Integer waitlistCount;
+    private String registrationDeadline;
+
+    /**
+     * Default no-argument constructor required for Firebase Firestore deserialization.
+     */
+    public Waitlist() {
+        this.attendeeIds = new ArrayList<>();
+        this.waitlistCount = 0;
+    }
 
     @Exclude
     private final FirebaseFirestore db;
@@ -48,6 +57,7 @@ public class Waitlist {
      *
      * @param eventId The unique identifier of the event.
      */
+
     public Waitlist(String eventId) {
         this();
         this.eventId = eventId;

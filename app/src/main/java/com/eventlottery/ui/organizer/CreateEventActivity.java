@@ -1,5 +1,6 @@
 package com.eventlottery.ui.organizer;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -12,21 +13,43 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
-
 import com.eventlottery.controller.EventController;
-import com.eventlottery.model.Event;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
-
+import com.eventlottery.model.Event;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
-
-import org.apache.commons.collections4.Get;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * Handles event creation with geolocation toggle functionality.
+ *
+ * This activity allows organizers to enable or disable
+ * geolocation requirements for their events. When enabled, organizers can set
+ * a radius (1-500km) that entrants must be within to join.
+ *
+ * User stories implemented:
+ * US 02.02.03
+ * US 02.01.04
+ * US 02.03.01
+ *
+ * Layout file: activity_create_event.xml
+ *
+ * Outstanding issues:
+ * - Geolocation coordinates are hardcoded
+ * - Registration dates are hardcoded
+ * - No Organizer ID
+ * - Some Number only Textbooks accept letters
+ *
+ * @see com.eventlottery.model.Event
+ * @see com.google.firebase.firestore.FirebaseFirestore
+ */
 public class CreateEventActivity extends AppCompatActivity {
 
     private ActivityCreateEventBinding binding;
@@ -36,31 +59,68 @@ public class CreateEventActivity extends AppCompatActivity {
     private EventController eventController = new EventController();
     private Uri selectedImageUri;
     private String organizerId;
+    private FirebaseStorage storage = FirebaseStorage.getInstance();
+    private StorageReference storageRef = storage.getReference();
 
 
 
+
+    /**
+     * Launches an image picker which allows the user
+     * to select an image and then sets the selected image URI.
+     * Written by Google Gemini, Prompt: "How would you be able to
+     * get the user to browse and input an image?"
+     */
     private final ActivityResultLauncher<String> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
                     selectedImageUri = uri;
-                    
+
+                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     // Show the image in the ImageView
                     binding.posterImageView.setImageURI(uri);
                     
-                    // Make the ImageView fill the card
+                    // Remove the grey tint so the actual image shows
+                    binding.posterImageView.setImageTintList(null);
+
+                    binding.posterImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+                    // Adjust the ImageView to be larger but leave room for the button
                     ViewGroup.LayoutParams params = binding.posterImageView.getLayoutParams();
                     params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                    params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                    params.height = (int) (130 * getResources().getDisplayMetrics().density);
                     binding.posterImageView.setLayoutParams(params);
-                    binding.posterImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     
-                    // Hide the placeholder text and button
+                    // Hide placeholder text but KEEP the button visible
                     binding.uploadTitleText.setVisibility(View.GONE);
                     binding.uploadSubtitleText.setVisibility(View.GONE);
-                    binding.browseFilesButton.setVisibility(View.GONE);
+
+                    // Update the button text so the user knows they can change it
+                    binding.browseFilesButton.setText("Change Poster");
                 }
             });
 
+    private void uploadImage(Event event, Uri imageUri) {
+        StorageReference posterRef = storageRef.child("event_posters/" + event.getId() + ".jpg");
+
+        posterRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    posterRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
+                        String publicUrl = downloadUri.toString();
+
+                        event.setPosterImageUrl(publicUrl);
+
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Image Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    /**
+     * Called when the activity is first created.
+     * @param savedInstanceState Saved data when the instance was last closed
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,10 +128,9 @@ public class CreateEventActivity extends AppCompatActivity {
         binding = ActivityCreateEventBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        /* Get the organizer ID from the intent
+        /* OrganizerId commented out for now as login not fully implemented
         organizerId = getIntent().getStringExtra("ORGANIZER_ID");
         if (organizerId == null) {
-            // Fallback for testing/debugging
             organizerId = "test_organizer_id";
         } */
 
@@ -79,10 +138,18 @@ public class CreateEventActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Sets up the UI elements and its functionality to work for creating
+     * events.
+     */
     private void setupUI() {
+        // some setup logic here
+
         binding.cancelButton.setOnClickListener(v -> finish());
 
         // Date Picker logic
+        //All date and time Picker Logic for Date, Time, and Registration was written by Google Gemini:
+        //Prompt: "How would users select a date and time without directly entering it as a String?"
         binding.eventDateEditText.setOnClickListener(v -> {
             MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                     .setTitleText("Select Event Date")
@@ -138,6 +205,7 @@ public class CreateEventActivity extends AppCompatActivity {
             datePicker.show(getSupportFragmentManager(), "REG_CLOSE_PICKER");
         });
 
+        //gives functionality to the limit switches
         binding.waitlistLimitSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             binding.waitlistLimitEditText.setEnabled(isChecked);
             binding.waitlistLimitLayout.setEnabled(isChecked);
@@ -148,12 +216,13 @@ public class CreateEventActivity extends AppCompatActivity {
             binding.radiusLayout.setEnabled(isChecked);
         });
 
-
+        //specifies to only browse images
         binding.browseFilesButton.setOnClickListener(v -> {
             imagePickerLauncher.launch("image/*");
         });
 
 
+        //beginning to create the event and assign its details and push it to the database
         binding.createEventButton.setOnClickListener(v -> {
             Event event = new Event();
             event.setName(binding.eventNameEditText.getText().toString());
@@ -163,14 +232,6 @@ public class CreateEventActivity extends AppCompatActivity {
             
             // Set the captured organizer ID
             //event.setOrganizerId(organizerId);
-            
-            try {
-                if (selectedImageUri != null) {
-                    event.setPosterImageUrl(selectedImageUri.toString());
-                }
-            } catch (Exception e) {
-                event.setPosterImageUrl(null);
-            }
 
             // Setting the actual timestamps captured from the pickers
             event.setRegistrationOpens(registrationOpensTime);
@@ -196,13 +257,11 @@ public class CreateEventActivity extends AppCompatActivity {
             event.setLocation(binding.locationEditText.getText().toString());
             event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());
             if (binding.geolocationSwitch.isChecked()) {
-                event.setGeolocationRadius(Integer.valueOf(binding.radiusEditText.getText().toString()));
-            }
-
-            try {
-                event.setPrice(Double.parseDouble(binding.priceEditText.getText().toString()));
-            } catch (NumberFormatException e) {
-                event.setPrice(0.0);
+                try {
+                    event.setGeolocationRadius(Integer.valueOf(binding.radiusEditText.getText().toString()));
+                } catch (NumberFormatException e) {
+                    event.setGeolocationRadius(null);
+                }
             }
 
             List<String> selectedTags = new ArrayList<>();
@@ -211,10 +270,25 @@ public class CreateEventActivity extends AppCompatActivity {
                 selectedTags.add(chip.getText().toString());
             }
             event.setTags(selectedTags);
-            
+
+            //uploadImage(event, selectedImageUri);
+            event.setPosterImageUrl(selectedImageUri.toString());
+
+            try {
+                event.setPrice(Double.parseDouble(binding.priceEditText.getText().toString()));
+            } catch (NumberFormatException e) {
+                event.setPrice(0.0);
+            }
+
+            //adding the event to the database
+            //First generate QRs
             eventController.addEvent(event, new EventController.OnEventOperationListener() {
                 @Override
                 public void onSuccess() {
+                    // Generate the QR code if the event is successful
+                    event.setQrCodeUrl("eventlottery://event/" + event.getId());
+                    // Are we using event or event temp????
+//                    event.setQrCode(event.generateQRBitmap(event.getQrCodeUrl()));
                     Toast.makeText(CreateEventActivity.this, "Event created successfully", Toast.LENGTH_SHORT).show();
                     finish();
                 }
@@ -227,6 +301,9 @@ public class CreateEventActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Destroys the activity and sets the binding to null
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();

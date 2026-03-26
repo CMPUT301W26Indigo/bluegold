@@ -1,29 +1,39 @@
 package com.eventlottery.controller;
 
 import com.eventlottery.model.Event;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Controller for Event-related operations.
- * Part of the 'Controller' in MVC.
+ * Deals with database operations for events.
  */
 public class EventController {
     private final FirebaseFirestore db;
     private final String COLLECTION_NAME = "events";
 
+    /**
+     * Interface for handling events loaded from Firestore.
+     */
     public interface OnEventsLoadedListener {
         void onEventsLoaded(List<Event> events);
         void onError(Exception e);
     }
 
+    /**
+     * Interface for handling operations on events.
+     */
     public interface OnEventOperationListener {
         void onSuccess();
         void onError(Exception e);
     }
 
+    /**
+     * Constructor for EventController.
+     */
     public EventController() {
         this.db = FirebaseFirestore.getInstance();
     }
@@ -84,7 +94,5 @@ public class EventController {
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
     }
-
-    // Call functions that create and present url
 
 }

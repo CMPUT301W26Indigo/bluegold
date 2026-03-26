@@ -33,6 +33,14 @@ public class GuestList {
     }
 
     /**
+     * Default no-argument constructor required for Firebase Firestore deserialization.
+     */
+    public GuestList() {
+        this.attendeeIds = new ArrayList<>();
+        this.listCount = 0;
+    }
+
+    /**
      * Constructs a GuestList with a specific capacity limit.
      *
      * @param eventId   The unique identifier of the event.
@@ -202,6 +210,28 @@ public class GuestList {
         }
         if (changed) {
             saveToFirebase();
+        }
+    }
+
+    /**
+     * Change all entrants who did not sign up for the event to the cancelled status
+     * Cancelled attendees are those who have the declined and maybe statuses.
+     */
+    public void cancelEntrants() {
+        ArrayList<String> toCancel = new ArrayList<>();
+
+        for (HashMap<String, String> attendee : attendeeIds) {
+            for (String key : attendee.keySet()) {
+                String status = attendee.get(key);
+
+                if (status.equals("declined") || status.equals("maybe")) {
+                    toCancel.add(key);
+                }
+            }
+        }
+
+        for (String attendeeId : toCancel) {
+            changeAttendeeStatus(attendeeId, "cancelled");
         }
     }
 }

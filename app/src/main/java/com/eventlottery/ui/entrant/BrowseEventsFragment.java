@@ -18,7 +18,6 @@ import com.eventlottery.ui.adapters.EventAdapter;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -134,7 +133,10 @@ public class BrowseEventsFragment extends Fragment {
 
     private void navigateToEventDetails(Event event) {
         Intent intent = new Intent(getActivity(), EventDetailsActivity.class);
-        intent.putExtra("EVENT", event);
+        // Since EventTemp had serializable properties and Event does not, I had to pass the eventId
+        // Instead of the whole event into Firebase.
+        // This seems to work, but be wary of this line if errors start cropping up.
+        intent.putExtra("EVENT_ID", event.getId());
         startActivity(intent);
     }
 
