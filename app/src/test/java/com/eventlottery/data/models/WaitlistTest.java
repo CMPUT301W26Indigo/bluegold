@@ -1,92 +1,165 @@
 package com.eventlottery.data.models;
 
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.eventlottery.model.Waitlist;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 
 public class WaitlistTest {
 
-    private Waitlist waitlist;
+    private Waitlist unlimitedWaitlist;
+    private Waitlist limitedWaitlist;
+    private final String TEST_EVENT_ID = "event_123";
 
     @Before
     public void setUp() {
-        waitlist = new Waitlist("test_id");
+        unlimitedWaitlist = new Waitlist(TEST_EVENT_ID);
+        limitedWaitlist = new Waitlist(TEST_EVENT_ID, 1, null);
+    }
+
+    @Test
+    public void testConstructorWithLimit() {
+        assertEquals(TEST_EVENT_ID, limitedWaitlist.getEventId());
+        assertEquals(Integer.valueOf(1), limitedWaitlist.getWaitlistLimit());
+        assertEquals(0, (int) limitedWaitlist.getWaitlistCount());
+        assertTrue(limitedWaitlist.getAttendeeIds().isEmpty());
+    }
+
+    @Test
+    public void testConstructorWithoutLimit() {
+        assertNull(unlimitedWaitlist.getWaitlistLimit());
+        assertEquals(TEST_EVENT_ID, unlimitedWaitlist.getEventId());
     }
 
     @Test
     public void testAddAttendee() {
-        waitlist.addAttendee("user1");
+        String attendeeId = "user_456";
+        unlimitedWaitlist.addAttendee(attendeeId);
 
-        ArrayList<String> attendees = waitlist.getAttendeeIds();
-        assertEquals(1, attendees.size());
-        assertTrue(attendees.contains("user1"));
-        assertEquals(1, waitlist.getWaitlistCount().intValue());
+        assertEquals(1, (int) unlimitedWaitlist.getWaitlistCount());
+        assertTrue(unlimitedWaitlist.getAttendeeIds().contains(attendeeId));
+        assertTrue(unlimitedWaitlist.findAttendee(attendeeId));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAddAttendeeWhenFull() {
+        limitedWaitlist.addAttendee("user1");
+        limitedWaitlist.addAttendee("user2"); // Should throw exception
     }
 
     @Test
     public void testRemoveAttendee() {
-        waitlist.addAttendee("user1");
-        waitlist.addAttendee("user2");
-        waitlist.removeAttendee("user1");
+        String attendeeId = "user_789";
+        unlimitedWaitlist.addAttendee(attendeeId);
+        assertEquals(1, (int) unlimitedWaitlist.getWaitlistCount());
 
-        ArrayList<String> attendees = waitlist.getAttendeeIds();
-        assertEquals(1, attendees.size());
-        assertFalse(attendees.contains("user1"));
-        assertTrue(attendees.contains("user2"));
-        assertEquals(1, waitlist.getWaitlistCount().intValue());
+        unlimitedWaitlist.removeAttendee(attendeeId);
+        assertEquals(0, (int) unlimitedWaitlist.getWaitlistCount());
+        assertFalse(unlimitedWaitlist.findAttendee(attendeeId));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testRemoveNonExistentAttendee() {
-        waitlist.removeAttendee("user1");
+        unlimitedWaitlist.removeAttendee("non_existent_user");
+    }
+
+    @Test
+    public void testIsWaitlistFull_Unlimited() {
+        assertNull(unlimitedWaitlist.getWaitlistLimit());
+        assertFalse(unlimitedWaitlist.isWaitlistFull());
+
+        for (int i = 0; i < 100; i++) {
+            unlimitedWaitlist.addAttendee("user" + i);
+        }
+        assertFalse(unlimitedWaitlist.isWaitlistFull());
+    }
+
+    @Test
+    public void testIsWaitlistFull_Limited() {
+        Waitlist limitedWaitlist2 = new Waitlist(TEST_EVENT_ID, 2, null);
+        assertFalse(limitedWaitlist.isWaitlistFull());
+
+        limitedWaitlist2.addAttendee("user1");
+        assertFalse(limitedWaitlist2.isWaitlistFull());
+
+        limitedWaitlist2.addAttendee("user2");
+        assertTrue(limitedWaitlist2.isWaitlistFull());
+    }
+
+    // -------- MOVED TESTS FROM FIRST FILE --------
+
+    @Test
+    public void testAddAttendee_ListVerification() {
+        unlimitedWaitlist.addAttendee("user1");
+
+        ArrayList<String> attendees = unlimitedWaitlist.getAttendeeIds();
+        assertEquals(1, attendees.size());
+        assertTrue(attendees.contains("user1"));
+        assertEquals(1, unlimitedWaitlist.getWaitlistCount().intValue());
+    }
+
+    @Test
+    public void testRemoveAttendee_ListVerification() {
+        unlimitedWaitlist.addAttendee("user1");
+        unlimitedWaitlist.addAttendee("user2");
+        unlimitedWaitlist.removeAttendee("user1");
+
+        ArrayList<String> attendees = unlimitedWaitlist.getAttendeeIds();
+        assertEquals(1, attendees.size());
+        assertFalse(attendees.contains("user1"));
+        assertTrue(attendees.contains("user2"));
+        assertEquals(1, unlimitedWaitlist.getWaitlistCount().intValue());
     }
 
     @Test
     public void testFindAttendee() {
-        waitlist.addAttendee("user1");
+        unlimitedWaitlist.addAttendee("user1");
 
-        assertTrue(waitlist.findAttendee("user1"));
-        assertFalse(waitlist.findAttendee("user2"));
+        assertTrue(unlimitedWaitlist.findAttendee("user1"));
+        assertFalse(unlimitedWaitlist.findAttendee("user2"));
     }
 
     @Test
     public void testGetWaitlistCount() {
-        assertEquals(0, waitlist.getWaitlistCount().intValue());
+        assertEquals(0, unlimitedWaitlist.getWaitlistCount().intValue());
 
-        waitlist.addAttendee("user1");
-        assertEquals(1, waitlist.getWaitlistCount().intValue());
+        unlimitedWaitlist.addAttendee("user1");
+        assertEquals(1, unlimitedWaitlist.getWaitlistCount().intValue());
 
-        waitlist.addAttendee("user2");
-        assertEquals(2, waitlist.getWaitlistCount().intValue());
+        unlimitedWaitlist.addAttendee("user2");
+        assertEquals(2, unlimitedWaitlist.getWaitlistCount().intValue());
 
-        waitlist.removeAttendee("user1");
-        assertEquals(1, waitlist.getWaitlistCount().intValue());
+        unlimitedWaitlist.removeAttendee("user1");
+        assertEquals(1, unlimitedWaitlist.getWaitlistCount().intValue());
     }
 
     @Test
     public void testWaitlistWithLimit() {
-        Waitlist limitedWaitlist = new Waitlist("test_id", 3);
+        Waitlist limitedWaitlist3 = new Waitlist("test_id", 3, null);
 
-        assertFalse(limitedWaitlist.isWaitlistFull());
+        assertFalse(limitedWaitlist3.isWaitlistFull());
 
-        limitedWaitlist.addAttendee("user1");
-        limitedWaitlist.addAttendee("user2");
-        assertFalse(limitedWaitlist.isWaitlistFull());
+        limitedWaitlist3.addAttendee("user1");
+        limitedWaitlist3.addAttendee("user2");
+        assertFalse(limitedWaitlist3.isWaitlistFull());
 
-        limitedWaitlist.addAttendee("user3");
-        assertTrue(limitedWaitlist.isWaitlistFull());
+        limitedWaitlist3.addAttendee("user3");
+        assertTrue(limitedWaitlist3.isWaitlistFull());
     }
 
     @Test(expected = IllegalStateException.class)
     public void testAddToFullWaitlist() {
-        Waitlist limitedWaitlist = new Waitlist("test_id", 2);
+        Waitlist limitedWaitlist4 = new Waitlist("test_id", 2, null);
 
-        limitedWaitlist.addAttendee("user1");
-        limitedWaitlist.addAttendee("user2");
-        limitedWaitlist.addAttendee("user3"); // Should throw exception
+        limitedWaitlist4.addAttendee("user1");
+        limitedWaitlist4.addAttendee("user2");
+        limitedWaitlist4.addAttendee("user3"); // Should throw exception
     }
 }

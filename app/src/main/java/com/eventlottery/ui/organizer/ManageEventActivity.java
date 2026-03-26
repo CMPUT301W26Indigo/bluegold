@@ -3,16 +3,14 @@ package com.eventlottery.ui.organizer;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
-import com.bumptech.glide.Glide;
-import com.eventlottery.databinding.ActivityManageEvent1Binding;
-import com.eventlottery.model.Event;
-import com.eventlottery.model.EventTemp;
+import com.eventlottery.R;
+import com.eventlottery.databinding.ActivityManageEventBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -41,7 +39,7 @@ import java.util.ArrayList;
  */
 public class ManageEventActivity extends AppCompatActivity {
 
-    private ActivityManageEvent1Binding binding;
+    private ActivityManageEventBinding binding;
     private FirebaseFirestore db;
     private String eventId;
     private String eventName;
@@ -71,6 +69,11 @@ public class ManageEventActivity extends AppCompatActivity {
                 });
 
 
+        eventId = getIntent().getStringExtra("EVENT_ID");
+        eventName = getIntent().getStringExtra("EVENT_NAME");
+
+        setupUI();
+        loadEventStats();
     }
 
     private void setupUI() {
@@ -94,11 +97,25 @@ public class ManageEventActivity extends AppCompatActivity {
         binding.descriptionText.setText(event.getDescription());
         binding.locationNameText.setText(event.getLocation());
 
-
-
-        /*binding.btnDrawLottery.setOnClickListener(v -> {
+        // Draw lottery button
+        binding.btnDrawLottery.setOnClickListener(v -> {
+            Intent intent = new Intent(this, InvitedEntrantsActivity.class);
             startActivity(new Intent(this, DrawLotteryActivity.class));
-        });*/
+            intent.putExtra("EVENT_ID", eventId);
+            startActivity(intent);
+        });
+
+        // View Invited Entrants button
+        binding.btnViewInvited.setOnClickListener(v -> {
+            Intent intent = new Intent(this, InvitedEntrantsActivity.class);
+            intent.putExtra("EVENT_ID", eventId);
+            startActivity(intent);
+        });
+
+        // Export CSV button
+        binding.btnExportCSV.setOnClickListener(v -> {
+            exportCSV();
+        });
     }
 
     @Override
@@ -106,6 +123,36 @@ public class ManageEventActivity extends AppCompatActivity {
         super.onDestroy();
         binding = null;
     }
+
+
+    private void loadEventStats() {
+        // Get waitlist count
+        db.collection("events").document(eventId)
+                .collection("waitlist")
+                .get()
+                .addOnSuccessListener(query -> {
+                    binding.tvWaitlistCount.setText("Waitlist: " + query.size());
+                });
+
+        // Get invited count
+        db.collection("events").document(eventId)
+                .collection("guestList")
+                .whereEqualTo("status", "invited")
+                .get()
+                .addOnSuccessListener(query -> {
+                    binding.tvInvitedCount.setText("Invited: " + query.size());
+                });
+
+        // Get confirmed count
+        db.collection("events").document(eventId)
+                .collection("guestList")
+                .whereEqualTo("status", "confirmed")
+                .get()
+                .addOnSuccessListener(query -> {
+                    binding.tvConfirmedCount.setText("Confirmed: " + query.size());
+                });
+
+}
 
 
     private void exportCSV() {
@@ -143,11 +190,12 @@ public class ManageEventActivity extends AppCompatActivity {
                                             .append(email).append(",")
                                             .append(phone).append("\n");
 
-                                    // Share when done
-                                    if (names.size() == queryDocumentSnapshots.size() - 1) {
+                                    names.add(name);
+
+                                    // Share when all are processed
+                                    if (names.size() == totalCount) {
                                         shareCSV(csv.toString());
                                     }
-                                    names.add(name);
                                 });
                     }
                 });

@@ -9,8 +9,7 @@ import com.google.zxing.common.BitMatrix;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -26,16 +25,32 @@ public class Event {
     private String organizerId;
     private String date;
     private String time;
+    private String endTime;
     private String location;
-    private ArrayList<String> tags;
+    private String locationAddress;
+    private int capacity;
+    private Integer waitlistLimit; // Nullable - null means unlimited
+    private int waitlistCount;
+    private int confirmedCount;
+    private String posterImageUrl;
+    private double price;
+    private long registrationOpens;
+    private long registrationCloses;
+    private Long lotteryDrawDate; // Nullable
+    private long createdAt;
+    private long updatedAt;
+    private List<String> tags; //Does it work with either arraylist or list?
     private boolean geolocationEnabled;
     private Integer geolocationRadius; // Nullable - in kilometers (1-500)
     private String status; // "open", "closed", "lottery_drawn", "completed"
     private String qrCodeUrl;
+    private Bitmap qrCode;
     private boolean isFlagged;
+    private int flagCount;
     private Waitlist waitlist;
     private GuestList guestList;
     private boolean recurringEvent;
+    private boolean isPrivate;
 
     public Event() {
         this.id = "";
@@ -44,15 +59,31 @@ public class Event {
         this.organizerId = "";
         this.date = "";
         this.time = "";
+        this.endTime = "";
         this.location = "";
+        this.locationAddress = "";
+        this.capacity = 0;
+        this.waitlistLimit = null;
+        this.waitlistCount = 0;
+        this.confirmedCount = 0;
+        this.posterImageUrl = null;
+        this.price = 0.0;
+        this.registrationOpens = 0L;
+        this.registrationCloses = 0L;
+        this.lotteryDrawDate = null;
+        this.createdAt = System.currentTimeMillis();
+        this.updatedAt = System.currentTimeMillis();
         this.tags = new ArrayList<>();
         this.geolocationEnabled = false;
         this.geolocationRadius = null;
         this.status = "open";
         this.qrCodeUrl = null;
+        this.qrCode = null;
         this.isFlagged = false;
+        this.flagCount = 0;
         this.recurringEvent = false;
-        this.waitlist = new Waitlist("", null); // Use empty strings for defaults
+        this.isPrivate = false;
+        this.waitlist = new Waitlist(""); // Use empty strings for defaults
         this.guestList = new GuestList("");
     }
 
@@ -60,40 +91,91 @@ public class Event {
      * Constructor with all parameters.
      * Use null for eventCapacity or waitlistLimit if they are not restricted.
      */
-    public Event(String id, String name, String description, String organizerId, String date, String time, String location, ArrayList<String> tags, boolean geolocationEnabled, Integer geolocationRadius, String qrCodeUrl, Integer eventCapacity, Integer waitlistLimit, String registrationDeadline, boolean recurringEvent) {
+    public Event(
+            String id,
+            String name,
+            String description,
+            String organizerId,
+            String date,
+            String time,
+            String endTime,
+            String location,
+            String locationAddress,
+            int capacity,
+            Integer waitlistLimit,
+            int waitlistCount,
+            int confirmedCount,
+            String posterImageUrl,
+            double price,
+            long registrationOpens,
+            long registrationCloses,
+            Long lotteryDrawDate,
+            long createdAt,
+            long updatedAt,
+            List<String> tags,
+            boolean geolocationEnabled,
+            Integer geolocationRadius,
+            String status,
+            String qrCodeUrl,
+            Bitmap qrCode,
+            boolean isFlagged,
+            int flagCount,
+            Waitlist waitlist,
+            GuestList guestList,
+            boolean recurringEvent,
+            boolean isPrivate
+    ) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.organizerId = organizerId;
         this.date = date;
         this.time = time;
+        this.endTime = endTime;
         this.location = location;
-        this.tags = tags;
+        this.locationAddress = locationAddress;
+        this.capacity = capacity;
+        this.waitlistLimit = waitlistLimit;
+        this.waitlistCount = waitlistCount;
+        this.confirmedCount = confirmedCount;
+        this.posterImageUrl = posterImageUrl;
+        this.price = price;
+        this.registrationOpens = registrationOpens;
+        this.registrationCloses = registrationCloses;
+        this.lotteryDrawDate = lotteryDrawDate;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.tags = (tags != null) ? new ArrayList<>(tags) : new ArrayList<>();
         this.geolocationEnabled = geolocationEnabled;
         this.geolocationRadius = geolocationRadius;
-        this.status = "open";
+        this.status = status;
         this.qrCodeUrl = qrCodeUrl;
-        this.isFlagged = false;
+        this.qrCode = qrCode;
+        this.isFlagged = isFlagged;
+        this.flagCount = flagCount;
+        this.waitlist = waitlist;
+        this.guestList = guestList;
         this.recurringEvent = recurringEvent;
-
+        this.isPrivate = isPrivate;
 
         // Initialize with optional limits
-        this.waitlist = (waitlistLimit != null) ? new Waitlist(id, waitlistLimit, registrationDeadline) : new Waitlist(id, registrationDeadline);
-        this.guestList = (eventCapacity != null) ? new GuestList(id, eventCapacity) : new GuestList(id);
+        this.waitlist = (waitlistLimit != null) ? new Waitlist(id, waitlistLimit, Long.toString(registrationCloses)) : new Waitlist(id);
+        this.guestList = (capacity != 0) ? new GuestList(id, capacity) : new GuestList(id);
     }
 
     // Simplified constructor for basic events
-    public Event(String id, String name, String description, String organizerId, String date, String time, String location, ArrayList<String> tags, boolean geolocationEnabled, Integer geolocationRadius, String qrCodeUrl) {
-        this(id, name, description, organizerId, date, time, location, tags, geolocationEnabled, geolocationRadius, qrCodeUrl, null, null, null, false);
-    }
+    // I do not believe we need this
+//    public Event(String id, String name, String description, String organizerId, String date, String time, String location, ArrayList<String> tags, boolean geolocationEnabled, Integer geolocationRadius, String qrCodeUrl) {
+//        this(id, name, description, organizerId, date, time, location, tags, geolocationEnabled, geolocationRadius, qrCodeUrl, null, null, null, false, false);
+//    }
 
-    // Getters and Setters
-    public void setId(String id) {
-        this.id = id;
-    }
-
+    // Setters and Getters
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -136,6 +218,14 @@ public class Event {
         this.time = time;
     }
 
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+
     public String getLocation() {
         return location;
     }
@@ -144,11 +234,107 @@ public class Event {
         this.location = location;
     }
 
-    public ArrayList<String> getTags() {
+    public String getLocationAddress() {
+        return locationAddress;
+    }
+
+    public void setLocationAddress(String locationAddress) {
+        this.locationAddress = locationAddress;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public Integer getWaitlistLimit() {
+        return waitlistLimit;
+    }
+
+    public void setWaitlistLimit(Integer waitlistLimit) {
+        this.waitlistLimit = waitlistLimit;
+    }
+
+    public int getWaitlistCount() {
+        return waitlistCount;
+    }
+
+    public void setWaitlistCount(int waitlistCount) {
+        this.waitlistCount = waitlistCount;
+    }
+
+    public int getConfirmedCount() {
+        return confirmedCount;
+    }
+
+    public void setConfirmedCount(int confirmedCount) {
+        this.confirmedCount = confirmedCount;
+    }
+
+    public String getPosterImageUrl() {
+        return posterImageUrl;
+    }
+
+    public void setPosterImageUrl(String posterImageUrl) {
+        this.posterImageUrl = posterImageUrl;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public long getRegistrationOpens() {
+        return registrationOpens;
+    }
+
+    public void setRegistrationOpens(long registrationOpens) {
+        this.registrationOpens = registrationOpens;
+    }
+
+    public long getRegistrationCloses() {
+        return registrationCloses;
+    }
+
+    public void setRegistrationCloses(long registrationCloses) {
+        this.registrationCloses = registrationCloses;
+    }
+
+    public Long getLotteryDrawDate() {
+        return lotteryDrawDate;
+    }
+
+    public void setLotteryDrawDate(Long lotteryDrawDate) {
+        this.lotteryDrawDate = lotteryDrawDate;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(long createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(long updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public List<String> getTags() {
         return tags;
     }
 
-    public void setTags(ArrayList<String> tags) {
+    public void setTags(List<String> tags) {
         this.tags = tags;
     }
 
@@ -184,12 +370,28 @@ public class Event {
         this.qrCodeUrl = qrCodeUrl;
     }
 
+    public Bitmap getQrCode() {
+        return qrCode;
+    }
+
+    public void setQrCode(Bitmap qrCode) {
+        this.qrCode = qrCode;
+    }
+
     public boolean isFlagged() {
         return isFlagged;
     }
 
     public void setFlagged(boolean flagged) {
         isFlagged = flagged;
+    }
+
+    public int getFlagCount() {
+        return flagCount;
+    }
+
+    public void setFlagCount(int flagCount) {
+        this.flagCount = flagCount;
     }
 
     public Waitlist getWaitlist() {
@@ -208,60 +410,31 @@ public class Event {
         this.recurringEvent = recurringEvent;
     }
 
-    // Lottery System if not specified a max num of guests to select
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public void setPrivate(boolean aPrivate) {
+        isPrivate = aPrivate;
+    }
 
     /**
-     * Lottery System if not specified a max num of guests to select
-     * Randomly selects guests from the waitlist and adds them to the guest list.
-     * Sends notifications to the selected guests.
      *
-     * @return void
-     * <p>
-     * public static final Creator CREATOR = new Creator() {
-     * Override public Event createFromParcel(Parcel in) {
-     * return new Event(in);
-     * }
-     * Override public Event[] newArray(int size) {
-     * return new Event[size];
-     * }
-     * };
-     * <p>
-     * /*
-     * Generates QR Code once the create button is pressed
-     *
+     * @param content The text/URL to encode.
+     * @return Bitmap of the QR code, or null if generation fails.
      */
-    public Bitmap generateQR() {
-        // Credit for basis of code: https://youtu.be/n8HdrLYL9DA?si=42nC-Wwzbn5_1wUU
-        // TODO: Add this code to the activity/fragment that houses the button that generates events
-        // btn_generate = findViewById(R.id.[BUTTON THAT GENERATES EVENT]);
-        // btn_generate.SetOnClickListener(v -> {
-        //   generateQR();
-        // });
-        // TODO: Add a spot somewhere that displays QR Codes for events
-        // qr_display = findViewById(R.id.[IMAGE THAT WILL HOLD THE QR CODE]);
-        // TODO: Test generation using following dummy text
-        //String text = "Welcome to the Event Details Page!";
-
-        // TODO: Verify that this URL is correct. If not, change it. May need to change this to work with Firestore
-        String deepLink = "eventlottery://event/" + this.getId();
+    public Bitmap generateQRBitmap(String content) {
+        if (content == null || content.isEmpty() || this.isPrivate) return null;
 
         MultiFormatWriter writer = new MultiFormatWriter();
         try {
-            BitMatrix matrix = writer.encode(deepLink,
-                    BarcodeFormat.QR_CODE,
-                    400,
-                    400);
-
-            BarcodeEncoder encoder = new BarcodeEncoder();
-            //qr_display.setImageBitmap(bitmap);
-
-            return encoder.createBitmap(matrix);
+            BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, 400, 400);
+            return new BarcodeEncoder().createBitmap(matrix);
         } catch (WriterException e) {
             e.printStackTrace();
-            throw new RuntimeException(e);
+            return null;
         }
     }
-
     // Business Logic Methods
 
     /**
@@ -373,6 +546,19 @@ public class Event {
         return csv.toString();
 
     }
+
+    public boolean isWaitlistFull() {
+        return waitlist.isWaitlistFull();
+    }
+
+    public boolean isRegistrationOpen() {
+        long currentTime = System.currentTimeMillis();
+        return "open".equals(status) &&
+                currentTime >= registrationOpens &&
+                currentTime <= registrationCloses &&
+                !isWaitlistFull();
+    }
+
     public void addAttendee(){
 
     }

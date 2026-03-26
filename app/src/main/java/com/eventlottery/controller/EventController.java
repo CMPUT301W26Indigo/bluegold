@@ -1,9 +1,11 @@
 package com.eventlottery.controller;
 
+import com.eventlottery.model.Event;
 import com.eventlottery.model.EventTemp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +20,7 @@ public class EventController {
      * Interface for handling events loaded from Firestore.
      */
     public interface OnEventsLoadedListener {
-        void onEventsLoaded(List<EventTemp> events);
+        void onEventsLoaded(List<Event> events);
         void onError(Exception e);
     }
 
@@ -44,9 +46,9 @@ public class EventController {
         db.collection(COLLECTION_NAME)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<EventTemp> events = new ArrayList<>();
+                    List<Event> events = new ArrayList<>();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        EventTemp event = document.toObject(EventTemp.class);
+                        Event event = document.toObject(Event.class);
                         event.setId(document.getId());
                         events.add(event);
                     }
@@ -58,18 +60,20 @@ public class EventController {
     /**
      * Adds a new event to Firestore.
      */
-    public void addEvent(EventTemp event, OnEventOperationListener listener) {
-        DocumentReference newDocRef = db.collection(COLLECTION_NAME).document();
-        event.setId(newDocRef.getId());
-        newDocRef.set(event)
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
+    public void addEvent(Event event, OnEventOperationListener listener) {
+        db.collection(COLLECTION_NAME)
+                .add(event)
+                .addOnSuccessListener(documentReference -> {
+                    event.setId(documentReference.getId());
+                    listener.onSuccess();
+                })
                 .addOnFailureListener(listener::onError);
     }
 
     /**
      * Updates an existing event in Firestore.
      */
-    public void updateEvent(EventTemp event, OnEventOperationListener listener) {
+    public void updateEvent(Event event, OnEventOperationListener listener) {
         if (event.getId() == null || event.getId().isEmpty()) {
             listener.onError(new IllegalArgumentException("Event ID is required for update"));
             return;
@@ -91,7 +95,5 @@ public class EventController {
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
     }
-
-    // todo Call functions that create and present url
 
 }

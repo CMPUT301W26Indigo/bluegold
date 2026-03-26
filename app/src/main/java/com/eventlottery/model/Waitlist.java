@@ -14,6 +14,14 @@ public class Waitlist {
     private String registrationDeadline;
 
     /**
+     * Default no-argument constructor required for Firebase Firestore deserialization.
+     */
+    public Waitlist() {
+        this.attendeeIds = new ArrayList<>();
+        this.waitlistCount = 0;
+    }
+
+    /**
      * Constructs a Waitlist with a specific capacity limit.
      *
      * @param eventId       The unique identifier of the event.
@@ -32,12 +40,13 @@ public class Waitlist {
      *
      * @param eventId The unique identifier of the event.
      */
-    public Waitlist(String eventId, String registrationDeadline) {
+
+    public Waitlist(String eventId) {
         this.eventId = eventId;
         this.attendeeIds = new ArrayList<String>();
         this.waitlistLimit = null;
         this.waitlistCount = 0;
-        this.registrationDeadline = registrationDeadline;
+        this.registrationDeadline = null;
     }
 
     /**
@@ -50,12 +59,30 @@ public class Waitlist {
     }
 
     /**
+     * Sets the unique identifier for the event.
+     *
+     * @param eventId The event ID string.
+     */
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    /**
      * Gets the list of attendee IDs currently on the waitlist.
      *
      * @return An ArrayList of attendee ID strings.
      */
     public ArrayList<String> getAttendeeIds() {
         return attendeeIds;
+    }
+
+    /**
+     * Sets the list of attendee IDs currently on the waitlist.
+     *
+     * @param attendeeIds An ArrayList of attendee ID strings.
+     */
+    public void setAttendeeIds(ArrayList<String> attendeeIds) {
+        this.attendeeIds = attendeeIds;
     }
 
     /**
@@ -68,12 +95,30 @@ public class Waitlist {
     }
 
     /**
+     * Sets the maximum number of attendees allowed on this waitlist.
+     *
+     * @param waitlistLimit The waitlist limit.
+     */
+    public void setWaitlistLimit(Integer waitlistLimit) {
+        this.waitlistLimit = waitlistLimit;
+    }
+
+    /**
      * Gets the current number of attendees on the waitlist.
      *
      * @return The current waitlist count.
      */
     public Integer getWaitlistCount() {
         return waitlistCount;
+    }
+
+    /**
+     * Sets the current number of attendees on the waitlist.
+     *
+     * @param waitlistCount The current waitlist count.
+     */
+    public void setWaitlistCount(Integer waitlistCount) {
+        this.waitlistCount = waitlistCount;
     }
 
     /**
