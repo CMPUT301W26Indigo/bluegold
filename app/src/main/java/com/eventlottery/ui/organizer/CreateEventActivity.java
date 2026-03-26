@@ -1,5 +1,6 @@
 package com.eventlottery.ui.organizer;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -99,7 +100,7 @@ public class CreateEventActivity extends AppCompatActivity {
                 }
             });
 
-    private void uploadImage(EventTemp event, Uri imageUri) {
+    private void uploadImage(Event event, Uri imageUri) {
         StorageReference posterRef = storageRef.child("event_posters/" + event.getId() + ".jpg");
 
         posterRef.putFile(imageUri)

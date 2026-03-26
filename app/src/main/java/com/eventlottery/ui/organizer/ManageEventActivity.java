@@ -3,14 +3,19 @@ package com.eventlottery.ui.organizer;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
+import com.bumptech.glide.Glide;
 import com.eventlottery.R;
+import com.eventlottery.databinding.ActivityManageEvent1Binding;
 import com.eventlottery.databinding.ActivityManageEventBinding;
+import com.eventlottery.model.Event;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -39,11 +44,11 @@ import java.util.ArrayList;
  */
 public class ManageEventActivity extends AppCompatActivity {
 
-    private ActivityManageEventBinding binding;
+    private @NonNull ActivityManageEvent1Binding binding;
     private FirebaseFirestore db;
     private String eventId;
     private String eventName;
-    private EventTemp event;
+    private Event event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,20 +65,14 @@ public class ManageEventActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        event = documentSnapshot.toObject(EventTemp.class);
+                        event = documentSnapshot.toObject(Event.class);
                         setupUI();
+                        loadEventStats();
                     } else {
                         Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
                         finish();
                     }
                 });
-
-
-        eventId = getIntent().getStringExtra("EVENT_ID");
-        eventName = getIntent().getStringExtra("EVENT_NAME");
-
-        setupUI();
-        loadEventStats();
     }
 
     private void setupUI() {
@@ -140,7 +139,7 @@ public class ManageEventActivity extends AppCompatActivity {
                 .whereEqualTo("status", "invited")
                 .get()
                 .addOnSuccessListener(query -> {
-                    binding.tvInvitedCount.setText("Invited: " + query.size());
+                    binding.tvInvitedCount.setText(query.size() + " not confirmed");
                 });
 
         // Get confirmed count
@@ -149,7 +148,7 @@ public class ManageEventActivity extends AppCompatActivity {
                 .whereEqualTo("status", "confirmed")
                 .get()
                 .addOnSuccessListener(query -> {
-                    binding.tvConfirmedCount.setText("Confirmed: " + query.size());
+                    binding.tvConfirmedCount.setText(String.valueOf(query.size()));
                 });
 
 }

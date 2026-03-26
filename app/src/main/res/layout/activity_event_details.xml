@@ -393,7 +393,7 @@
 
     <!-- Join Waiting List Button (Fixed at bottom) -->
     <Button
-        android:id="@+id/exportCSVButton"
+        android:id="@+id/btnExportCSV"
         style="@style/Widget.App.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

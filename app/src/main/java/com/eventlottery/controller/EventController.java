@@ -1,7 +1,6 @@
 package com.eventlottery.controller;
 
 import com.eventlottery.model.Event;
-import com.eventlottery.model.EventTemp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
