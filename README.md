@@ -116,4 +116,3 @@ We acknowledge the use of LLM’s to help generate portions of the code. Below w
 - Porting the UI created in Figma into Android Studio. Gemini was used to create equivalent Classes, Activities, Fragments, and XML files. The code inside these files was the minimum required for proper UI flow.
 - Debugging portions of the application.
 - Generating unit tests.
-

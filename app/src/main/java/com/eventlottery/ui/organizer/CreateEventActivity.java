@@ -1,5 +1,6 @@
 package com.eventlottery.ui.organizer;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -12,15 +13,15 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
-
 import com.eventlottery.controller.EventController;
-import com.eventlottery.model.EventTemp;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
-
+import com.eventlottery.model.Event;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ import java.util.List;
  * Outstanding issues:
  * - Geolocation coordinates are hardcoded
  * - Registration dates are hardcoded
- * - No Organizer Id
+ * - No Organizer ID
  * - Some Number only Textbooks accept letters
  *
  * @see com.eventlottery.model.Event
@@ -58,6 +59,10 @@ public class CreateEventActivity extends AppCompatActivity {
     private EventController eventController = new EventController();
     private Uri selectedImageUri;
     private String organizerId;
+    private FirebaseStorage storage = FirebaseStorage.getInstance();
+    private StorageReference storageRef = storage.getReference();
+
+
 
 
     /**
@@ -70,23 +75,47 @@ public class CreateEventActivity extends AppCompatActivity {
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
                     selectedImageUri = uri;
-                    
+
+                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     // Show the image in the ImageView
                     binding.posterImageView.setImageURI(uri);
                     
-                    // Make the ImageView fill the card
+                    // Remove the grey tint so the actual image shows
+                    binding.posterImageView.setImageTintList(null);
+
+                    binding.posterImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+                    // Adjust the ImageView to be larger but leave room for the button
                     ViewGroup.LayoutParams params = binding.posterImageView.getLayoutParams();
                     params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                    params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                    params.height = (int) (130 * getResources().getDisplayMetrics().density);
                     binding.posterImageView.setLayoutParams(params);
-                    binding.posterImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     
-                    // Hide the placeholder text and button
+                    // Hide placeholder text but KEEP the button visible
                     binding.uploadTitleText.setVisibility(View.GONE);
                     binding.uploadSubtitleText.setVisibility(View.GONE);
-                    binding.browseFilesButton.setVisibility(View.GONE);
+
+                    // Update the button text so the user knows they can change it
+                    binding.browseFilesButton.setText("Change Poster");
                 }
             });
+
+    private void uploadImage(Event event, Uri imageUri) {
+        StorageReference posterRef = storageRef.child("event_posters/" + event.getId() + ".jpg");
+
+        posterRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    posterRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
+                        String publicUrl = downloadUri.toString();
+
+                        event.setPosterImageUrl(publicUrl);
+
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Image Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
 
     /**
      * Called when the activity is first created.
@@ -195,7 +224,7 @@ public class CreateEventActivity extends AppCompatActivity {
 
         //beginning to create the event and assign its details and push it to the database
         binding.createEventButton.setOnClickListener(v -> {
-            EventTemp event = new EventTemp();
+            Event event = new Event();
             event.setName(binding.eventNameEditText.getText().toString());
             event.setDescription(binding.descriptionEditText.getText().toString());
             event.setDate(binding.eventDateEditText.getText().toString());
@@ -228,7 +257,11 @@ public class CreateEventActivity extends AppCompatActivity {
             event.setLocation(binding.locationEditText.getText().toString());
             event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());
             if (binding.geolocationSwitch.isChecked()) {
-                event.setGeolocationRadius(Integer.valueOf(binding.radiusEditText.getText().toString()));
+                try {
+                    event.setGeolocationRadius(Integer.valueOf(binding.radiusEditText.getText().toString()));
+                } catch (NumberFormatException e) {
+                    event.setGeolocationRadius(null);
+                }
             }
 
             List<String> selectedTags = new ArrayList<>();
@@ -238,13 +271,8 @@ public class CreateEventActivity extends AppCompatActivity {
             }
             event.setTags(selectedTags);
 
-            try {
-                if (selectedImageUri != null) {
-                    event.setPosterImageUrl(selectedImageUri.toString());
-                }
-            } catch (Exception e) {
-                event.setPosterImageUrl(null);
-            }
+            //uploadImage(event, selectedImageUri);
+            event.setPosterImageUrl(selectedImageUri.toString());
 
             try {
                 event.setPrice(Double.parseDouble(binding.priceEditText.getText().toString()));
@@ -253,9 +281,14 @@ public class CreateEventActivity extends AppCompatActivity {
             }
 
             //adding the event to the database
+            //First generate QRs
             eventController.addEvent(event, new EventController.OnEventOperationListener() {
                 @Override
                 public void onSuccess() {
+                    // Generate the QR code if the event is successful
+                    event.setQrCodeUrl("eventlottery://event/" + event.getId());
+                    // Are we using event or event temp????
+//                    event.setQrCode(event.generateQRBitmap(event.getQrCodeUrl()));
                     Toast.makeText(CreateEventActivity.this, "Event created successfully", Toast.LENGTH_SHORT).show();
                     finish();
                 }

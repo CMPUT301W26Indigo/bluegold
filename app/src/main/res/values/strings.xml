@@ -96,6 +96,11 @@
     <string name="view_qr">View QR</string>
     <string name="export_csv">Export CSV</string>
     <string name="draw_lottery">Draw Lottery</string>
+    <string name="view_invited">View Invited</string>
+    <string name="confirmed_entrants">Confirmed</string>
+
+
+
 
     <!-- Create Event -->
     <string name="create_event_title">Create New Event</string>
@@ -270,4 +275,9 @@
     </string>
     <string name="nav_scan_qr">Scan QR</string>
     <string name="qr_scan_btn_text">Scan</string>
+    <string name="view_qr_code">View QR Code</string>
+    <string name="search_and_browse_users">Search and Browse Users</string>
+    <string name="view_invited_entrants">View Invited Entrants</string>
+    <string name="view_confirmed_entrants">View Confirmed Entrants</string>
+    <string name="invite_entrants_to_private_event">Invite Entrants to Private Event</string>
 </resources>

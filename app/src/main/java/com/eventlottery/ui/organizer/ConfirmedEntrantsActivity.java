@@ -3,6 +3,7 @@ package com.eventlottery.ui.organizer;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.eventlottery.R;
@@ -34,6 +35,8 @@ public class ConfirmedEntrantsActivity extends AppCompatActivity {
     private ArrayList<String> entrantNames = new ArrayList<>();
     private FirebaseFirestore db;
     private String eventId;
+    private TextView tvTotalCount;
+    private TextView tvEmptyState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +47,10 @@ public class ConfirmedEntrantsActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         listView = findViewById(R.id.listView);
+
+        tvTotalCount = findViewById(R.id.tvTotalCount);
+        tvEmptyState = findViewById(R.id.tvEmptyState);
+
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, entrantNames);
         listView.setAdapter(adapter);
 
@@ -57,15 +64,35 @@ public class ConfirmedEntrantsActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     entrantNames.clear();
+
+                    int total = queryDocumentSnapshots.size();
+                    tvTotalCount.setText("Total Confirmed: " + total);
+
+                    if (total == 0) {
+                        tvEmptyState.setVisibility(android.view.View.VISIBLE);
+                        listView.setVisibility(android.view.View.GONE);
+                        return;
+                    }
+
+                    tvEmptyState.setVisibility(android.view.View.GONE);
+                    listView.setVisibility(android.view.View.VISIBLE);
+
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         String userId = doc.getId();
                         db.collection("users").document(userId).get()
                                 .addOnSuccessListener(userDoc -> {
                                     String name = userDoc.getString("name");
-                                    if (name != null) entrantNames.add(name);
+                                    if (name != null && !name.isEmpty()) {
+                                        entrantNames.add(name);
+                                    } else {
+                                        entrantNames.add(userId);
+                                    }
                                     adapter.notifyDataSetChanged();
                                 });
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 }
