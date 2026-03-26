@@ -12,6 +12,7 @@ public abstract class AbstractUser {
     protected String phoneNumber;
     protected String address;
     protected String deviceID;
+    private String profileImageUrl;
 
     public AbstractUser() {
         this.name = null;
@@ -21,6 +22,8 @@ public abstract class AbstractUser {
         this.deviceID = null;
     }
 
+
+    // Getters and Setters
     /**
      * Gets the attendee's email address.
      * @return The email address.
@@ -97,6 +100,30 @@ public abstract class AbstractUser {
     }
 
     /**
+     * Gets the attendee's unique ID (typically the device ID or Firebase ID).
+     * @return The attendee ID.
+     */
+    public String getAttendeeID() {
+        return deviceID;
+    }
+
+    /**
+     * Sets the attendee's unique ID.
+     * @param id The ID to set (e.g., the Firebase Installation ID).
+     */
+    public void setAttendeeID(String id) {
+        this.deviceID = id;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    /**
      * Retrieves the unique Android device ID for this app installation.
      * Source - https://stackoverflow.com/a/60505449
      * Posted by Rahul Samaddar
@@ -117,21 +144,5 @@ public abstract class AbstractUser {
      */
     public static Task<String> getFirebaseId() {
         return FirebaseInstallations.getInstance().getId();
-    }
-
-    /**
-     * Gets the attendee's unique ID (typically the device ID or Firebase ID).
-     * @return The attendee ID.
-     */
-    public String getAttendeeID() {
-        return deviceID;
-    }
-
-    /**
-     * Sets the attendee's unique ID.
-     * @param id The ID to set (e.g., the Firebase Installation ID).
-     */
-    public void setAttendeeID(String id) {
-        this.deviceID = id;
     }
 }
