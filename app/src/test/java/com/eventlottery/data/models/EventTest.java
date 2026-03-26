@@ -304,7 +304,7 @@ public class EventTest {
 
         ArrayList<String> selection = new ArrayList<>();
         // Extract attendee IDs from the GuestList (which stores them in HashMaps)
-        for (HashMap<String, String> guestMap : guestList.getAttendeeIds()) {
+        for (HashMap<String, String> guestMap : guestList.getAttendees()) {
             selection.addAll(guestMap.keySet());
         }
         return selection;
@@ -321,7 +321,7 @@ public class EventTest {
         guestList.changeAttendeeStatus("Fortnite", "invited");
         guestList.changeAttendeeStatus("LeagueofLegends", "confirmed");
 
-        ArrayList<HashMap<String, String>> attendeeIds = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendeeIds = guestList.getAttendees();
 
         // Count how many have "invited" status
         int invitedCount = 0;
@@ -381,7 +381,7 @@ public class EventTest {
         guestList.changeAttendeeStatus("Gurt", "invited");
         guestList.changeAttendeeStatus("SixSeven", "confirmed");
 
-        ArrayList<HashMap<String, String>> attendeeIds = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendeeIds = guestList.getAttendees();
 
         // Count how many have "confirmed" status
         int confirmedCount = 0;

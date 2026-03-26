@@ -9,7 +9,8 @@ import java.util.HashMap;
  */
 public class GuestList {
     private String eventId;
-    private ArrayList<HashMap<String, String>> attendeeIds;
+    //private ArrayList<HashMap<String, String>> attendeeIds;
+    private HashMap<String, String> attendees; // <attendeeId, status>
     private Integer listCount;
     private Integer listLimit;
 
@@ -17,8 +18,9 @@ public class GuestList {
      * Default no-argument constructor required for Firebase Firestore deserialization.
      */
     public GuestList() {
-        this.attendeeIds = new ArrayList<>();
+        this.attendees = new HashMap<>();
         this.listCount = 0;
+        this.listLimit = null;
     }
 
     /**
@@ -29,7 +31,7 @@ public class GuestList {
      */
     public GuestList(String eventId, Integer listLimit) {
         this.eventId = eventId;
-        this.attendeeIds = new ArrayList<HashMap<String, String>>();
+        this.attendees = new HashMap<String, String>();
         this.listCount = 0;
         this.listLimit = listLimit;
     }
@@ -41,7 +43,7 @@ public class GuestList {
      */
     public GuestList(String eventId) {
         this.eventId = eventId;
-        this.attendeeIds = new ArrayList<HashMap<String, String>>();
+        this.attendees = new HashMap<String, String>();
         this.listCount = 0;
         this.listLimit = null;
     }
@@ -70,17 +72,17 @@ public class GuestList {
      *
      * @return An ArrayList of HashMaps representing attendees.
      */
-    public ArrayList<HashMap<String, String>> getAttendeeIds() {
-        return attendeeIds;
+    public HashMap<String, String> getAttendees() {
+        return attendees;
     }
 
     /**
      * Sets the list of attendees and their current statuses.
      *
-     * @param attendeeIds An ArrayList of HashMaps representing attendees.
+     * @param attendees An ArrayList of HashMaps representing attendees.
      */
-    public void setAttendeeIds(ArrayList<HashMap<String, String>> attendeeIds) {
-        this.attendeeIds = attendeeIds;
+    public void setAttendees(HashMap<String, String> attendees) {
+        this.attendees = attendees;
     }
 
     /**
@@ -126,10 +128,12 @@ public class GuestList {
      * @param attendeeId The unique identifier of the attendee to add.
      */
     public void addGuestAttendee(String attendeeId) {
-        HashMap<String, String> attendee = new HashMap<String, String>();
-        attendee.put(attendeeId, "maybe");
-        attendeeIds.add(attendee);
+        attendees.put(attendeeId, "maybe");
         listCount++;
+    }
+
+    public void findAttendee(String attendeeId) {
+        attendees.get(attendeeId);
     }
 
     /**
@@ -139,7 +143,7 @@ public class GuestList {
      * @param status     The new status to assign (e.g., "accepted", "declined").
      */
     public void changeAttendeeStatus(String attendeeId, String status) {
-        for (HashMap<String, String> attendee : attendeeIds) {
+        for (HashMap<String, String> attendee : attendees) {
             if (attendee.containsKey(attendeeId)) {
                 attendee.put(attendeeId, status);
                 return;
@@ -154,7 +158,7 @@ public class GuestList {
     public void cancelEntrants() {
         ArrayList<String> toCancel = new ArrayList<>();
 
-        for (HashMap<String, String> attendee : attendeeIds) {
+        for (HashMap<String, String> attendee : attendees) {
             for (String key : attendee.keySet()) {
                 String status = attendee.get(key);
 
@@ -168,4 +172,6 @@ public class GuestList {
             changeAttendeeStatus(attendeeId, "cancelled");
         }
     }
+
+
 }

@@ -22,7 +22,7 @@ public class GuestListTest {
     public void testAddGuestAttendee() {
         guestList.addGuestAttendee("user1");
 
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
         assertEquals(1, attendees.size());
         assertEquals(1, guestList.getListCount().intValue());
 
@@ -39,7 +39,7 @@ public class GuestListTest {
         guestList.addGuestAttendee("user1");
         guestList.changeAttendeeStatus("user1", "confirmed");
 
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
 
         for (HashMap<String, String> attendee : attendees) {
             if (attendee.containsKey("user1")) {
@@ -53,7 +53,7 @@ public class GuestListTest {
         guestList.addGuestAttendee("user1");
         guestList.changeAttendeeStatus("user2", "confirmed"); // Should do nothing
 
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
 
         for (HashMap<String, String> attendee : attendees) {
             if (attendee.containsKey("user1")) {

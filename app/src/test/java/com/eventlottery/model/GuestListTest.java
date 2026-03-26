@@ -23,7 +23,7 @@ public class GuestListTest {
         assertEquals(TEST_EVENT_ID, guestList.getEventId());
         assertEquals(TEST_LIMIT, guestList.getListLimit());
         assertEquals(Integer.valueOf(0), guestList.getListCount());
-        assertTrue(guestList.getAttendeeIds().isEmpty());
+        assertTrue(guestList.getAttendees().isEmpty());
     }
 
     @Test
@@ -40,7 +40,7 @@ public class GuestListTest {
         guestList.addGuestAttendee(attendeeId);
 
         assertEquals(Integer.valueOf(1), guestList.getListCount());
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
         assertEquals(1, attendees.size());
         
         HashMap<String, String> attendeeMap = attendees.get(0);
@@ -56,7 +56,7 @@ public class GuestListTest {
         String newStatus = "accepted";
         guestList.changeAttendeeStatus(attendeeId, newStatus);
         
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
         HashMap<String, String> attendeeMap = attendees.get(0);
         assertEquals(newStatus, attendeeMap.get(attendeeId));
     }
@@ -69,7 +69,7 @@ public class GuestListTest {
         // Attempting to change status for a non-existent attendee should do nothing
         guestList.changeAttendeeStatus("non_existent_user", "accepted");
         
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
         HashMap<String, String> attendeeMap = attendees.get(0);
         assertEquals("maybe", attendeeMap.get(attendeeId));
     }
@@ -85,7 +85,7 @@ public class GuestListTest {
 
         guestList.cancelEntrants();
 
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
 
         assertEquals("cancelled", attendees.get(0).get(user1));
         assertEquals("cancelled", attendees.get(1).get(user2));
@@ -100,7 +100,7 @@ public class GuestListTest {
 
         guestList.cancelEntrants();
 
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
 
         assertEquals("accepted", attendees.get(0).get(user1));
     }
@@ -120,7 +120,7 @@ public class GuestListTest {
 
         guestList.cancelEntrants();
 
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
 
         assertEquals("cancelled", attendees.get(0).get(user1));
         assertEquals("cancelled", attendees.get(1).get(user2));
