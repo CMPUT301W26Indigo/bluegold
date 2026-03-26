@@ -79,6 +79,10 @@ public class Attendee {
                         this.phoneNumber = remote.phoneNumber;
                         this.address = remote.address;
                         this.eventHistory = remote.eventHistory != null ? remote.eventHistory : new ArrayList<>();
+                        // Re-attach listeners to loaded history objects
+                        for (AttendeeEventHistory history : this.eventHistory) {
+                            history.setOnChangeListener(this::saveToFirebase);
+                        }
                         this.waitListed = remote.waitListed != null ? remote.waitListed : new ArrayList<>();
                         this.notification = remote.notification;
                         if (listener != null) listener.onSuccess();
@@ -195,10 +199,12 @@ public class Attendee {
 
     /**
      * Adds an event to the attendee's history and updates Firebase.
+     * Sets up a listener so that attendance status updates are also synced.
      * @param eventID The unique identifier of the event.
      */
     public void addEventToHistory(String eventID) {
         AttendeeEventHistory event = new AttendeeEventHistory(eventID);
+        event.setOnChangeListener(this::saveToFirebase);
         eventHistory.add(event);
         saveToFirebase();
     }
