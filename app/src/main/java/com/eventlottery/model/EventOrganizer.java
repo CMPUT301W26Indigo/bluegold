@@ -127,14 +127,47 @@ public class EventOrganizer extends AbstractUser {
         throw new IllegalArgumentException("No event found with ID: " + eventId);
     }
 
-    public ArrayList<Attendee> getAttendeesOfEvent(String eventId) {
+    /**
+     * Retrieves all attendees for a specific event asynchronously.
+     *
+     * @param eventId The ID of the event.
+     * @param listener Callback to handle the list of retrieved attendees.
+     */
+    public void getAttendeesOfEvent(String eventId, OnAttendeesLoadedListener listener) {
         Event event = findEvent(eventId);
         ArrayList<String> attendeeIds = event.getGuestList().getAttendeeIds();
         ArrayList<Attendee> attendees = new ArrayList<>();
-        for (String attendeeId : attendeeIds) {
-            //attendees.add(findAttendee(attendeeId));
+
+        if (attendeeIds.isEmpty()) {
+            if (listener != null) listener.onSuccess(attendees);
+            return;
         }
-        return attendees;
+
+        final int total = attendeeIds.size();
+        final int[] count = {0};
+
+        for (String attendeeId : attendeeIds) {
+            findAttendee(attendeeId, new Attendee.OnAttendeeLoadedListener() {
+                @Override
+                public void onSuccess(Attendee attendee) {
+                    attendees.add(attendee);
+                    checkProgress();
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.e(TAG, "Error fetching attendee " + attendeeId, e);
+                    checkProgress();
+                }
+
+                private void checkProgress() {
+                    count[0]++;
+                    if (count[0] == total) {
+                        if (listener != null) listener.onSuccess(attendees);
+                    }
+                }
+            });
+        }
     }
 
     /**
