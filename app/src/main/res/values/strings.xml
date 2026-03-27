@@ -280,4 +280,8 @@
     <string name="view_invited_entrants">View Invited Entrants</string>
     <string name="view_confirmed_entrants">View Confirmed Entrants</string>
     <string name="invite_entrants_to_private_event">Invite Entrants to Private Event</string>
+    <string name="phone">Phone</string>
+    <string name="email">Email</string>
+    <string name="invite">Invite</string>
+    <string name="search_users_bar">Search users...</string>
 </resources>

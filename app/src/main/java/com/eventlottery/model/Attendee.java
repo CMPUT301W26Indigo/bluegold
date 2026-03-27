@@ -2,6 +2,10 @@ package com.eventlottery.model;
 
 import android.content.Context;
 import android.provider.Settings;
+import android.util.Log;
+
+import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.installations.FirebaseInstallations;
 import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
@@ -9,8 +13,12 @@ import java.util.ArrayList;
 /**
  * Represents an Attendee in the Event Lottery System.
  * Stores personal information, event history, and waitlist status.
+ * Automatically synchronizes changes with Firebase Firestore.
  */
 public class Attendee {
+    private static final String TAG = "Attendee";
+    private static final String COLLECTION_NAME = "attendees";
+
     private String name;
     private String email;
     private String phoneNumber;
@@ -20,9 +28,12 @@ public class Attendee {
     private ArrayList<String> waitListed;
     private boolean notification;
 
+    @Exclude
+    private final FirebaseFirestore db;
+
     /**
      * Constructs a new Attendee with default values.
-     * Initializes empty lists for event history and waitlists.
+     * Initializes empty lists for event history and waitlists and connects to Firestore.
      */
     public Attendee() {
         this.name = null;
@@ -33,6 +44,60 @@ public class Attendee {
         this.notification = true;
         this.eventHistory = new ArrayList<AttendeeEventHistory>();
         this.waitListed = new ArrayList<String>();
+        this.db = FirebaseFirestore.getInstance();
+    }
+
+    /**
+     * Synchronizes the current state of the Attendee object to Firebase.
+     * Only works if deviceID is set.
+     */
+    public void saveToFirebase() {
+        if (deviceID == null || deviceID.isEmpty()) {
+            Log.w(TAG, "Cannot save attendee: deviceID is null or empty");
+            return;
+        }
+        db.collection(COLLECTION_NAME).document(deviceID).set(this)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Attendee successfully updated on Firebase"))
+                .addOnFailureListener(e -> Log.e(TAG, "Error updating attendee on Firebase", e));
+    }
+
+    /**
+     * Pulls the latest data for this attendee from Firebase using the deviceID.
+     * @param listener Callback for completion.
+     */
+    public void fetchFromFirebase(OnAttendeeLoadedListener listener) {
+        if (deviceID == null || deviceID.isEmpty()) {
+            if (listener != null) listener.onError(new Exception("DeviceID not set"));
+            return;
+        }
+        db.collection(COLLECTION_NAME).document(deviceID).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Attendee remote = documentSnapshot.toObject(Attendee.class);
+                    if (remote != null) {
+                        this.name = remote.name;
+                        this.email = remote.email;
+                        this.phoneNumber = remote.phoneNumber;
+                        this.address = remote.address;
+                        this.eventHistory = remote.eventHistory != null ? remote.eventHistory : new ArrayList<>();
+                        // Re-attach listeners to loaded history objects
+                        for (AttendeeEventHistory history : this.eventHistory) {
+                            history.setOnChangeListener(this::saveToFirebase);
+                        }
+                        this.waitListed = remote.waitListed != null ? remote.waitListed : new ArrayList<>();
+                        this.notification = remote.notification;
+                        if (listener != null) listener.onSuccess();
+                    } else if (listener != null) {
+                        listener.onError(new Exception("Attendee document not found"));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (listener != null) listener.onError(e);
+                });
+    }
+
+    public interface OnAttendeeLoadedListener {
+        void onSuccess();
+        void onError(Exception e);
     }
 
     /**
@@ -44,13 +109,14 @@ public class Attendee {
     }
 
     /**
-     * Sets the attendee's email address after validation.
+     * Sets the attendee's email address after validation and updates Firebase.
      * @param email The email address to set.
      * @throws IllegalArgumentException if the email format is invalid.
      */
     public void setEmail(String email) {
         if (ValidateEmail.isValidEmail(email)) {
             this.email = email;
+            saveToFirebase();
         } else {
             throw new IllegalArgumentException("Invalid email format");
         }
@@ -65,11 +131,12 @@ public class Attendee {
     }
 
     /**
-     * Sets the attendee's name.
+     * Sets the attendee's name and updates Firebase.
      * @param name The name to set.
      */
     public void setName(String name) {
         this.name = name;
+        saveToFirebase();
     }
 
     /**
@@ -81,13 +148,14 @@ public class Attendee {
     }
 
     /**
-     * Sets the attendee's phone number after validation.
+     * Sets the attendee's phone number after validation and updates Firebase.
      * @param phoneNumber The phone number to set.
      * @throws IllegalArgumentException if the phone number format is invalid.
      */
     public void setPhoneNumber(String phoneNumber) {
         if (ValidatePhone.isValidPhoneNumber(phoneNumber)) {
             this.phoneNumber = phoneNumber;
+            saveToFirebase();
         } else {
             throw new IllegalArgumentException("Invalid phone number format");
         }
@@ -95,9 +163,6 @@ public class Attendee {
 
     /**
      * Retrieves the unique Android device ID for this app installation.
-     * Source - https://stackoverflow.com/a/60505449
-     * Posted by Rahul Samaddar
-     * Retrieved 2026-03-09, License - CC BY-SA 4.0
      * @param context The application context.
      * @return The unique Android ID string.
      */
@@ -107,9 +172,6 @@ public class Attendee {
 
     /**
      * Asynchronously retrieves the unique Firebase Installation ID.
-     * This ID is unique to the app installation on the device and remains consistent
-     * unless the app is uninstalled or the device is factory reset.
-     *
      * @return A Task that will resolve to the Firebase Installation ID.
      */
     public static Task<String> getFirebaseId() {
@@ -117,7 +179,7 @@ public class Attendee {
     }
 
     /**
-     * Gets the attendee's unique ID (typically the device ID or Firebase ID).
+     * Gets the attendee's unique ID.
      * @return The attendee ID.
      */
     public String getAttendeeID() {
@@ -125,28 +187,36 @@ public class Attendee {
     }
 
     /**
-     * Adds an event to the attendee's personal waitlist.
+     * Adds an event to the attendee's personal waitlist and updates Firebase.
      * @param eventID The unique identifier of the event.
      */
     public void joinWaitList(String eventID) {
-        waitListed.add(eventID);
+        if (!waitListed.contains(eventID)) {
+            waitListed.add(eventID);
+            saveToFirebase();
+        }
     }
 
     /**
-     * Adds an event to the attendee's history of participated events.
+     * Adds an event to the attendee's history and updates Firebase.
+     * Sets up a listener so that attendance status updates are also synced.
      * @param eventID The unique identifier of the event.
      */
     public void addEventToHistory(String eventID) {
         AttendeeEventHistory event = new AttendeeEventHistory(eventID);
+        event.setOnChangeListener(this::saveToFirebase);
         eventHistory.add(event);
+        saveToFirebase();
     }
 
     /**
-     * Removes an event from the attendee's waitlist.
+     * Removes an event from the attendee's waitlist and updates Firebase.
      * @param eventID The unique identifier of the event.
      */
     public void leaveWaitList(String eventID) {
-        waitListed.remove(eventID);
+        if (waitListed.remove(eventID)) {
+            saveToFirebase();
+        }
     }
 
     /**
@@ -166,11 +236,12 @@ public class Attendee {
     }
 
     /**
-     * Sets the notification preference for the attendee.
+     * Sets the notification preference and updates Firebase.
      * @param notification True to enable notifications, false to disable.
      */
     public void setNotification(boolean notification) {
         this.notification = notification;
+        saveToFirebase();
     }
 
     /**
@@ -190,17 +261,17 @@ public class Attendee {
     }
 
     /**
-     * Sets the attendee's physical address.
+     * Sets the attendee's physical address and updates Firebase.
      * @param address The address to set.
-     * todo Throw IllegalArgumentException for invalid format and ensure it can be converted to coordinates.
      */
     public void setAddress(String address) {
         this.address = address;
+        saveToFirebase();
     }
 
     /**
      * Sets the attendee's unique ID.
-     * @param id The ID to set (e.g., the Firebase Installation ID).
+     * @param id The ID to set.
      */
     public void setAttendeeID(String id) {
         this.deviceID = id;
