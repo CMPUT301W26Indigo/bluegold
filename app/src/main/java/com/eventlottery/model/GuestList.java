@@ -132,8 +132,14 @@ public class GuestList {
         listCount++;
     }
 
-    public void findAttendee(String attendeeId) {
-        attendees.get(attendeeId);
+    /**
+     * Finds the attendee with the given ID in the list.
+     *
+     * @param attendeeId
+     * @return status of attendee or null if none is found
+     */
+    public String findAttendee(String attendeeId) {
+        return attendees.get(attendeeId);
     }
 
     /**
@@ -143,11 +149,11 @@ public class GuestList {
      * @param status     The new status to assign (e.g., "accepted", "declined").
      */
     public void changeAttendeeStatus(String attendeeId, String status) {
-        for (HashMap<String, String> attendee : attendees) {
-            if (attendee.containsKey(attendeeId)) {
-                attendee.put(attendeeId, status);
-                return;
-            }
+        String currentStatus = attendees.get(attendeeId);
+        if (currentStatus != null) {
+            throw new IllegalArgumentException("Attendee with ID " + attendeeId + " is already in the list.");
+        } else {
+            attendees.put(attendeeId, status);
         }
     }
 
@@ -157,20 +163,22 @@ public class GuestList {
      */
     public void cancelEntrants() {
         ArrayList<String> toCancel = new ArrayList<>();
-
-        for (HashMap<String, String> attendee : attendees) {
-            for (String key : attendee.keySet()) {
-                String status = attendee.get(key);
-
-                if (status.equals("declined") || status.equals("maybe")) {
-                    toCancel.add(key);
-                }
-            }
-        }
+        attendees.forEach((attendeeId, status) -> {
+            Boolean b = status.equals("declined") || status.equals("maybe") ? toCancel.add(attendeeId) : null;
+        });
 
         for (String attendeeId : toCancel) {
             changeAttendeeStatus(attendeeId, "cancelled");
         }
+    }
+
+    /**
+     * Creates and returns a list of attendee IDs.
+     *
+     * @return ArrayList of just attendee IDs
+     */
+    public ArrayList<String> getAttendeeIds() {
+        return new ArrayList<>(attendees.keySet());
     }
 
 

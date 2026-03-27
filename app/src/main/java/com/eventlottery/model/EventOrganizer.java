@@ -123,8 +123,17 @@ public class EventOrganizer extends AbstractUser {
 
     public ArrayList<Attendee> getAttendeesOfEvent(String eventId) {
         Event event = findEvent(eventId);
-        return new ArrayList<>();
-        //return event.getGuestList().getAttendees();
+        ArrayList<String> attendeeIds = event.getGuestList().getAttendeeIds();
+        ArrayList<Attendee> attendees = new ArrayList<>();
+        for (String attendeeId : attendeeIds) {
+            attendees.add(findAttendee(attendeeId));
+        }
+        return attendees;
+    }
+
+    public Attendee findAttendee(String attendeeId) {
+        //TODO: Implement this method with Firebase
+        return null;
     }
 
 
