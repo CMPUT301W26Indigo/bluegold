@@ -49,6 +49,7 @@ public class ProfileFragment extends Fragment {
                 binding.etFullName.setText(user.getName());
                 binding.etEmail.setText(user.getEmail());
                 binding.etPhone.setText(user.getPhone());
+                binding.switchNotifications.setChecked(user.isNotificationsEnabled());
             }
 
             @Override
@@ -66,6 +67,7 @@ public class ProfileFragment extends Fragment {
                 currentUser.setName(binding.etFullName.getText().toString());
                 currentUser.setEmail(binding.etEmail.getText().toString());
                 currentUser.setPhone(binding.etPhone.getText().toString());
+                currentUser.setNotificationsEnabled(binding.switchNotifications.isChecked());
 
                 userController.saveUser(currentUser, new UserController.OnUserOperationListener() {
                     @Override
