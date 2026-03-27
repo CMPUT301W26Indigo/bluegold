@@ -60,6 +60,7 @@
     <string name="youve_been_selected">You\'ve been selected! Please confirm your attendance.</string>
     <string name="confirm_attendance">Confirm Attendance</string>
     <string name="decline">Decline</string>
+    <string name="accept">Accept</string>
     <string name="response_needed_by">Response needed by: %1$s</string>
 
     <!-- Notifications -->
@@ -70,6 +71,13 @@
     <string name="notification_not_selected_msg">Unfortunately, you were not selected for %1$s. You\'ve been added to the replacement pool.</string>
     <string name="notification_event_update">Event Update</string>
     <string name="view_event">View Event</string>
+    <string name="empty_notifications">You have no notifications</string>
+    <string name="notification_sent_by">Sent by: %1$s</string>
+    <string name="notification_sent_to">Sent to: %1$s</string>
+    <string name="notification_time">Time: %1$s</string>
+    <string name="notification_sent_success">Notifications sent to %1$s</string>
+    <string name="invitation_accepted">Invitation accepted</string>
+    <string name="invitation_declined">Invitation declined</string>
 
     <!-- Profile -->
     <string name="change_photo">Change Photo</string>
@@ -98,9 +106,14 @@
     <string name="draw_lottery">Draw Lottery</string>
     <string name="view_invited">View Invited</string>
     <string name="confirmed_entrants">Confirmed</string>
-
-
-
+    <string name="send_notifications">Send Notifications</string>
+    <string name="recipient_groups">Recipient Groups</string>
+    <string name="waiting_list">Waiting List</string>
+    <string name="selected">Selected</string>
+    <string name="cancelled">Cancelled</string>
+    <string name="message_title">Message Title</string>
+    <string name="notification_message_hint">Notification Message</string>
+    <string name="send_notification_now">Send Notification Now</string>
 
     <!-- Create Event -->
     <string name="create_event_title">Create New Event</string>
@@ -174,6 +187,7 @@
     <string name="manage_users">Manage Users</string>
     <string name="review_images">Review Images</string>
     <string name="recent_activity">Recent Activity</string>
+    <string name="notification_logs">Notification Logs</string>
 
     <!-- Manage Events (Admin) -->
     <string name="manage_events_title">Manage Events</string>
@@ -231,48 +245,7 @@
     <string name="error_generic">Something went wrong. Please try again.</string>
     <string name="error_location_permission">Location permission required for this event.</string>
     <string name="error_outside_radius">You are outside the required radius for this event.</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
 
-    <string name="lorem_ipsum">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
-        volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
-        dui nec risus. Maecenas non sodales nisi, vel dictum dolor. Class aptent taciti sociosqu ad
-        litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse blandit eleifend
-        diam, vel rutrum tellus vulputate quis. Aliquam eget libero aliquet, imperdiet nisl a,
-        ornare ex. Sed rhoncus est ut libero porta lobortis. Fusce in dictum tellus.\n\n
-        Suspendisse interdum ornare ante. Aliquam nec cursus lorem. Morbi id magna felis. Vivamus
-        egestas, est a condimentum egestas, turpis nisl iaculis ipsum, in dictum tellus dolor sed
-        neque. Morbi tellus erat, dapibus ut sem a, iaculis tincidunt dui. Interdum et malesuada
-        fames ac ante ipsum primis in faucibus. Curabitur et eros porttitor, ultricies urna vitae,
-        molestie nibh. Phasellus at commodo eros, non aliquet metus. Sed maximus nisl nec dolor
-        bibendum, vel congue leo egestas.\n\n
-        Sed interdum tortor nibh, in sagittis risus mollis quis. Curabitur mi odio, condimentum sit
-        amet auctor at, mollis non turpis. Nullam pretium libero vestibulum, finibus orci vel,
-        molestie quam. Fusce blandit tincidunt nulla, quis sollicitudin libero facilisis et. Integer
-        interdum nunc ligula, et fermentum metus hendrerit id. Vestibulum lectus felis, dictum at
-        lacinia sit amet, tristique id quam. Cras eu consequat dui. Suspendisse sodales nunc ligula,
-        in lobortis sem porta sed. Integer id ultrices magna, in luctus elit. Sed a pellentesque
-        est.\n\n
-        Aenean nunc velit, lacinia sed dolor sed, ultrices viverra nulla. Etiam a venenatis nibh.
-        Morbi laoreet, tortor sed facilisis varius, nibh orci rhoncus nulla, id elementum leo dui
-        non lorem. Nam mollis ipsum quis auctor varius. Quisque elementum eu libero sed commodo. In
-        eros nisl, imperdiet vel imperdiet et, scelerisque a mauris. Pellentesque varius ex nunc,
-        quis imperdiet eros placerat ac. Duis finibus orci et est auctor tincidunt. Sed non viverra
-        ipsum. Nunc quis augue egestas, cursus lorem at, molestie sem. Morbi a consectetur ipsum, a
-        placerat diam. Etiam vulputate dignissim convallis. Integer faucibus mauris sit amet finibus
-        convallis.\n\n
-        Phasellus in aliquet mi. Pellentesque habitant morbi tristique senectus et netus et
-        malesuada fames ac turpis egestas. In volutpat arcu ut felis sagittis, in finibus massa
-        gravida. Pellentesque id tellus orci. Integer dictum, lorem sed efficitur ullamcorper,
-        libero justo consectetur ipsum, in mollis nisl ex sed nisl. Donec maximus ullamcorper
-        sodales. Praesent bibendum rhoncus tellus nec feugiat. In a ornare nulla. Donec rhoncus
-        libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
-        vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
-    </string>
     <string name="nav_scan_qr">Scan QR</string>
     <string name="qr_scan_btn_text">Scan</string>
     <string name="view_qr_code">View QR Code</string>
@@ -280,4 +253,8 @@
     <string name="view_invited_entrants">View Invited Entrants</string>
     <string name="view_confirmed_entrants">View Confirmed Entrants</string>
     <string name="invite_entrants_to_private_event">Invite Entrants to Private Event</string>
+    <string name="phone">Phone</string>
+    <string name="email">Email</string>
+    <string name="invite">Invite</string>
+    <string name="search_users_bar">Search users...</string>
 </resources>

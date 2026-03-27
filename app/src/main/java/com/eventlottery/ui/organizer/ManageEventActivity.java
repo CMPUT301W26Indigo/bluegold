@@ -1,9 +1,11 @@
 package com.eventlottery.ui.organizer;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -16,6 +18,8 @@ import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityManageEvent1Binding;
 import com.eventlottery.databinding.ActivityManageEventBinding;
 import com.eventlottery.model.Event;
+import com.eventlottery.services.Base64EncodeDecode;
+import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -83,13 +87,24 @@ public class ManageEventActivity extends AppCompatActivity {
         }
         Log.d("ManageEvent", "Loading URL: " + event.getPosterImageUrl());
         if (event.getPosterImageUrl() != null) {
+            Bitmap bitmap = Base64EncodeDecode.decodeBase64(event.getPosterImageUrl());
             Glide.with(this)
-                    .load(event.getPosterImageUrl())
+                    .load(bitmap)
                     .error(android.R.drawable.stat_notify_error)
                     .into(binding.eventPosterImage);
         }
         binding.eventNameText.setText(event.getName());
         binding.statusChip.setText(event.getStatus());
+        for (String tag : event.getTags()) {
+            Chip chip = new Chip(this);
+            chip.setText(tag);
+            binding.tagChipGroup.addView(chip);
+        }
+
+        if (event.getGeolocationRadius() != null) {
+            binding.geolocationCard.setVisibility(View.VISIBLE);
+            binding.geolocationRadiusText.setText("Within " + event.getGeolocationRadius() + "km radius");
+        }
 
         binding.eventDateText.setText(event.getDate());
         binding.eventTimeText.setText(event.getTime());
@@ -98,8 +113,14 @@ public class ManageEventActivity extends AppCompatActivity {
 
         // Draw lottery button
         binding.btnDrawLottery.setOnClickListener(v -> {
-            Intent intent = new Intent(this, InvitedEntrantsActivity.class);
-            startActivity(new Intent(this, DrawLotteryActivity.class));
+            //code was orginally
+            //Intent intent = new Intent(this, InvitedEntrantsActivity.class);
+            //startActivity(new Intent(this, DrawLotteryActivity.class));
+            //commented out cause it felt weird opening invited entrants
+            //and then backing out to draw lottery, David
+
+            Intent intent = new Intent(this, DrawLotteryActivity.class);
+            //startActivity(new Intent(this, DrawLotteryActivity.class));
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
         });
@@ -130,7 +151,7 @@ public class ManageEventActivity extends AppCompatActivity {
                 .collection("waitlist")
                 .get()
                 .addOnSuccessListener(query -> {
-                    binding.tvWaitlistCount.setText("Waitlist: " + query.size());
+                    binding.tvWaitlistCount.setText(query.size() + " in the waitlist");
                 });
 
         // Get invited count
@@ -148,7 +169,7 @@ public class ManageEventActivity extends AppCompatActivity {
                 .whereEqualTo("status", "confirmed")
                 .get()
                 .addOnSuccessListener(query -> {
-                    binding.tvConfirmedCount.setText(String.valueOf(query.size()));
+                    binding.tvConfirmedCount.setText(query.size() + " / " + event.getCapacity());
                 });
 
 }

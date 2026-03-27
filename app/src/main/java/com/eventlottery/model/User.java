@@ -13,7 +13,7 @@ public class User implements Parcelable {
     private String email;
     private String phone;
     private String profileImageUrl;
-    private boolean notificationsEnabled;
+    private boolean notificationsEnabled = true;
     private String deviceToken;
 
     public User() {

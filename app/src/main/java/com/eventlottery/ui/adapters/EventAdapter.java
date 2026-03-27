@@ -1,5 +1,6 @@
 package com.eventlottery.ui.adapters;
 
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import com.bumptech.glide.Glide;
 import com.eventlottery.R;
 import com.eventlottery.model.Event;
 import com.eventlottery.databinding.ItemEventCardBinding;
+import com.eventlottery.services.Base64EncodeDecode;
 import com.google.android.material.chip.Chip;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,8 +85,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
             //set image
             if (event.getPosterImageUrl() != null) {
+                Bitmap bitmap = Base64EncodeDecode.decodeBase64(event.getPosterImageUrl());
                 Glide.with(binding.getRoot().getContext())
-                    .load(event.getPosterImageUrl())
+                    .load(bitmap)
                     .into(binding.eventPosterImage);
             }
             
