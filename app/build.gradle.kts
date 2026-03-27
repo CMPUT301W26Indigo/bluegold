@@ -4,10 +4,6 @@ plugins {
 }
 
 android {
-    tasks.withType<Test>{
-        useJUnitPlatform()
-    }
-
     namespace = "com.eventlottery"
     compileSdk = 36
 
@@ -48,6 +44,10 @@ android {
             excludes += "/META-INF/NOTICE.md"
             excludes += "/META-INF/LICENSE-notice.md"
         }
+    }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 }
 

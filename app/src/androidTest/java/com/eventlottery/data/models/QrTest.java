@@ -1,4 +1,4 @@
-package com.example.bluegold;
+package com.eventlottery.data.models;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
