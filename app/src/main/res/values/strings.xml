@@ -60,6 +60,7 @@
     <string name="youve_been_selected">You\'ve been selected! Please confirm your attendance.</string>
     <string name="confirm_attendance">Confirm Attendance</string>
     <string name="decline">Decline</string>
+    <string name="accept">Accept</string>
     <string name="response_needed_by">Response needed by: %1$s</string>
 
     <!-- Notifications -->
@@ -70,6 +71,13 @@
     <string name="notification_not_selected_msg">Unfortunately, you were not selected for %1$s. You\'ve been added to the replacement pool.</string>
     <string name="notification_event_update">Event Update</string>
     <string name="view_event">View Event</string>
+    <string name="empty_notifications">You have no notifications</string>
+    <string name="notification_sent_by">Sent by: %1$s</string>
+    <string name="notification_sent_to">Sent to: %1$s</string>
+    <string name="notification_time">Time: %1$s</string>
+    <string name="notification_sent_success">Notifications sent to %1$s</string>
+    <string name="invitation_accepted">Invitation accepted</string>
+    <string name="invitation_declined">Invitation declined</string>
 
     <!-- Profile -->
     <string name="change_photo">Change Photo</string>
@@ -98,9 +106,14 @@
     <string name="draw_lottery">Draw Lottery</string>
     <string name="view_invited">View Invited</string>
     <string name="confirmed_entrants">Confirmed</string>
-
-
-
+    <string name="send_notifications">Send Notifications</string>
+    <string name="recipient_groups">Recipient Groups</string>
+    <string name="waiting_list">Waiting List</string>
+    <string name="selected">Selected</string>
+    <string name="cancelled">Cancelled</string>
+    <string name="message_title">Message Title</string>
+    <string name="notification_message_hint">Notification Message</string>
+    <string name="send_notification_now">Send Notification Now</string>
 
     <!-- Create Event -->
     <string name="create_event_title">Create New Event</string>
@@ -174,6 +187,7 @@
     <string name="manage_users">Manage Users</string>
     <string name="review_images">Review Images</string>
     <string name="recent_activity">Recent Activity</string>
+    <string name="notification_logs">Notification Logs</string>
 
     <!-- Manage Events (Admin) -->
     <string name="manage_events_title">Manage Events</string>

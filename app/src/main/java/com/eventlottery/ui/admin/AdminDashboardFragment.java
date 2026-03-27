@@ -43,6 +43,10 @@ public class AdminDashboardFragment extends Fragment {
         binding.cardReviewImages.setOnClickListener(v -> {
             startActivity(new Intent(getActivity(), ReviewImagesActivity.class));
         });
+
+        binding.cardNotificationLogs.setOnClickListener(v -> {
+            startActivity(new Intent(getActivity(), NotificationLogsActivity.class));
+        });
     }
 
     @Override

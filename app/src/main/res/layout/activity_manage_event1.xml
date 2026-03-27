@@ -398,6 +398,17 @@
         android:layout_marginBottom="46dp">
 
         <Button
+            android:id="@+id/btnSendNotifications"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.App.Button"
+            android:padding="10dp"
+            android:layout_gravity="bottom"
+            android:text="Send Notifications"
+            android:textSize="@dimen/text_lg"
+            app:backgroundTint="@color/primary_blue" />
+
+        <Button
             android:id="@+id/btnExportCSV"
             style="@style/Widget.App.Button"
             android:layout_width="match_parent"

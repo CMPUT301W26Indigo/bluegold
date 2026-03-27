@@ -1,21 +1,23 @@
-package com.eventlottery.ui.entrant;
+package com.eventlottery.ui.admin;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import com.eventlottery.R;
-import com.eventlottery.databinding.ActivityNotificationsBinding;
+import com.eventlottery.databinding.ActivityNotificationLogsBinding;
+import com.eventlottery.ui.entrant.NotificationListFragment;
 
 /**
- * Activity hosting NotificationListFragment in ENTRANT mode.
+ * Activity hosting NotificationListFragment in ADMIN mode.
+ * Supports US 03.08.01.
  */
-public class NotificationsActivity extends AppCompatActivity {
+public class NotificationLogsActivity extends AppCompatActivity {
 
-    private ActivityNotificationsBinding binding;
+    private ActivityNotificationLogsBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityNotificationsBinding.inflate(getLayoutInflater());
+        binding = ActivityNotificationLogsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
@@ -24,14 +26,11 @@ public class NotificationsActivity extends AppCompatActivity {
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
 
-        // The rest of this method was modified by Gemini on March 26, 2026
-        //  when prompted to move the Notifications UI from an activity based
-        //  system to a fragment based system.
         if (savedInstanceState == null) {
-            // Load the reusable fragment in ENTRANT mode
+            // Load the reusable fragment in ADMIN mode
             NotificationListFragment fragment = NotificationListFragment.newInstance(
-                    NotificationListFragment.Mode.ENTRANT, "mock_user_id"
-            ); // TODO: Replace with actual user ID
+                    NotificationListFragment.Mode.ADMIN, null
+            );
             
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment)
