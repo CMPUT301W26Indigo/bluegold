@@ -32,8 +32,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     buildFeatures {
@@ -117,17 +117,27 @@ dependencies {
     implementation("commons-validator:commons-validator:1.9.0")
 }
 
+// This task is only required to generate a folder full of HTML documentation files
 tasks.register<Javadoc>("generateJavadoc") {
+    // 1. Point to your Java source files
     source = fileTree("src/main/java")
+
+    // 2. Build the classpath including the Android SDK and all project dependencies
     val androidJar = files(android.bootClasspath)
     val projectDependencies = configurations.getByName("debugCompileClasspath")
     classpath = androidJar + projectDependencies
+
+    // 3. Set output location
     setDestinationDir(file("${layout.buildDirectory.get()}/outputs/javadoc"))
+
+    // 4. Configure Javadoc options
     (options as StandardJavadocDocletOptions).apply {
         addStringOption("Xdoclint:none", "-quiet")
         links("https://developer.android.com/reference")
         encoding = "UTF-8"
         charSet = "UTF-8"
     }
+
+    // 5. Exclude auto-generated files
     exclude("**/R.java", "**/BuildConfig.java")
 }
