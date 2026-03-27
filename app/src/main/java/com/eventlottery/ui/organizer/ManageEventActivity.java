@@ -1,6 +1,7 @@
 package com.eventlottery.ui.organizer;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +18,7 @@ import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityManageEvent1Binding;
 import com.eventlottery.databinding.ActivityManageEventBinding;
 import com.eventlottery.model.Event;
+import com.eventlottery.services.Base64EncodeDecode;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -85,8 +87,9 @@ public class ManageEventActivity extends AppCompatActivity {
         }
         Log.d("ManageEvent", "Loading URL: " + event.getPosterImageUrl());
         if (event.getPosterImageUrl() != null) {
+            Bitmap bitmap = Base64EncodeDecode.decodeBase64(event.getPosterImageUrl());
             Glide.with(this)
-                    .load(event.getPosterImageUrl())
+                    .load(bitmap)
                     .error(android.R.drawable.stat_notify_error)
                     .into(binding.eventPosterImage);
         }
