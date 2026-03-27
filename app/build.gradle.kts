@@ -58,7 +58,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.gridlayout)
     implementation(libs.recyclerview)
-    implementation(libs.cardview)
+    // implementation(libs.cardview) // Commented out: Unused
 
     // Navigation
     implementation(libs.navigation.fragment)
@@ -107,13 +107,13 @@ dependencies {
 
     // Image Loading - Glide
     implementation(libs.glide)
-    annotationProcessor(libs.compiler)
+    // annotationProcessor(libs.compiler) // Commented out: Unused
 
     // External Integrations & Logic
-    implementation(libs.core)
-    implementation(libs.play.services.location)
-    implementation(libs.gson)
-    implementation(libs.opencsv)
+    // implementation(libs.core) // Commented out: Unused (provided by zxing-android-embedded)
+    // implementation(libs.play.services.location) // Commented out: Unused
+    // implementation(libs.gson) // Commented out: Unused
+    // implementation(libs.opencsv) // Commented out: Unused
     implementation(libs.commons.validator)
 }
 
