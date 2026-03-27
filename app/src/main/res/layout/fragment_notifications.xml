@@ -16,7 +16,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"
-                app:title="Notifications"
+                app:title="@string/notifications_title"
                 app:titleTextColor="@android:color/white" />
 
         </com.google.android.material.appbar.AppBarLayout>
@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="You have no notifications"
+                android:text="@string/empty_notifications"
                 android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                 android:textColor="?android:attr/textColorSecondary"
                 android:visibility="gone"

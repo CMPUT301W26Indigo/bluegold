@@ -99,7 +99,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.Material3.BodySmall"
                 android:textColor="?android:attr/textColorSecondary"
-                tools:text="Timestamp: June 15, 2026 2:00 PM" />
+                tools:text="Time: June 15, 2026 2:00 PM" />
 
         </LinearLayout>
 
@@ -117,7 +117,7 @@
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Decline"
+                android:text="@string/decline"
                 android:textColor="@color/status_flagged_red" />
 
             <com.google.android.material.button.MaterialButton
@@ -126,7 +126,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="Accept" />
+                android:text="@string/accept" />
 
         </LinearLayout>
 

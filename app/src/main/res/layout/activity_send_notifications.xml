@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -14,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:title="Send Notifications"
+            app:title="@string/send_notifications"
             app:titleTextColor="@android:color/white" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -33,7 +34,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Recipient Groups"
+                android:text="@string/recipient_groups"
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_marginBottom="8dp" />
 
@@ -50,7 +51,7 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Waiting List"
+                    android:text="@string/waiting_list"
                     android:checked="true" />
 
                 <com.google.android.material.chip.Chip
@@ -58,20 +59,20 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Selected" />
+                    android:text="@string/selected" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipCancelled"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Cancelled" />
+                    android:text="@string/cancelled" />
             </com.google.android.material.chip.ChipGroup>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Message Title"
+                android:hint="@string/message_title"
                 android:layout_marginBottom="16dp"
                 app:endIconMode="clear_text">
                 <com.google.android.material.textfield.TextInputEditText
@@ -84,7 +85,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Notification Message"
+                android:hint="@string/notification_message_hint"
                 android:layout_marginBottom="24dp"
                 app:counterEnabled="true"
                 app:counterMaxLength="200">
@@ -101,7 +102,7 @@
                 android:id="@+id/btnSend"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Send Notification Now"
+                android:text="@string/send_notification_now"
                 android:padding="12dp" />
 
         </LinearLayout>
