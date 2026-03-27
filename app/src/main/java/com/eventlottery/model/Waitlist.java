@@ -44,6 +44,7 @@ public class Waitlist {
         this.waitlistLimit = waitlistLimit;
     }
 
+    // Fixed with AI: This method was added by Gemini to fix build error in Event
     /**
      * Constructs a Waitlist with a specific capacity limit and registration deadline.
      *
@@ -97,6 +98,7 @@ public class Waitlist {
                         this.attendeeIds = remote.attendeeIds != null ? remote.attendeeIds : new ArrayList<>();
                         this.waitlistLimit = remote.waitlistLimit;
                         this.waitlistCount = remote.waitlistCount;
+                        // Fixed with AI: The next line was added by Gemini to fix build error in Event
                         this.registrationDeadline = remote.registrationDeadline;
                         if (listener != null) listener.onSuccess();
                     } else if (listener != null) {
@@ -180,6 +182,7 @@ public class Waitlist {
         this.waitlistCount = waitlistCount;
     }
 
+    // Fixed with AI: This method was added by Gemini to fix build error in Event
     /**
      * Gets the registration deadline.
      * @return The registration deadline string.
@@ -188,6 +191,7 @@ public class Waitlist {
         return registrationDeadline;
     }
 
+    // Fixed with AI: This method was added by Gemini to fix build error in Event
     /**
      * Sets the registration deadline and updates Firebase.
      * @param registrationDeadline The deadline to set.
