@@ -20,14 +20,6 @@ public class Waitlist {
     private Integer waitlistCount;
     private String registrationDeadline;
 
-    /**
-     * Default no-argument constructor required for Firebase Firestore deserialization.
-     */
-    public Waitlist() {
-        this.attendeeIds = new ArrayList<>();
-        this.waitlistCount = 0;
-    }
-
     @Exclude
     private final FirebaseFirestore db;
 
@@ -53,11 +45,22 @@ public class Waitlist {
     }
 
     /**
+     * Constructs a Waitlist with a specific capacity limit and registration deadline.
+     *
+     * @param eventId              The unique identifier of the event.
+     * @param waitlistLimit       The maximum number of attendees allowed on the waitlist.
+     * @param registrationDeadline The deadline for registration.
+     */
+    public Waitlist(String eventId, Integer waitlistLimit, String registrationDeadline) {
+        this(eventId, waitlistLimit);
+        this.registrationDeadline = registrationDeadline;
+    }
+
+    /**
      * Constructs an unlimited Waitlist for the given event.
      *
      * @param eventId The unique identifier of the event.
      */
-
     public Waitlist(String eventId) {
         this();
         this.eventId = eventId;
@@ -94,6 +97,7 @@ public class Waitlist {
                         this.attendeeIds = remote.attendeeIds != null ? remote.attendeeIds : new ArrayList<>();
                         this.waitlistLimit = remote.waitlistLimit;
                         this.waitlistCount = remote.waitlistCount;
+                        this.registrationDeadline = remote.registrationDeadline;
                         if (listener != null) listener.onSuccess();
                     } else if (listener != null) {
                         listener.onError(new Exception("Waitlist document not found"));
@@ -174,6 +178,23 @@ public class Waitlist {
      */
     public void setWaitlistCount(Integer waitlistCount) {
         this.waitlistCount = waitlistCount;
+    }
+
+    /**
+     * Gets the registration deadline.
+     * @return The registration deadline string.
+     */
+    public String getRegistrationDeadline() {
+        return registrationDeadline;
+    }
+
+    /**
+     * Sets the registration deadline and updates Firebase.
+     * @param registrationDeadline The deadline to set.
+     */
+    public void setRegistrationDeadline(String registrationDeadline) {
+        this.registrationDeadline = registrationDeadline;
+        saveToFirebase();
     }
 
     /**

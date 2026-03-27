@@ -33,14 +33,6 @@ public class GuestList {
     }
 
     /**
-     * Default no-argument constructor required for Firebase Firestore deserialization.
-     */
-    public GuestList() {
-        this.attendeeIds = new ArrayList<>();
-        this.listCount = 0;
-    }
-
-    /**
      * Constructs a GuestList with a specific capacity limit.
      *
      * @param eventId   The unique identifier of the event.
