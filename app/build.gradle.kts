@@ -57,27 +57,27 @@ dependencies {
     implementation(libs.material)
     implementation(libs.constraintlayout)
     implementation(libs.gridlayout)
-    implementation("androidx.recyclerview:recyclerview:1.4.0")
-    implementation("androidx.cardview:cardview:1.0.0")
+    implementation(libs.recyclerview)
+    implementation(libs.cardview)
 
     // Navigation
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
 
     // Activity and Fragment
-    implementation("androidx.activity:activity-ktx:1.13.0")
-    implementation("androidx.fragment:fragment-ktx:1.8.9")
+    implementation(libs.activity.ktx)
+    implementation(libs.fragment.ktx)
 
     // QR Scanning
-    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation(libs.zxing.android.embedded)
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.11.0"))
-    implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-storage")
-    implementation("com.google.firebase:firebase-messaging")
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.messaging)
 
     // FIX: Use compileOnly for Javadoc documentation.
     // This provides the SDK to the IDE tool without breaking the build/indexing.
@@ -85,36 +85,36 @@ dependencies {
 
     // Testing Dependencies
     testImplementation(libs.junit)
-    testImplementation("io.mockk:mockk:1.14.9")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
 
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    androidTestImplementation("androidx.test.espresso:espresso-intents:3.7.0")
+    androidTestImplementation(libs.espresso.intents)
     androidTestImplementation(libs.activity)
-    androidTestImplementation("androidx.test:runner:1.7.0")
-    androidTestImplementation("androidx.test:rules:1.7.0")
-    androidTestImplementation("io.mockk:mockk-android:1.14.9")
+    androidTestImplementation(libs.runner)
+    androidTestImplementation(libs.rules)
+    androidTestImplementation(libs.mockk.android)
 
     // Essential UI & Logic Utilities
-    implementation("androidx.core:core-ktx:1.18.0")
-    implementation("androidx.coordinatorlayout:coordinatorlayout:1.3.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.10.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
+    implementation(libs.core.ktx)
+    implementation(libs.coordinatorlayout)
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.lifecycle.livedata.ktx)
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     // Image Loading - Glide
-    implementation("com.github.bumptech.glide:glide:5.0.5")
-    annotationProcessor("com.github.bumptech.glide:compiler:5.0.5")
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler)
 
     // External Integrations & Logic
-    implementation("com.google.zxing:core:3.5.4")
-    implementation("com.google.android.gms:play-services-location:21.3.0")
-    implementation("com.google.code.gson:gson:2.13.2")
-    implementation("com.opencsv:opencsv:5.12.0")
-    implementation("commons-validator:commons-validator:1.10.1")
+    implementation(libs.core)
+    implementation(libs.play.services.location)
+    implementation(libs.gson)
+    implementation(libs.opencsv)
+    implementation(libs.commons.validator)
 }
 
 // This task is only required to generate a folder full of HTML documentation files
