@@ -16,6 +16,14 @@ public class Attendee extends AbstractUser {
     private boolean notification;
 
     /**
+     * Interface for handling asynchronous attendee loading from Firebase.
+     */
+    public interface OnAttendeeLoadedListener {
+        void onSuccess(Attendee attendee);
+        void onError(Exception e);
+    }
+
+    /**
      * Constructs a new Attendee with default values.
      * Initializes empty lists for event history and waitlists.
      */
@@ -83,4 +91,19 @@ public class Attendee extends AbstractUser {
         return notification;
     }
 
+    /**
+     * Sets the list of event IDs the attendee is waitlisted for.
+     * @param waitListed
+     */
+    public void setWaitListed(ArrayList<String> waitListed) {
+        this.waitListed = waitListed;
+    }
+
+    /**
+     * Sets the list of events the attendee has participated in.
+     * @param eventHistory
+     */
+    public void setEventHistory(ArrayList<AttendeeEventHistory> eventHistory) {
+        this.eventHistory = eventHistory;
+    }
 }

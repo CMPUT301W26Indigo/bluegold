@@ -1,11 +1,16 @@
 package com.eventlottery.model;
 
 import android.graphics.Bitmap;
+import android.util.Log;
+
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class EventOrganizer extends AbstractUser {
+    private static final String TAG = "EventOrganizer";
     private ArrayList<Event> events;
 
     public EventOrganizer() {
@@ -24,6 +29,7 @@ public class EventOrganizer extends AbstractUser {
         events.add(event);
         return event;
     }
+
     /**
      * Creates an event with all parameters.
      * @return created event
@@ -126,15 +132,38 @@ public class EventOrganizer extends AbstractUser {
         ArrayList<String> attendeeIds = event.getGuestList().getAttendeeIds();
         ArrayList<Attendee> attendees = new ArrayList<>();
         for (String attendeeId : attendeeIds) {
-            attendees.add(findAttendee(attendeeId));
+            //attendees.add(findAttendee(attendeeId));
         }
         return attendees;
     }
 
-    public Attendee findAttendee(String attendeeId) {
-        //TODO: Implement this method with Firebase
-        return null;
+    /**
+     * Fetches an attendee from Firebase by ID.
+     * Since Firebase is asynchronous, this uses a listener to return the data once loaded.
+     *
+     * @param attendeeId The ID of the attendee to find.
+     * @param listener Callback to handle the retrieved attendee.
+     */
+    public void findAttendee(String attendeeId, Attendee.OnAttendeeLoadedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("attendees").document(attendeeId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Attendee attendee = documentSnapshot.toObject(Attendee.class);
+                    if (attendee != null) {
+                        attendee.setAttendeeID(attendeeId);
+                        if (listener != null) listener.onSuccess(attendee);
+                    } else if (listener != null) {
+                        listener.onError(new Exception("Attendee document not found"));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (listener != null) listener.onError(e);
+                });
     }
 
-
+    public interface OnAttendeesLoadedListener {
+        void onSuccess(ArrayList<Attendee> attendees);
+        void onError(Exception e);
+    }
 }
