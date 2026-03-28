@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * Stores personal information, event history, and waitlist status.
  * Automatically synchronizes changes with Firebase Firestore.
  */
-public class Attendee {
+public class Attendee extends AbstractUser {
     private static final String TAG = "Attendee";
     private static final String COLLECTION_NAME = "attendees";
 
@@ -32,15 +32,19 @@ public class Attendee {
     private final FirebaseFirestore db;
 
     /**
+     * Interface for handling asynchronous attendee loading from Firebase.
+     */
+    public interface OnAttendeeLoadedListener {
+        void onSuccess(Attendee attendee);
+        void onError(Exception e);
+    }
+
+    /**
      * Constructs a new Attendee with default values.
      * Initializes empty lists for event history and waitlists and connects to Firestore.
      */
     public Attendee() {
-        this.name = null;
-        this.email = null;
-        this.phoneNumber = null;
-        this.address = null;
-        this.deviceID = null;
+        super();
         this.notification = true;
         this.eventHistory = new ArrayList<AttendeeEventHistory>();
         this.waitListed = new ArrayList<String>();
@@ -85,7 +89,7 @@ public class Attendee {
                         }
                         this.waitListed = remote.waitListed != null ? remote.waitListed : new ArrayList<>();
                         this.notification = remote.notification;
-                        if (listener != null) listener.onSuccess();
+//                        if (listener != null) listener.onSuccess();
                     } else if (listener != null) {
                         listener.onError(new Exception("Attendee document not found"));
                     }
@@ -94,13 +98,8 @@ public class Attendee {
                     if (listener != null) listener.onError(e);
                 });
     }
-
-    public interface OnAttendeeLoadedListener {
-        void onSuccess();
-        void onError(Exception e);
-    }
-
     /**
+     * Adds an event to the attendee's personal waitlist.
      * Gets the attendee's email address.
      * @return The email address.
      */
@@ -253,6 +252,14 @@ public class Attendee {
     }
 
     /**
+     * Sets the list of event IDs the attendee is waitlisted for.
+     * @param waitListed
+     */
+    public void setWaitListed(ArrayList<String> waitListed) {
+        this.waitListed = waitListed;
+    }
+
+    /**
      * Gets the attendee's physical address.
      * @return The address string.
      */
@@ -270,10 +277,10 @@ public class Attendee {
     }
 
     /**
-     * Sets the attendee's unique ID.
-     * @param id The ID to set.
+     * Sets the list of events the attendee has participated in.
+     * @param eventHistory
      */
-    public void setAttendeeID(String id) {
-        this.deviceID = id;
+    public void setEventHistory(ArrayList<AttendeeEventHistory> eventHistory) {
+        this.eventHistory = eventHistory;
     }
 }
