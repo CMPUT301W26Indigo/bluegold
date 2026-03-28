@@ -22,16 +22,12 @@ public class GuestListTest {
     public void testAddGuestAttendee() {
         guestList.addGuestAttendee("user1");
 
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
+        HashMap<String, String> attendees = guestList.getAttendees();
         assertEquals(1, attendees.size());
         assertEquals(1, guestList.getListCount().intValue());
 
         // Check default status is "maybe"
-        for (HashMap<String, String> attendee : attendees) {
-            if (attendee.containsKey("user1")) {
-                assertEquals("maybe", attendee.get("user1"));
-            }
-        }
+        assertEquals("maybe", attendees.get("user1"));
     }
 
     @Test
@@ -39,27 +35,17 @@ public class GuestListTest {
         guestList.addGuestAttendee("user1");
         guestList.changeAttendeeStatus("user1", "confirmed");
 
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
+        HashMap<String, String> attendees = guestList.getAttendees();
 
-        for (HashMap<String, String> attendee : attendees) {
-            if (attendee.containsKey("user1")) {
-                assertEquals("confirmed", attendee.get("user1"));
-            }
-        }
+        assertEquals("confirmed", attendees.get("user1"));
+
     }
 
     @Test
     public void testChangeStatusForNonExistentAttendee() {
         guestList.addGuestAttendee("user1");
-        guestList.changeAttendeeStatus("user2", "confirmed"); // Should do nothing
+        assertThrows(IllegalArgumentException.class, () ->guestList.changeAttendeeStatus("user2", "confirmed"));
 
-        ArrayList<HashMap<String, String>> attendees = guestList.getAttendees();
-
-        for (HashMap<String, String> attendee : attendees) {
-            if (attendee.containsKey("user1")) {
-                assertEquals("maybe", attendee.get("user1"));
-            }
-        }
     }
 
     @Test

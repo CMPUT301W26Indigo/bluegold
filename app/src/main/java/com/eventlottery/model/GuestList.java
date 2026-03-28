@@ -70,7 +70,7 @@ public class GuestList {
      * Gets the list of attendees and their current statuses.
      * Each entry is a map where the key is the attendee ID and the value is their status.
      *
-     * @return An ArrayList of HashMaps representing attendees.
+     * @return A HashMap representing attendees where the key is attendee ID and value is status.
      */
     public HashMap<String, String> getAttendees() {
         return attendees;
@@ -79,7 +79,7 @@ public class GuestList {
     /**
      * Sets the list of attendees and their current statuses.
      *
-     * @param attendees An ArrayList of HashMaps representing attendees.
+     * @param attendees A HashMap representing attendees.
      */
     public void setAttendees(HashMap<String, String> attendees) {
         this.attendees = attendees;
@@ -150,8 +150,8 @@ public class GuestList {
      */
     public void changeAttendeeStatus(String attendeeId, String status) {
         String currentStatus = attendees.get(attendeeId);
-        if (currentStatus != null) {
-            throw new IllegalArgumentException("Attendee with ID " + attendeeId + " is already in the list.");
+        if (currentStatus == null) {
+            throw new IllegalArgumentException("Attendee with ID " + attendeeId + " is not in the list.");
         } else {
             attendees.put(attendeeId, status);
         }

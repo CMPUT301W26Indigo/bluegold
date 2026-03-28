@@ -6,7 +6,6 @@ import android.util.Log;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class EventOrganizer extends AbstractUser {
@@ -113,7 +112,7 @@ public class EventOrganizer extends AbstractUser {
     }
 
     /**
-     * Removes an event from the organizer's list of events.
+     * Finds an event from the organizer's list of events.
      * If event with that ID is not found, and exception is thrown
      * @param eventId
      * @return found event
@@ -129,6 +128,8 @@ public class EventOrganizer extends AbstractUser {
 
     /**
      * Retrieves all attendees for a specific event asynchronously.
+     * This function and the following one are from Gemini - "How to properly fetch attendees from Firebase"
+     * 26/03/2026
      *
      * @param eventId The ID of the event.
      * @param listener Callback to handle the list of retrieved attendees.
@@ -150,7 +151,9 @@ public class EventOrganizer extends AbstractUser {
             findAttendee(attendeeId, new Attendee.OnAttendeeLoadedListener() {
                 @Override
                 public void onSuccess(Attendee attendee) {
-                    attendees.add(attendee);
+                    synchronized (attendees) { // Synchronize access to attendees list so that it's thread-safe
+                        attendees.add(attendee);
+                    }
                     checkProgress();
                 }
 
@@ -163,7 +166,7 @@ public class EventOrganizer extends AbstractUser {
                 private void checkProgress() {
                     count[0]++;
                     if (count[0] == total) {
-                        if (listener != null) listener.onSuccess(attendees);
+                        if (listener != null) listener.onSuccess(attendees); // This is where we pass the array of attendee objects into
                     }
                 }
             });
@@ -194,6 +197,52 @@ public class EventOrganizer extends AbstractUser {
                     if (listener != null) listener.onError(e);
                 });
     }
+
+    /**
+     * Sends a notification to all attendees of an event.
+     *
+     * @param eventId
+     * @param message
+     */
+    public void sendNotification(String message, String eventId) {
+        Notification notification = new Notification();
+        notification.setMessage(message);
+        notification.sendNotification();
+        // This method may change depending on how the send notification method is implemented i.e whether it sends to
+        // one user at a time or a list of users (this will determine whether this method needs a loop to send to all users)
+    }
+
+    /**
+     * Triggers lottery system of a specified event without a limit.
+     *
+     * @param eventId
+     */
+    public void lotteryWithoutLimit(String eventId) {
+        Event event = findEvent(eventId);
+        event.LotterySystem();
+    }
+
+    /**
+     * Triggers lottery system of a specified event with a limit.
+     *
+     * @param eventId
+     * @param limit
+     */
+    public void lotteryWithLimit(String eventId, int limit) {
+        Event event = findEvent(eventId);
+        event.LotterySystem(limit);
+    }
+
+    /**
+     * Removes all inactive attendees from a specified event.
+     * @param eventId
+     */
+    public void removeInactiveAttendees(String eventId) {
+        Event event = findEvent(eventId);
+        event.getGuestList().cancelEntrants();
+    }
+
+
 
     public interface OnAttendeesLoadedListener {
         void onSuccess(ArrayList<Attendee> attendees);
