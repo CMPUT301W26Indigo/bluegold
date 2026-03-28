@@ -385,56 +385,64 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Organizer Option Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <Button
+                    android:id="@+id/btnSendNotifications"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button"
+                    android:padding="10dp"
+                    android:text="@string/send_notifications_text"
+                    android:textSize="@dimen/text_lg"
+                    app:backgroundTint="@color/primary_blue" />
+
+                <Button
+                    android:id="@+id/btnExportCSV"
+                    style="@style/Widget.App.Button"
+                    android:layout_width="match_parent"
+                    android:padding="10dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/export_csv"
+                    android:textSize="@dimen/text_lg"
+                    app:backgroundTint="@color/primary_blue" />
+
+                <Button
+                    android:id="@+id/btnDrawLottery"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button"
+                    android:padding="10dp"
+                    android:text="@string/draw_lottery"
+                    android:textSize="@dimen/text_lg"
+                    app:backgroundTint="@color/primary_blue" />
+
+                <Button
+                    android:id="@+id/btnViewInvited"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button"
+                    android:padding="10dp"
+                    android:text="@string/view_invited"
+                    android:textSize="@dimen/text_lg"
+                    app:backgroundTint="@color/primary_blue" />
+
+                <Button
+                    android:id="@+id/btnInvitePrivateEntrants"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button"
+                    android:padding="10dp"
+                    android:text="@string/invite_entrants_to_private_event"
+                    android:textSize="@dimen/text_lg"
+                    app:backgroundTint="@color/primary_blue" />
+            </LinearLayout>
+
         </LinearLayout>
-
     </androidx.core.widget.NestedScrollView>
-
-    <!-- Organizer Option Buttons (Fixed at bottom) -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:orientation="vertical"
-        android:layout_marginBottom="46dp">
-
-        <Button
-            android:id="@+id/btnSendNotifications"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.App.Button"
-            android:padding="10dp"
-            android:layout_gravity="bottom"
-            android:text="Send Notifications"
-            android:textSize="@dimen/text_lg"
-            app:backgroundTint="@color/primary_blue" />
-
-        <Button
-            android:id="@+id/btnExportCSV"
-            style="@style/Widget.App.Button"
-            android:layout_width="match_parent"
-            android:padding="10dp"
-            android:layout_height="wrap_content"
-            android:text="@string/export_csv"
-            android:textSize="@dimen/text_lg"
-            app:backgroundTint="@color/primary_blue" />
-        <Button
-            android:id="@+id/btnDrawLottery"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.App.Button"
-            android:padding="10dp"
-            android:text="@string/draw_lottery"
-            android:textSize="@dimen/text_lg"
-            app:backgroundTint="@color/primary_blue" />
-        <Button
-            android:id="@+id/btnViewInvited"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.App.Button"
-            android:padding="10dp"
-            android:text="@string/view_invited"
-            android:textSize="@dimen/text_lg"
-            app:backgroundTint="@color/primary_blue" />
-    </LinearLayout>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
