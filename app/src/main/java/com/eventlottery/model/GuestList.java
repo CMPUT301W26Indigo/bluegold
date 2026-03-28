@@ -25,21 +25,14 @@ public class GuestList {
     private final FirebaseFirestore db;
 
     /**
-     * Default constructor required for Firestore deserialization.
-     */
-    public GuestList() {
-        this.attendeeIds = new ArrayList<>();
-        this.listCount = 0;
-        this.db = FirebaseFirestore.getInstance();
-    }
-
-    /**
      * Default no-argument constructor required for Firebase Firestore deserialization.
      */
     public GuestList() {
         this.attendees = new HashMap<>();
         this.listCount = 0;
         this.listLimit = null;
+        this.db = FirebaseFirestore.getInstance();
+
     }
 
     /**
@@ -96,7 +89,7 @@ public class GuestList {
                 .addOnSuccessListener(documentSnapshot -> {
                     GuestList remote = documentSnapshot.toObject(GuestList.class);
                     if (remote != null) {
-                        this.attendeeIds = remote.attendeeIds != null ? remote.attendeeIds : new ArrayList<>();
+                        this.attendees = remote.attendees != null ? remote.attendees : new HashMap<>();
                         this.listCount = remote.listCount;
                         this.listLimit = remote.listLimit;
                         if (listener != null) listener.onSuccess();
@@ -207,15 +200,6 @@ public class GuestList {
     }
 
     /**
-     * Updates the status of an existing attendee in the list.
-        HashMap<String, String> attendee = new HashMap<>();
-        attendee.put(attendeeId, "maybe");
-        attendeeIds.add(attendee);
-        listCount = attendeeIds.size();
-        saveToFirebase();
-    }
-
-    /**
      * Updates the status of an existing attendee in the list and updates Firebase.
      *
      * @param attendeeId The unique identifier of the attendee.
@@ -227,42 +211,31 @@ public class GuestList {
             throw new IllegalArgumentException("Attendee with ID " + attendeeId + " is not in the list.");
         } else {
             attendees.put(attendeeId, status);
-        boolean changed = false;
-        for (HashMap<String, String> attendee : attendeeIds) {
-            if (attendee.containsKey(attendeeId)) {
-                attendee.put(attendeeId, status);
-                changed = true;
-                break;
-            }
-        }
-        if (changed) {
             saveToFirebase();
         }
     }
 
-    /**
-     * Change all entrants who did not sign up for the event to the cancelled status
-     * Cancelled attendees are those who have the declined and maybe statuses.
-     */
-    public void cancelEntrants() {
-        ArrayList<String> toCancel = new ArrayList<>();
-        attendees.forEach((attendeeId, status) -> {
-            Boolean b = status.equals("declined") || status.equals("maybe") ? toCancel.add(attendeeId) : null;
-        });
+        /**
+         * Change all entrants who did not sign up for the event to the cancelled status
+         * Cancelled attendees are those who have the declined and maybe statuses.
+         */
+        public void cancelEntrants() {
+            ArrayList<String> toCancel = new ArrayList<>();
+            attendees.forEach((attendeeId, status) -> {
+                Boolean b = status.equals("declined") || status.equals("maybe") ? toCancel.add(attendeeId) : null;
+            });
 
-        for (String attendeeId : toCancel) {
-            changeAttendeeStatus(attendeeId, "cancelled");
+            for (String attendeeId : toCancel) {
+                changeAttendeeStatus(attendeeId, "cancelled");
+            }
         }
-    }
 
-    /**
-     * Creates and returns a list of attendee IDs.
-     *
-     * @return ArrayList of just attendee IDs
-     */
-    public ArrayList<String> getAttendeeIds() {
-        return new ArrayList<>(attendees.keySet());
-    }
-
-
+        /**
+         * Creates and returns a list of attendee IDs.
+         *
+         * @return ArrayList of just attendee IDs
+         */
+        public ArrayList<String> getAttendeeIds() {
+            return new ArrayList<>(attendees.keySet());
+        }
 }

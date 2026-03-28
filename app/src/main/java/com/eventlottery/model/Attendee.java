@@ -89,7 +89,7 @@ public class Attendee extends AbstractUser {
                         }
                         this.waitListed = remote.waitListed != null ? remote.waitListed : new ArrayList<>();
                         this.notification = remote.notification;
-                        if (listener != null) listener.onSuccess();
+//                        if (listener != null) listener.onSuccess();
                     } else if (listener != null) {
                         listener.onError(new Exception("Attendee document not found"));
                     }
@@ -98,12 +98,6 @@ public class Attendee extends AbstractUser {
                     if (listener != null) listener.onError(e);
                 });
     }
-
-    public interface OnAttendeeLoadedListener {
-        void onSuccess();
-        void onError(Exception e);
-    }
-
     /**
      * Adds an event to the attendee's personal waitlist.
      * Gets the attendee's email address.
@@ -266,8 +260,6 @@ public class Attendee extends AbstractUser {
     }
 
     /**
-     * Sets the list of events the attendee has participated in.
-     * @param eventHistory
      * Gets the attendee's physical address.
      * @return The address string.
      */
@@ -285,8 +277,8 @@ public class Attendee extends AbstractUser {
     }
 
     /**
-     * Sets the attendee's unique ID.
-     * @param id The ID to set.
+     * Sets the list of events the attendee has participated in.
+     * @param eventHistory
      */
     public void setEventHistory(ArrayList<AttendeeEventHistory> eventHistory) {
         this.eventHistory = eventHistory;

@@ -27,12 +27,6 @@ public class AttendeeEventHistory {
     }
 
     /**
-     * Default no-argument constructor required for Firebase Firestore deserialization.
-     */
-    public AttendeeEventHistory() {
-    }
-
-    /**
      * Constructs a new AttendeeEventHistory for the given event.
      * Initial attendance status is set to false.
      * @param eventID The unique identifier of the event.

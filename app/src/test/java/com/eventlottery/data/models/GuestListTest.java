@@ -1,12 +1,13 @@
 package com.eventlottery.data.models;
 
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.eventlottery.model.GuestList;
 
-import java.util.ArrayList;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.HashMap;
 
 public class GuestListTest {

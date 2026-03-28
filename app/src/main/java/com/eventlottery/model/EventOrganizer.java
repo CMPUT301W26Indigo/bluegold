@@ -207,7 +207,8 @@ public class EventOrganizer extends AbstractUser {
     public void sendNotification(String message, String eventId) {
         Notification notification = new Notification();
         notification.setMessage(message);
-        notification.sendNotification();
+//        TODO: implement sendNotification method
+//        notification.sendNotification();
         // This method may change depending on how the send notification method is implemented i.e whether it sends to
         // one user at a time or a list of users (this will determine whether this method needs a loop to send to all users)
     }
