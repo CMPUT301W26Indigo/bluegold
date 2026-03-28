@@ -108,6 +108,9 @@ public class OrganizerDashboardFragment extends Fragment {
      */
     private void navigateToManageEvent(Event event) {
         // Intent to manage event activity
+        Intent intent = new Intent(getActivity(), ManageEventActivity.class);
+        intent.putExtra("EVENT_ID", event.getId());
+        startActivity(intent);
     }
 
     /**

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout 
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -46,6 +46,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingBottom="70dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -79,6 +80,21 @@
                     tools:text="Registration Open" />
 
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/tvWaitlistCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/waitlist_count"
+                    android:layout_marginTop="8dp"
+                    android:textSize="24sp" />
+            </LinearLayout>
+
 
             <!-- Tags -->
             <com.google.android.material.chip.ChipGroup
@@ -185,14 +201,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="@dimen/spacing_sm"
-                                android:text="@string/capacity"
+                                android:text="@string/confirmed_entrants"
                                 android:textAppearance="@style/TextAppearance.App.Caption"
                                 android:textAllCaps="true" />
 
                         </LinearLayout>
 
                         <TextView
-                            android:id="@+id/capacityText"
+                            android:id="@+id/tvConfirmedCount"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.App.Title"
@@ -200,11 +216,11 @@
                             tools:text="28 / 50" />
 
                         <TextView
-                            android:id="@+id/spotsAvailableText"
+                            android:id="@+id/tvInvitedCount"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:textAppearance="@style/TextAppearance.App.BodySmall"
-                            tools:text="32 spots available" />
+                            tools:text="32 not confirmed" />
 
                     </LinearLayout>
 
@@ -359,29 +375,11 @@
                         android:layout_marginBottom="@dimen/spacing_sm" />
 
                     <TextView
-                        android:id="@+id/tvWaitlistCount"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:textSize="16sp" />
-
-                    <TextView
                         android:id="@+id/descriptionText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textAppearance="@style/TextAppearance.App.Body"
                         tools:text="Join us for an exciting basketball tournament! Teams will compete in a friendly but competitive environment. All skill levels welcome." />
-
-                    <Button
-                        android:id="@+id/viewQrButton"
-                        style="@style/Widget.App.Button"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/spacing_lg"
-                        android:text="@string/view_qr_code"
-                        android:textSize="@dimen/text_lg"
-                        android:paddingVertical="@dimen/spacing_lg"
-                        app:backgroundTint="@color/primary_blue" />
 
                 </LinearLayout>
 
@@ -391,17 +389,52 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Join Waiting List Button (Fixed at bottom) -->
-    <Button
-        android:id="@+id/btnExportCSV"
-        style="@style/Widget.App.Button"
+    <!-- Organizer Option Buttons (Fixed at bottom) -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_lg"
         android:layout_gravity="bottom"
-        android:text="@string/join_waiting_list"
-        android:textSize="@dimen/text_lg"
-        android:paddingVertical="@dimen/spacing_lg"
-        app:backgroundTint="@color/primary_blue" />
+        android:orientation="vertical"
+        android:layout_marginBottom="46dp">
+
+        <Button
+            android:id="@+id/btnSendNotifications"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.App.Button"
+            android:padding="10dp"
+            android:layout_gravity="bottom"
+            android:text="Send Notifications"
+            android:textSize="@dimen/text_lg"
+            app:backgroundTint="@color/primary_blue" />
+
+        <Button
+            android:id="@+id/btnExportCSV"
+            style="@style/Widget.App.Button"
+            android:layout_width="match_parent"
+            android:padding="10dp"
+            android:layout_height="wrap_content"
+            android:text="@string/export_csv"
+            android:textSize="@dimen/text_lg"
+            app:backgroundTint="@color/primary_blue" />
+        <Button
+            android:id="@+id/btnDrawLottery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.App.Button"
+            android:padding="10dp"
+            android:text="@string/draw_lottery"
+            android:textSize="@dimen/text_lg"
+            app:backgroundTint="@color/primary_blue" />
+        <Button
+            android:id="@+id/btnViewInvited"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.App.Button"
+            android:padding="10dp"
+            android:text="@string/view_invited"
+            android:textSize="@dimen/text_lg"
+            app:backgroundTint="@color/primary_blue" />
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -105,6 +105,14 @@
                 android:backgroundTint="@color/primary_blue" />
 
             <Button
+                android:id="@+id/btnSendNotifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Send Notifications"
+                android:layout_marginBottom="8dp"
+                android:backgroundTint="@color/secondary_purple" />
+
+            <Button
                 android:id="@+id/btnExportCSV"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

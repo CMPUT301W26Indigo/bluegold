@@ -10,8 +10,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.eventlottery.R;
 import com.eventlottery.databinding.ItemNotificationBinding;
 import com.eventlottery.model.Notification;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Adapter for displaying Notifications in a RecyclerView.
@@ -20,17 +22,24 @@ import java.util.List;
 public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder> {
 
     private List<Notification> notifications = new ArrayList<>();
-    private final OnNotificationClickListener listener;
+    private final OnNotificationActionListener actionListener;
+    private boolean isAdminMode = false;
 
     /**
-     * Interface for handling clicks on notification items.
+     * Interface for handling actions on notification items.
      */
-    public interface OnNotificationClickListener {
+    public interface OnNotificationActionListener {
         void onNotificationClick(Notification notification);
+        void onAcceptInvitation(Notification notification);
+        void onDeclineInvitation(Notification notification);
     }
 
-    public NotificationAdapter(OnNotificationClickListener listener) {
-        this.listener = listener;
+    public NotificationAdapter(OnNotificationActionListener actionListener) {
+        this.actionListener = actionListener;
+    }
+
+    public void setAdminMode(boolean adminMode) {
+        this.isAdminMode = adminMode;
     }
 
     /**
@@ -54,7 +63,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     @Override
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
-        holder.bind(notifications.get(position), listener);
+        holder.bind(notifications.get(position), actionListener, isAdminMode);
     }
 
     @Override
@@ -64,15 +73,17 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     static class NotificationViewHolder extends RecyclerView.ViewHolder {
         private final ItemNotificationBinding binding;
+        private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
 
         NotificationViewHolder(ItemNotificationBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
 
-        // The handling of the various types of notifications for the app
-        // was helped created with the assistance of Gemini.
-        void bind(Notification notification, OnNotificationClickListener listener) {
+        // The following method was modified by Gemini on March 26, 2026 when
+        //  prompted to move the Notifications UI from an activity based
+        //  system to a fragment based system.
+        void bind(Notification notification, OnNotificationActionListener actionListener, boolean isAdminMode) {
             binding.tvNotificationMessage.setText(notification.getMessage());
             binding.tvNotificationType.setText(notification.getType());
 
@@ -80,7 +91,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             if (notification.isRead()) {
                 binding.unreadDot.setVisibility(View.GONE);
                 binding.notificationCard.setCardBackgroundColor(
-                        ContextCompat.getColor(itemView.getContext(), R.color.background_white)
+                        ContextCompat.getColor(itemView.getContext(), android.R.color.white)
                 );
             } else {
                 binding.unreadDot.setVisibility(View.VISIBLE);
@@ -89,39 +100,58 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 );
             }
 
-            // 2. Bold Text for Actionable Items (Invitations)
-            // Text remains bold if it's an INVITATION and status is PENDING
-            if ("INVITATION".equals(notification.getType()) && "PENDING".equals(notification.getStatus())) {
-                binding.tvNotificationMessage.setTypeface(null, Typeface.BOLD);
-            } else {
-                binding.tvNotificationMessage.setTypeface(null, Typeface.NORMAL);
-            }
-
-            // 3. Status Badge (ACCEPTED / DECLINED)
-            String status = notification.getStatus();
-            if (status != null && !"PENDING".equals(status)) {
-                binding.tvNotificationStatus.setVisibility(View.VISIBLE);
-                binding.tvNotificationStatus.setText(status);
+            if (isAdminMode) {
+                binding.layoutAdminInfo.setVisibility(View.VISIBLE);
+                binding.layoutActions.setVisibility(View.GONE); // No actions in admin log
+                binding.unreadDot.setVisibility(View.GONE);
                 
-                // Color coding for the badge
-                if ("ACCEPTED".equals(status)) {
-                    binding.tvNotificationStatus.setTextColor(
-                            ContextCompat.getColor(itemView.getContext(), R.color.status_confirmed_green)
-                    );
-                } else if ("DECLINED".equals(status)) {
-                    binding.tvNotificationStatus.setTextColor(
-                            ContextCompat.getColor(itemView.getContext(), R.color.status_flagged_red)
-                    );
+                binding.tvSenderInfo.setText("Sent by: " + (notification.getSenderName() != null ? notification.getSenderName() : "Unknown"));
+                binding.tvRecipientInfo.setText("Sent to: " + (notification.getRecipientName() != null ? notification.getRecipientName() : "Unknown"));
+                
+                if (notification.getTimestamp() != null) {
+                    binding.tvTimestamp.setText("Time: " + dateFormat.format(notification.getTimestamp()));
                 }
             } else {
-                binding.tvNotificationStatus.setVisibility(View.GONE);
+                binding.layoutAdminInfo.setVisibility(View.GONE);
+                
+                // 3. Handle Actionable Invitations (Entrant Mode only)
+                boolean isInvitation = "INVITATION".equals(notification.getType()) || "CO_ORGANIZER_INVITE".equals(notification.getType());
+                boolean isPending = "PENDING".equals(notification.getStatus());
+
+                if (isInvitation && isPending) {
+                    binding.layoutActions.setVisibility(View.VISIBLE);
+                    binding.tvNotificationMessage.setTypeface(null, Typeface.BOLD);
+                    binding.tvNotificationStatus.setVisibility(View.GONE);
+                } else {
+                    binding.layoutActions.setVisibility(View.GONE);
+                    binding.tvNotificationMessage.setTypeface(null, Typeface.NORMAL);
+                    
+                    if (!isPending) {
+                        binding.tvNotificationStatus.setVisibility(View.VISIBLE);
+                        binding.tvNotificationStatus.setText(notification.getStatus());
+                        
+                        if ("ACCEPTED".equals(notification.getStatus())) {
+                            binding.tvNotificationStatus.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.status_confirmed_green));
+                        } else {
+                            binding.tvNotificationStatus.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.status_flagged_red));
+                        }
+                    } else {
+                        binding.tvNotificationStatus.setVisibility(View.GONE);
+                    }
+                }
             }
 
-            // Set item click listener
+            // Set Action Listeners
+            binding.btnAccept.setOnClickListener(v -> {
+                if (actionListener != null) actionListener.onAcceptInvitation(notification);
+            });
+
+            binding.btnDecline.setOnClickListener(v -> {
+                if (actionListener != null) actionListener.onDeclineInvitation(notification);
+            });
+
             itemView.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onNotificationClick(notification);
-                }
+                if (actionListener != null) actionListener.onNotificationClick(notification);
             });
         }
     }

@@ -25,10 +25,22 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.App.Title"
             android:textStyle="bold"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/statusBadge"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="Summer Basketball Tournament" />
+
+
+        <ImageView
+            android:id="@+id/eventPosterImage"
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/statusBadge"
+            app:srcCompat="@drawable/ic_launcher_foreground" />
+
+
 
         <!-- Status Badge -->
         <com.google.android.material.chip.Chip
@@ -37,8 +49,8 @@
             android:layout_height="wrap_content"
             android:textColor="@color/text_white"
             app:chipBackgroundColor="@color/status_open_green"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="Open" />
 
         <!-- Date and Time -->
@@ -48,13 +60,13 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
             android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/eventNameText">
+            app:layout_constraintTop_toBottomOf="@id/eventPosterImage">
 
             <ImageView
                 android:layout_width="@dimen/icon_sm"
                 android:layout_height="@dimen/icon_sm"
-                android:src="@android:drawable/ic_menu_my_calendar"
                 android:contentDescription="@string/event_date"
+                android:src="@android:drawable/ic_menu_my_calendar"
                 app:tint="@color/text_secondary" />
 
             <TextView
@@ -79,8 +91,8 @@
             <ImageView
                 android:layout_width="@dimen/icon_sm"
                 android:layout_height="@dimen/icon_sm"
-                android:src="@android:drawable/ic_dialog_map"
                 android:contentDescription="@string/location"
+                android:src="@android:drawable/ic_dialog_map"
                 app:tint="@color/text_secondary" />
 
             <TextView
@@ -105,8 +117,8 @@
             <ImageView
                 android:layout_width="@dimen/icon_sm"
                 android:layout_height="@dimen/icon_sm"
-                android:src="@android:drawable/ic_menu_agenda"
                 android:contentDescription="@string/capacity"
+                android:src="@android:drawable/ic_menu_agenda"
                 app:tint="@color/text_secondary" />
 
             <TextView
@@ -154,14 +166,15 @@
                 android:id="@+id/geolocationBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/text_orange_900"
                 android:visibility="gone"
                 app:chipBackgroundColor="@color/background_orange_50"
-                android:textColor="@color/text_orange_900"
                 app:chipStrokeColor="@color/border_orange_200"
                 tools:text="Within 10km"
                 tools:visibility="visible" />
 
         </LinearLayout>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

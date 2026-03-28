@@ -1,5 +1,10 @@
 package com.eventlottery.ui.organizer;
 
+import static com.eventlottery.services.Base64EncodeDecode.encodeImageToBase64;
+
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -19,9 +24,22 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.ByteArrayOutputStream;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import android.util.Base64;
 
 
 /**
@@ -56,6 +74,10 @@ public class CreateEventActivity extends AppCompatActivity {
     private EventController eventController = new EventController();
     private Uri selectedImageUri;
     private String organizerId;
+    private FirebaseStorage storage = FirebaseStorage.getInstance();
+    private StorageReference storageRef = storage.getReference();
+
+
 
 
     /**
@@ -68,23 +90,39 @@ public class CreateEventActivity extends AppCompatActivity {
             registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
                     selectedImageUri = uri;
-                    
+
+                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     // Show the image in the ImageView
                     binding.posterImageView.setImageURI(uri);
                     
-                    // Make the ImageView fill the card
+                    // Remove the grey tint so the actual image shows
+                    binding.posterImageView.setImageTintList(null);
+
+                    binding.posterImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+                    // Adjust the ImageView to be larger but leave room for the button
                     ViewGroup.LayoutParams params = binding.posterImageView.getLayoutParams();
                     params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                    params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                    params.height = (int) (130 * getResources().getDisplayMetrics().density);
                     binding.posterImageView.setLayoutParams(params);
-                    binding.posterImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     
-                    // Hide the placeholder text and button
+                    // Hide placeholder text but KEEP the button visible
                     binding.uploadTitleText.setVisibility(View.GONE);
                     binding.uploadSubtitleText.setVisibility(View.GONE);
-                    binding.browseFilesButton.setVisibility(View.GONE);
+
+                    // Update the button text so the user knows they can change it
+                    binding.browseFilesButton.setText("Change Poster");
                 }
             });
+
+    private void uploadImage(Event event, Uri imageUri) {
+        if (imageUri != null) {
+            String base64Image = encodeImageToBase64(this,imageUri);
+            if (base64Image != null) {
+                event.setPosterImageUrl(base64Image);
+            }
+        }
+    }
 
     /**
      * Called when the activity is first created.
@@ -100,7 +138,7 @@ public class CreateEventActivity extends AppCompatActivity {
         /* OrganizerId commented out for now as login not fully implemented
         organizerId = getIntent().getStringExtra("ORGANIZER_ID");
         if (organizerId == null) {
-            organizerId = "test_organizer_id";
+            makeToast()
         } */
 
         setupUI();
@@ -226,7 +264,11 @@ public class CreateEventActivity extends AppCompatActivity {
             event.setLocation(binding.locationEditText.getText().toString());
             event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());
             if (binding.geolocationSwitch.isChecked()) {
-                event.setGeolocationRadius(Integer.valueOf(binding.radiusEditText.getText().toString()));
+                try {
+                    event.setGeolocationRadius(Integer.valueOf(binding.radiusEditText.getText().toString()));
+                } catch (NumberFormatException e) {
+                    event.setGeolocationRadius(null);
+                }
             }
 
             List<String> selectedTags = new ArrayList<>();
@@ -236,13 +278,7 @@ public class CreateEventActivity extends AppCompatActivity {
             }
             event.setTags(selectedTags);
 
-            try {
-                if (selectedImageUri != null) {
-                    event.setPosterImageUrl(selectedImageUri.toString());
-                }
-            } catch (Exception e) {
-                event.setPosterImageUrl(null);
-            }
+            uploadImage(event, selectedImageUri);
 
             try {
                 event.setPrice(Double.parseDouble(binding.priceEditText.getText().toString()));
