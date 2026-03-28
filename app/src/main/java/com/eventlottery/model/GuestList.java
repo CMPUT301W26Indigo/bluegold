@@ -16,7 +16,8 @@ public class GuestList {
     private static final String COLLECTION_NAME = "guestlists";
 
     private String eventId;
-    private ArrayList<HashMap<String, String>> attendeeIds;
+    //private ArrayList<HashMap<String, String>> attendeeIds;
+    private HashMap<String, String> attendees; // <attendeeId, status>
     private Integer listCount;
     private Integer listLimit;
 
@@ -36,8 +37,9 @@ public class GuestList {
      * Default no-argument constructor required for Firebase Firestore deserialization.
      */
     public GuestList() {
-        this.attendeeIds = new ArrayList<>();
+        this.attendees = new HashMap<>();
         this.listCount = 0;
+        this.listLimit = null;
     }
 
     /**
@@ -49,6 +51,8 @@ public class GuestList {
     public GuestList(String eventId, Integer listLimit) {
         this();
         this.eventId = eventId;
+        this.attendees = new HashMap<String, String>();
+        this.listCount = 0;
         this.listLimit = listLimit;
     }
 
@@ -60,6 +64,8 @@ public class GuestList {
     public GuestList(String eventId) {
         this();
         this.eventId = eventId;
+        this.attendees = new HashMap<String, String>();
+        this.listCount = 0;
         this.listLimit = null;
     }
 
@@ -129,19 +135,19 @@ public class GuestList {
      * Gets the list of attendees and their current statuses.
      * Each entry is a map where the key is the attendee ID and the value is their status.
      *
-     * @return An ArrayList of HashMaps representing attendees.
+     * @return A HashMap representing attendees where the key is attendee ID and value is status.
      */
-    public ArrayList<HashMap<String, String>> getAttendeeIds() {
-        return attendeeIds;
+    public HashMap<String, String> getAttendees() {
+        return attendees;
     }
 
     /**
-     * Sets the attendee IDs and updates the list count.
-     * @param attendeeIds The list of attendee maps.
+     * Sets the list of attendees and their current statuses.
+     *
+     * @param attendees A HashMap representing attendees.
      */
-    public void setAttendeeIds(ArrayList<HashMap<String, String>> attendeeIds) {
-        this.attendeeIds = attendeeIds;
-        this.listCount = attendeeIds != null ? attendeeIds.size() : 0;
+    public void setAttendees(HashMap<String, String> attendees) {
+        this.attendees = attendees;
     }
 
     /**
@@ -186,6 +192,22 @@ public class GuestList {
      * @param attendeeId The unique identifier of the attendee to add.
      */
     public void addGuestAttendee(String attendeeId) {
+        attendees.put(attendeeId, "maybe");
+        listCount++;
+    }
+
+    /**
+     * Finds the attendee with the given ID in the list.
+     *
+     * @param attendeeId
+     * @return status of attendee or null if none is found
+     */
+    public String findAttendee(String attendeeId) {
+        return attendees.get(attendeeId);
+    }
+
+    /**
+     * Updates the status of an existing attendee in the list.
         HashMap<String, String> attendee = new HashMap<>();
         attendee.put(attendeeId, "maybe");
         attendeeIds.add(attendee);
@@ -200,6 +222,11 @@ public class GuestList {
      * @param status     The new status to assign (e.g., "accepted", "declined").
      */
     public void changeAttendeeStatus(String attendeeId, String status) {
+        String currentStatus = attendees.get(attendeeId);
+        if (currentStatus == null) {
+            throw new IllegalArgumentException("Attendee with ID " + attendeeId + " is not in the list.");
+        } else {
+            attendees.put(attendeeId, status);
         boolean changed = false;
         for (HashMap<String, String> attendee : attendeeIds) {
             if (attendee.containsKey(attendeeId)) {
@@ -219,19 +246,23 @@ public class GuestList {
      */
     public void cancelEntrants() {
         ArrayList<String> toCancel = new ArrayList<>();
-
-        for (HashMap<String, String> attendee : attendeeIds) {
-            for (String key : attendee.keySet()) {
-                String status = attendee.get(key);
-
-                if (status.equals("declined") || status.equals("maybe")) {
-                    toCancel.add(key);
-                }
-            }
-        }
+        attendees.forEach((attendeeId, status) -> {
+            Boolean b = status.equals("declined") || status.equals("maybe") ? toCancel.add(attendeeId) : null;
+        });
 
         for (String attendeeId : toCancel) {
             changeAttendeeStatus(attendeeId, "cancelled");
         }
     }
+
+    /**
+     * Creates and returns a list of attendee IDs.
+     *
+     * @return ArrayList of just attendee IDs
+     */
+    public ArrayList<String> getAttendeeIds() {
+        return new ArrayList<>(attendees.keySet());
+    }
+
+
 }
