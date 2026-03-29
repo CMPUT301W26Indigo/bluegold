@@ -1,19 +1,8 @@
-package com.eventlottery.data.models;
+package com.eventlottery.model;
 
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-
-import android.util.Log;
-
-import androidx.annotation.NonNull;
-
-import com.eventlottery.model.Attendee;
-import com.eventlottery.model.AttendeeEventHistory;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.installations.FirebaseInstallations;
-
 import java.util.ArrayList;
 
 public class AttendeeTest {
@@ -96,6 +85,4 @@ public class AttendeeTest {
         attendee.setAttendeeID("harry123");
         assertEquals("harry123", attendee.getAttendeeID());
     }
-
-
 }
