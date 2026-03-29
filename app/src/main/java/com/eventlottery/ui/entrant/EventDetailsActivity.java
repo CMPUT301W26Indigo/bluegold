@@ -1,16 +1,21 @@
 package com.eventlottery.ui.entrant;
 
 import android.content.Intent;
-import android.os.Build;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.TextView;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.eventlottery.R;
+import com.bumptech.glide.Glide;
+import com.eventlottery.databinding.ActivityEventDetailsBinding;
 import com.eventlottery.model.Event;
+import com.eventlottery.services.Base64EncodeDecode;
 import com.eventlottery.ui.qr.QRDisplayActivity;
+import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
@@ -24,7 +29,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * - Display geolocation requirements
  * - Join/Leave waitlist button
  * - Show capacity and spots available
- * 
+ *
  * TODO: Implement full functionality
  * - Load event data from Intent extras
  * - Display event poster with Glide
@@ -32,17 +37,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * - Check geolocation requirements
  */
 public class EventDetailsActivity extends AppCompatActivity {
-    
+
+    private @NonNull ActivityEventDetailsBinding binding;
     private Event event;
     private String eventId;
-    private TextView tvEventName, tvDescription, tvWaitlistCount;
-    private Button btnJoinWaitlist;
     private FirebaseFirestore db;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_event_details);
+        binding = ActivityEventDetailsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         // Get event from Intent
         if (getIntent().getData() != null) {
@@ -51,43 +56,86 @@ public class EventDetailsActivity extends AppCompatActivity {
             eventId = getIntent().getStringExtra("EVENT_ID");  // get ID normally
         }
 
-        // Use type-safe getParcelableExtra for API 33+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            event = getIntent().getParcelableExtra("EVENT", Event.class);
-        } else {
-            // Suppress warning for older APIs as it's unavoidable there
-            //noinspection deprecation
-            event = getIntent().getParcelableExtra("EVENT");
-        }
-        // TODO: Setup views and load event data
-        setupToolbar();
-        loadEventDetails();
+        // Initialize Firebase
+        db = FirebaseFirestore.getInstance();
 
-        // When the viewQR button is pressed, take us to the QR page
-        Button viewQrButton = findViewById(R.id.viewQrButton);
-        viewQrButton.setOnClickListener(v -> {
-            Intent intent = new Intent(EventDetailsActivity.this, QRDisplayActivity.class);
-            // GO BACK AND FIX THIS LUCIA!!!
-            intent.putExtra("EVENT_ID", event.getId());
-            startActivity(intent);
-        });
+        db.collection("events").document(eventId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        event = documentSnapshot.toObject(Event.class);
+                        setupUI();
+                        loadEventStats();
+                    } else {
+                        Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                });
     }
-    
+
     private void setupToolbar() {
         // TODO: Setup toolbar with back button
     }
-    
-    private void loadEventDetails() {
-        // TODO: Load event details from database if not passed in Intent
-        // TODO: Display event information
-        // TODO: Setup join waitlist button
 
-        // JUST ADDED, PLEASE REVIEW
+    private void setupUI() {
+        setSupportActionBar(binding.toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            binding.toolbar.setNavigationOnClickListener(v -> finish());
+        }
+        Log.d("ManageEvent", "Loading URL: " + event.getPosterImageUrl());
+        if (event.getPosterImageUrl() != null) {
+            Bitmap bitmap = Base64EncodeDecode.decodeBase64(event.getPosterImageUrl());
+            Glide.with(this)
+                    .load(bitmap)
+                    .error(android.R.drawable.stat_notify_error)
+                    .into(binding.eventPosterImage);
+        }
+        binding.eventNameText.setText(event.getName());
+        binding.statusChip.setText(event.getStatus());
+        for (String tag : event.getTags()) {
+            Chip chip = new Chip(this);
+            chip.setText(tag);
+            binding.tagChipGroup.addView(chip);
+        }
+
+        if (event.getGeolocationRadius() != null) {
+            binding.geolocationCard.setVisibility(View.VISIBLE);
+            binding.geolocationRadiusText.setText("Entry Limited Within " + event.getGeolocationRadius() + "km radius");
+        }
+
+        binding.eventDateText.setText(event.getDate());
+        binding.eventTimeText.setText(event.getTime());
+        binding.descriptionText.setText(event.getDescription());
+        binding.locationNameText.setText(event.getLocation());
+        // TODO: Change the waitlist button's appearance depending on whether or not the lottery has been drawn and people are being waitlisted
+        // Join Waitlist button
+        if(!event.isPrivate()) {
+            binding.joinWaitlistBtn.setOnClickListener(v -> {
+//                event.addAttendeeToWaitlist(attendeeId);
+            });
+
+            // View QR button
+            binding.viewQrButton.setOnClickListener(v -> {
+                Intent intent = new Intent(this, QRDisplayActivity.class);
+                intent.putExtra("EVENT_ID", eventId);
+                startActivity(intent);
+            });
+        }
+    }
+
+    private void loadEventStats() {
+        // Get waitlist count and fill out capacity card in UI
         db.collection("events").document(eventId)
                 .collection("waitlist")
                 .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    tvWaitlistCount.setText("Waiting list: " + querySnapshot.size() + " people");
+                .addOnSuccessListener(query -> {
+                    binding.tvWaitlistCount.setText(query.size() + " in the waitlist");
+                    binding.capacityText.setText(query.size() + " / " + event.getCapacity());
+                    binding.spotsAvailableText.setText(event.getCapacity() - query.size() + " spots available");
                 });
+
+
+
     }
 }
