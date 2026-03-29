@@ -41,6 +41,7 @@ public class QrTest {
         assertTrue(qrCode.getWidth() > 0);
         assertTrue(qrCode.getHeight() > 0);
     }
+
     @Test
     public void testNoTwoEventsTheSame() {
         Event event2 = new Event();

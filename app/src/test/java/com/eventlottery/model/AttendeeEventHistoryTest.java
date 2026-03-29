@@ -8,6 +8,7 @@ public class AttendeeEventHistoryTest {
     @Test
     public void testConstructor() {
         String eventId = "test_event_123";
+
         AttendeeEventHistory history = new AttendeeEventHistory(eventId);
         
         assertEquals("Event ID should match constructor argument", eventId, history.getEventID());
@@ -17,7 +18,7 @@ public class AttendeeEventHistoryTest {
     @Test
     public void testUpdateAttendance() {
         AttendeeEventHistory history = new AttendeeEventHistory("test_event");
-        
+
         assertFalse("Initial attendance should be false", history.isAttended());
         
         history.updateAttendance();

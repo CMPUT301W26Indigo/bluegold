@@ -3,8 +3,6 @@ package com.eventlottery.model;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GuestListTest {
