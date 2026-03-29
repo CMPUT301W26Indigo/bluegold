@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityEventDetailsBinding;
 import com.eventlottery.model.Event;
 import com.eventlottery.services.Base64EncodeDecode;
@@ -108,11 +109,20 @@ public class EventDetailsActivity extends AppCompatActivity {
         binding.eventTimeText.setText(event.getTime());
         binding.descriptionText.setText(event.getDescription());
         binding.locationNameText.setText(event.getLocation());
-        // TODO: Change the waitlist button's appearance depending on whether or not the lottery has been drawn and people are being waitlisted
-        // Join Waitlist button
+
+        // Buttons only appear if event is not private
         if(!event.isPrivate()) {
             binding.joinWaitlistBtn.setOnClickListener(v -> {
-//                event.addAttendeeToWaitlist(attendeeId);
+                // Waitlist btn
+                if(binding.joinWaitlistBtn.getText() == "Join Waiting List") {
+                    // TODO Add attendee
+                    binding.joinWaitlistBtn.setBackgroundColor(getColor(com.eventlottery.R.color.status_open_green));
+                    binding.joinWaitlistBtn.setText("Leave Waiting List");
+                } else {
+                    // TODO Delete Attendee
+                    binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.primary_blue));
+                    binding.joinWaitlistBtn.setText("Join Waiting List");
+                }
             });
 
             // View QR button

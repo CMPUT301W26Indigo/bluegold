@@ -1,12 +1,13 @@
 package com.eventlottery.ui.qr;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventlottery.databinding.ActivityQrDisplayBinding;
 import com.eventlottery.model.Event;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * QRDisplayActivity - View for viewing QR codes.
@@ -15,12 +16,24 @@ import com.eventlottery.model.Event;
 public class QRDisplayActivity extends AppCompatActivity {
 
     private ActivityQrDisplayBinding binding;
+    private FirebaseFirestore db;
+    private String eventId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityQrDisplayBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        db = FirebaseFirestore.getInstance();
+        eventId = getIntent().getStringExtra("EVENT_ID");
+
+        if (eventId == null) {
+            Toast.makeText(this, "Event ID missing", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
         setupUI();
     }
 
@@ -37,10 +50,27 @@ public class QRDisplayActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
-        Event event = getIntent().getParcelableExtra("EVENT");
-        Bitmap qrBitmap = event.generateQRBitmap(event.getQrCodeUrl());
-        if (qrBitmap != null) {
-            binding.ivQr.setImageBitmap(qrBitmap);
-        }
+
+        db.collection("events").document(eventId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Event event = documentSnapshot.toObject(Event.class);
+
+                        if (event != null) {
+                            if (event.getQrCodeUrl() == null) {
+                                event.setQrCodeUrl("https://eventlottery.app/event/" + event.getId());
+                            }
+                            binding.ivQr.setImageBitmap(event.generateQRBitmap(event.getQrCodeUrl()));
+                        }
+                    } else {
+                        Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error loading event", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
     }
 }
