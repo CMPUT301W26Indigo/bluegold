@@ -1,4 +1,4 @@
-package com.eventlottery.data.models;
+package com.eventlottery.model;
 
 import static org.junit.Assert.assertEquals;
 
