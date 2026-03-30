@@ -60,12 +60,17 @@ public class EventController {
      * Adds a new event to Firestore.
      */
     public void addEvent(Event event, OnEventOperationListener listener) {
-        db.collection(COLLECTION_NAME)
-                .add(event)
-                .addOnSuccessListener(documentReference -> {
-                    event.setId(documentReference.getId());
-                    listener.onSuccess();
-                })
+
+        DocumentReference docRef =
+                db.collection(COLLECTION_NAME).document();
+
+        String eventId = docRef.getId();
+
+        event.setId(eventId);
+        event.setQrCodeUrl("eventlottery://event/" + eventId);
+
+        docRef.set(event)
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
     }
 
