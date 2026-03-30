@@ -58,9 +58,6 @@ public class QRDisplayActivity extends AppCompatActivity {
                         Event event = documentSnapshot.toObject(Event.class);
 
                         if (event != null) {
-                            if (event.getQrCodeUrl() == null) {
-                                event.setQrCodeUrl("https://eventlottery.app/event/" + event.getId());
-                            }
                             binding.ivQr.setImageBitmap(event.generateQRBitmap(event.getQrCodeUrl()));
                         }
                     } else {
