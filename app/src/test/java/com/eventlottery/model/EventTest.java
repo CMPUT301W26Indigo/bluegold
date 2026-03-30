@@ -1,4 +1,4 @@
-package com.eventlottery.data.models;
+package com.eventlottery.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -7,11 +7,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.graphics.Bitmap;
-
-import com.eventlottery.model.Attendee;
-import com.eventlottery.model.Event;
-import com.eventlottery.model.GuestList;
-import com.eventlottery.model.Waitlist;
 
 import org.junit.Before;
 import org.junit.Test;

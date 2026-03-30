@@ -3,8 +3,6 @@ package com.eventlottery.model;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class GuestListTest {
@@ -75,6 +73,7 @@ public class GuestListTest {
         HashMap<String, String> attendees = guestList.getAttendees();
         assertEquals("maybe", attendees.get(attendeeId));
     }
+
     @Test
     public void testCancelEntrants_ChangesMaybeAndDeclined() {
         String user1 = "user1";
@@ -129,4 +128,73 @@ public class GuestListTest {
         assertEquals("accepted", attendees.get(user3));
     }
 
+    // The next two tests existed in a duplicate file under data.models.
+    //  The files were consolidated into one.
+    @Test
+    public void testGetListCount() {
+        assertEquals(0, guestList.getListCount().intValue());
+
+        guestList.addGuestAttendee("user1");
+        assertEquals(1, guestList.getListCount().intValue());
+
+        guestList.addGuestAttendee("user2");
+        assertEquals(2, guestList.getListCount().intValue());
+    }
+
+    @Test
+    public void testGuestListWithLimit() {
+        GuestList limitedList = new GuestList("test1", 5);
+        assertEquals(5, limitedList.getListLimit().intValue());
+
+        limitedList.addGuestAttendee("user1");
+        assertEquals(1, limitedList.getListCount().intValue());
+    }
+
+    /*
+    // These tests were in the duplicate file, but were preserved in case
+    //  these tests contained tests that weren't in this file.
+    @Test
+    public void testAddGuestAttendee() {
+        guestList.addGuestAttendee("user1");
+
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+        assertEquals(1, attendees.size());
+        assertEquals(1, guestList.getListCount().intValue());
+
+        // Check default status is "maybe"
+        for (HashMap<String, String> attendee : attendees) {
+            if (attendee.containsKey("user1")) {
+                assertEquals("maybe", attendee.get("user1"));
+            }
+        }
+    }
+
+    @Test
+    public void testChangeAttendeeStatus() {
+        guestList.addGuestAttendee("user1");
+        guestList.changeAttendeeStatus("user1", "confirmed");
+
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+
+        for (HashMap<String, String> attendee : attendees) {
+            if (attendee.containsKey("user1")) {
+                assertEquals("confirmed", attendee.get("user1"));
+            }
+        }
+    }
+
+    @Test
+    public void testChangeStatusForNonExistentAttendee() {
+        guestList.addGuestAttendee("user1");
+        guestList.changeAttendeeStatus("user2", "confirmed"); // Should do nothing
+
+        ArrayList<HashMap<String, String>> attendees = guestList.getAttendeeIds();
+
+        for (HashMap<String, String> attendee : attendees) {
+            if (attendee.containsKey("user1")) {
+                assertEquals("maybe", attendee.get("user1"));
+            }
+        }
+    }
+     */
 }

@@ -1,4 +1,4 @@
-package com.eventlottery.data.models;
+package com.eventlottery.model;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -19,7 +19,6 @@ import android.graphics.Bitmap;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.intent.matcher.IntentMatchers;
 
-import com.eventlottery.model.Event;
 import com.eventlottery.ui.qr.QRScannerActivity;
 
 import org.junit.Before;
@@ -42,6 +41,7 @@ public class QrTest {
         assertTrue(qrCode.getWidth() > 0);
         assertTrue(qrCode.getHeight() > 0);
     }
+
     @Test
     public void testNoTwoEventsTheSame() {
         Event event2 = new Event();

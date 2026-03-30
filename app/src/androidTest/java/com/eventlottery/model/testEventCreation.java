@@ -1,4 +1,5 @@
-package com.eventlottery.data.models;
+package com.eventlottery.model;
+
 import com.eventlottery.R;
 import com.eventlottery.ui.organizer.OrganizerDashboardActivity;
 
