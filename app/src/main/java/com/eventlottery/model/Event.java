@@ -163,12 +163,6 @@ public class Event {
         this.guestList = (capacity != 0) ? new GuestList(id, capacity) : new GuestList(id);
     }
 
-    // Simplified constructor for basic events
-    // I do not believe we need this
-//    public Event(String id, String name, String description, String organizerId, String date, String time, String location, ArrayList<String> tags, boolean geolocationEnabled, Integer geolocationRadius, String qrCodeUrl) {
-//        this(id, name, description, organizerId, date, time, location, tags, geolocationEnabled, geolocationRadius, qrCodeUrl, null, null, null, false, false);
-//    }
-
     // Setters and Getters
     public String getId() {
         return id;

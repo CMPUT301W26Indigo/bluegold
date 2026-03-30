@@ -41,7 +41,7 @@
     <string name="event_date">Event Date</string>
     <string name="capacity">Capacity</string>
     <string name="location">Location</string>
-    <string name="geolocation_required">Geolocation Required</string>
+    <string name="geolocation_required">Geolocation</string>
     <string name="within_radius">Within %1$d km radius</string>
     <string name="description">Description</string>
     <string name="waitlist_count">%1$d / %2$d on waiting list</string>
@@ -257,4 +257,5 @@
     <string name="email">Email</string>
     <string name="invite">Invite</string>
     <string name="search_users_bar">Search users...</string>
+    <string name="send_notifications_text">Send Notifications</string>
 </resources>

@@ -3,8 +3,6 @@ package com.eventlottery.ui.organizer;
 import static com.eventlottery.services.Base64EncodeDecode.encodeImageToBase64;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -27,19 +25,8 @@ import com.google.android.material.timepicker.TimeFormat;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.ByteArrayOutputStream;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import android.util.Base64;
 
 
 /**
@@ -291,10 +278,6 @@ public class CreateEventActivity extends AppCompatActivity {
             eventController.addEvent(event, new EventController.OnEventOperationListener() {
                 @Override
                 public void onSuccess() {
-                    // Generate the QR code if the event is successful
-                    event.setQrCodeUrl("eventlottery://event/" + event.getId());
-                    // Are we using event or event temp????
-//                    event.setQrCode(event.generateQRBitmap(event.getQrCodeUrl()));
                     Toast.makeText(CreateEventActivity.this, "Event created successfully", Toast.LENGTH_SHORT).show();
                     finish();
                 }
