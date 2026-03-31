@@ -113,14 +113,7 @@ public class ManageEventActivity extends AppCompatActivity {
 
         // Draw lottery button
         binding.btnDrawLottery.setOnClickListener(v -> {
-            //code was orginally
-            //Intent intent = new Intent(this, InvitedEntrantsActivity.class);
-            //startActivity(new Intent(this, DrawLotteryActivity.class));
-            //commented out cause it felt weird opening invited entrants
-            //and then backing out to draw lottery, David
-
             Intent intent = new Intent(this, DrawLotteryActivity.class);
-            //startActivity(new Intent(this, DrawLotteryActivity.class));
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
         });
@@ -131,6 +124,17 @@ public class ManageEventActivity extends AppCompatActivity {
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
         });
+
+        // Search and invite users button
+        if (event.isPrivate()) {
+            binding.btnInvitePrivateEntrants.setVisibility(View.VISIBLE);
+
+            binding.btnInvitePrivateEntrants.setOnClickListener(v -> {
+                Intent intent = new Intent(this, SearchUsersActivity.class);
+                intent.putExtra("EVENT_ID", eventId);
+                startActivity(intent);
+            });
+        }
 
         // Export CSV button
         binding.btnExportCSV.setOnClickListener(v -> {

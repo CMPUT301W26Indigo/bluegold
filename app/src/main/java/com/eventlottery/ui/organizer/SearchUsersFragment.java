@@ -72,7 +72,13 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
                 for (User user : users) {
                     Attendee attendee = new Attendee();
                     attendee.setName(user.getName());
-                    attendee.setEmail(user.getEmail());
+                    try {
+                        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+                            attendee.setEmail(user.getEmail());
+                        }
+                    } catch (IllegalArgumentException e) {
+                        attendee.setEmail("Unknown");
+                    }
                     attendee.setPhoneNumber(user.getPhone());
                     attendee.setAttendeeID(user.getId());
                     allAttendees.add(attendee);

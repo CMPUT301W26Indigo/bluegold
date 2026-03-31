@@ -337,6 +337,7 @@
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
+
         <!--        Private Event Card-->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
