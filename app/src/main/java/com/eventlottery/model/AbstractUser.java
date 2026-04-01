@@ -2,10 +2,17 @@ package com.eventlottery.model;
 
 import android.content.Context;
 import android.provider.Settings;
+import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.installations.FirebaseInstallations;
 
+import java.util.ArrayList;
+
+/**
+ * Abstract class representing a user in the system.
+ * Common properties for Attendees, Event Organizers, and Admins.
+ */
 public abstract class AbstractUser {
     protected String name;
     protected String email;
@@ -14,6 +21,15 @@ public abstract class AbstractUser {
     protected String deviceID;
     private String profileImageUrl;
 
+    /**
+     * Generalized interface for handling asynchronous user loading from Firebase.
+     * @param <T> The type of user (Attendee, EventOrganizer, Admin).
+     */
+    public interface OnUserLoadedListener<T extends AbstractUser> {
+        void onSuccess(T user);
+        void onError(Exception e);
+    }
+
     public AbstractUser() {
         this.name = null;
         this.email = null;
@@ -21,7 +37,6 @@ public abstract class AbstractUser {
         this.address = null;
         this.deviceID = null;
     }
-
 
     // Getters and Setters
     /**
@@ -145,4 +160,15 @@ public abstract class AbstractUser {
     public static Task<String> getFirebaseId() {
         return FirebaseInstallations.getInstance().getId();
     }
+
+    /**
+     * Synchronizes the user state to Firebase.
+     */
+    public abstract void saveToFirebase();
+
+    /**
+     * Fetches user data from Firebase.
+     * @param listener Callback for completion.
+     */
+    public abstract void fetchFromFirebase(OnUserLoadedListener<? extends AbstractUser> listener);
 }

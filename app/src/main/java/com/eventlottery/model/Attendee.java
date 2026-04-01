@@ -32,14 +32,6 @@ public class Attendee extends AbstractUser {
     private final FirebaseFirestore db;
 
     /**
-     * Interface for handling asynchronous attendee loading from Firebase.
-     */
-    public interface OnAttendeeLoadedListener {
-        void onSuccess(Attendee attendee);
-        void onError(Exception e);
-    }
-
-    /**
      * Constructs a new Attendee with default values.
      * Initializes empty lists for event history and waitlists and connects to Firestore.
      */
@@ -48,14 +40,23 @@ public class Attendee extends AbstractUser {
         this.notification = true;
         this.eventHistory = new ArrayList<AttendeeEventHistory>();
         this.waitListed = new ArrayList<String>();
-        this.db = FirebaseFirestore.getInstance();
+        
+        FirebaseFirestore tempDb = null;
+        try {
+            tempDb = FirebaseFirestore.getInstance();
+        } catch (IllegalStateException e) {
+            Log.w(TAG, "Firebase not initialized, Firestore operations will be unavailable");
+        }
+        this.db = tempDb;
     }
 
     /**
      * Synchronizes the current state of the Attendee object to Firebase.
      * Only works if deviceID is set.
      */
+    @Override
     public void saveToFirebase() {
+        if (db == null) return;
         if (deviceID == null || deviceID.isEmpty()) {
             Log.w(TAG, "Cannot save attendee: deviceID is null or empty");
             return;
@@ -69,7 +70,13 @@ public class Attendee extends AbstractUser {
      * Pulls the latest data for this attendee from Firebase using the deviceID.
      * @param listener Callback for completion.
      */
-    public void fetchFromFirebase(OnAttendeeLoadedListener listener) {
+    @Override
+    @SuppressWarnings("unchecked")
+    public void fetchFromFirebase(OnUserLoadedListener<? extends AbstractUser> listener) {
+        if (db == null) {
+            if (listener != null) listener.onError(new Exception("Firebase not initialized"));
+            return;
+        }
         if (deviceID == null || deviceID.isEmpty()) {
             if (listener != null) listener.onError(new Exception("DeviceID not set"));
             return;
@@ -89,7 +96,7 @@ public class Attendee extends AbstractUser {
                         }
                         this.waitListed = remote.waitListed != null ? remote.waitListed : new ArrayList<>();
                         this.notification = remote.notification;
-//                        if (listener != null) listener.onSuccess();
+                        if (listener != null) ((OnUserLoadedListener<Attendee>)listener).onSuccess(this);
                     } else if (listener != null) {
                         listener.onError(new Exception("Attendee document not found"));
                     }
@@ -98,20 +105,11 @@ public class Attendee extends AbstractUser {
                     if (listener != null) listener.onError(e);
                 });
     }
-    /**
-     * Adds an event to the attendee's personal waitlist.
-     * Gets the attendee's email address.
-     * @return The email address.
-     */
-    public String getEmail() {
-        return email;
-    }
 
-    /**
-     * Sets the attendee's email address after validation and updates Firebase.
-     * @param email The email address to set.
-     * @throws IllegalArgumentException if the email format is invalid.
-     */
+    @Override
+    public String getEmail() { return email; }
+
+    @Override
     public void setEmail(String email) {
         if (ValidateEmail.isValidEmail(email)) {
             this.email = email;
@@ -121,36 +119,19 @@ public class Attendee extends AbstractUser {
         }
     }
 
-    /**
-     * Gets the attendee's name.
-     * @return The name of the attendee.
-     */
-    public String getName() {
-        return name;
-    }
+    @Override
+    public String getName() { return name; }
 
-    /**
-     * Sets the attendee's name and updates Firebase.
-     * @param name The name to set.
-     */
+    @Override
     public void setName(String name) {
         this.name = name;
         saveToFirebase();
     }
 
-    /**
-     * Gets the attendee's phone number.
-     * @return The phone number.
-     */
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
+    @Override
+    public String getPhoneNumber() { return phoneNumber; }
 
-    /**
-     * Sets the attendee's phone number after validation and updates Firebase.
-     * @param phoneNumber The phone number to set.
-     * @throws IllegalArgumentException if the phone number format is invalid.
-     */
+    @Override
     public void setPhoneNumber(String phoneNumber) {
         if (ValidatePhone.isValidPhoneNumber(phoneNumber)) {
             this.phoneNumber = phoneNumber;
@@ -160,35 +141,21 @@ public class Attendee extends AbstractUser {
         }
     }
 
-    /**
-     * Retrieves the unique Android device ID for this app installation.
-     * @param context The application context.
-     * @return The unique Android ID string.
-     */
-    public static String getDeviceId(Context context) {
-        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+    @Override
+    public String getAttendeeID() { return deviceID; }
+
+    @Override
+    public void setAttendeeID(String attendeeID) { this.deviceID = attendeeID; }
+
+    @Override
+    public String getAddress() { return address; }
+
+    @Override
+    public void setAddress(String address) {
+        this.address = address;
+        saveToFirebase();
     }
 
-    /**
-     * Asynchronously retrieves the unique Firebase Installation ID.
-     * @return A Task that will resolve to the Firebase Installation ID.
-     */
-    public static Task<String> getFirebaseId() {
-        return FirebaseInstallations.getInstance().getId();
-    }
-
-    /**
-     * Gets the attendee's unique ID.
-     * @return The attendee ID.
-     */
-    public String getAttendeeID() {
-        return deviceID;
-    }
-
-    /**
-     * Adds an event to the attendee's personal waitlist and updates Firebase.
-     * @param eventID The unique identifier of the event.
-     */
     public void joinWaitList(String eventID) {
         if (!waitListed.contains(eventID)) {
             waitListed.add(eventID);
@@ -234,29 +201,9 @@ public class Attendee extends AbstractUser {
         return waitListed;
     }
 
-    /**
-     * Sets the notification preference and updates Firebase.
-     * @param notification True to enable notifications, false to disable.
-     */
     public void setNotification(boolean notification) {
         this.notification = notification;
         saveToFirebase();
-    }
-
-    /**
-     * Gets the notification preference for the attendee.
-     * @return True if notifications are enabled, false otherwise.
-     */
-    public boolean getNotification() {
-        return notification;
-    }
-
-    /**
-     * Sets the list of event IDs the attendee is waitlisted for.
-     * @param waitListed
-     */
-    public void setWaitListed(ArrayList<String> waitListed) {
-        this.waitListed = waitListed;
     }
 
     /**

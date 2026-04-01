@@ -245,6 +245,8 @@ public class EventOrganizer extends AbstractUser {
 
 
 
+
+
     public interface OnAttendeesLoadedListener {
         void onSuccess(ArrayList<Attendee> attendees);
         void onError(Exception e);
