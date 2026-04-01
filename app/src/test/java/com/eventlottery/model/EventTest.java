@@ -1,4 +1,4 @@
-package com.eventlottery.data.models;
+package com.eventlottery.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -7,11 +7,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.graphics.Bitmap;
-
-import com.eventlottery.model.Attendee;
-import com.eventlottery.model.Event;
-import com.eventlottery.model.GuestList;
-import com.eventlottery.model.Waitlist;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -303,10 +298,8 @@ public class EventTest {
         testEvent.LotterySystem();
 
         ArrayList<String> selection = new ArrayList<>();
-        // Extract attendee IDs from the GuestList (which stores them in HashMaps)
-        for (HashMap<String, String> guestMap : guestList.getAttendeeIds()) {
-            selection.addAll(guestMap.keySet());
-        }
+        // Extract attendee IDs from the GuestList
+        selection.addAll(guestList.getAttendees().keySet());
         return selection;
     }
 
@@ -321,15 +314,13 @@ public class EventTest {
         guestList.changeAttendeeStatus("Fortnite", "invited");
         guestList.changeAttendeeStatus("LeagueofLegends", "confirmed");
 
-        ArrayList<HashMap<String, String>> attendeeIds = guestList.getAttendeeIds();
+        HashMap<String, String> attendees = guestList.getAttendees();
 
         // Count how many have "invited" status
         int invitedCount = 0;
-        for (HashMap<String, String> attendee : attendeeIds) {
-            for (String status : attendee.values()) {
-                if ("invited".equals(status)) {
-                    invitedCount++;
-                }
+        for (String status : attendees.values()) {
+            if ("invited".equals(status)) {
+                invitedCount++;
             }
         }
 
@@ -381,15 +372,13 @@ public class EventTest {
         guestList.changeAttendeeStatus("Gurt", "invited");
         guestList.changeAttendeeStatus("SixSeven", "confirmed");
 
-        ArrayList<HashMap<String, String>> attendeeIds = guestList.getAttendeeIds();
+        HashMap<String, String> attendees = guestList.getAttendees();
 
         // Count how many have "confirmed" status
         int confirmedCount = 0;
-        for (HashMap<String, String> attendee : attendeeIds) {
-            for (String status : attendee.values()) {
-                if ("confirmed".equals(status)) {
-                    confirmedCount++;
-                }
+        for (String status : attendees.values()) {
+            if ("confirmed".equals(status)) {
+                confirmedCount++;
             }
         }
 

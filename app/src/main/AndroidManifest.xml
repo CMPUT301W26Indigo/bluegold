@@ -67,9 +67,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="eventlottery.app"
-                    android:pathPrefix="/event"
-                    android:scheme="https" />
+                    android:host="event"
+                    android:scheme="eventlottery" />
             </intent-filter>
         </activity>
         <activity
