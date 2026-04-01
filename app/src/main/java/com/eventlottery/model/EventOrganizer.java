@@ -23,7 +23,7 @@ public class EventOrganizer extends AbstractUser {
      * Creates an event with no parameters.
      * @return created event
      */
-    public Event createEventBlanked() {
+    public Event createEventBlank() {
         Event event = new Event();
         events.add(event);
         return event;

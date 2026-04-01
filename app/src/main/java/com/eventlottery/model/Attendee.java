@@ -48,7 +48,15 @@ public class Attendee extends AbstractUser {
         this.notification = true;
         this.eventHistory = new ArrayList<AttendeeEventHistory>();
         this.waitListed = new ArrayList<String>();
-        this.db = FirebaseFirestore.getInstance();
+        
+        FirebaseFirestore tempDb = null;
+        try {
+            tempDb = FirebaseFirestore.getInstance();
+        } catch (IllegalStateException e) {
+            tempDb = null;
+            Log.w(TAG, "Firebase not initialized, Firestore operations will be unavailable");
+        }
+        this.db = tempDb;
     }
 
     /**
@@ -56,6 +64,7 @@ public class Attendee extends AbstractUser {
      * Only works if deviceID is set.
      */
     public void saveToFirebase() {
+        if (db == null) return;
         if (deviceID == null || deviceID.isEmpty()) {
             Log.w(TAG, "Cannot save attendee: deviceID is null or empty");
             return;
@@ -70,6 +79,10 @@ public class Attendee extends AbstractUser {
      * @param listener Callback for completion.
      */
     public void fetchFromFirebase(OnAttendeeLoadedListener listener) {
+        if (db == null) {
+            if (listener != null) listener.onError(new Exception("Firebase not initialized"));
+            return;
+        }
         if (deviceID == null || deviceID.isEmpty()) {
             if (listener != null) listener.onError(new Exception("DeviceID not set"));
             return;
@@ -282,5 +295,13 @@ public class Attendee extends AbstractUser {
      */
     public void setEventHistory(ArrayList<AttendeeEventHistory> eventHistory) {
         this.eventHistory = eventHistory;
+    }
+
+    /**
+     * Sets the attendee's ID. Required for tests or loading.
+     * @param attendeeID
+     */
+    public void setAttendeeID(String attendeeID) {
+        this.deviceID = attendeeID;
     }
 }

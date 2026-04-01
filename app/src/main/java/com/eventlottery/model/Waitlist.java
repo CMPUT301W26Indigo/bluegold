@@ -29,7 +29,14 @@ public class Waitlist {
     public Waitlist() {
         this.attendeeIds = new ArrayList<>();
         this.waitlistCount = 0;
-        this.db = FirebaseFirestore.getInstance();
+        FirebaseFirestore tempDb;
+        try {
+            tempDb = FirebaseFirestore.getInstance();
+        } catch (IllegalStateException e) {
+            tempDb = null;
+            Log.w(TAG, "Firebase not initialized, Firestore operations will be unavailable");
+        }
+        this.db = tempDb;
     }
 
     /**
@@ -69,10 +76,22 @@ public class Waitlist {
     }
 
     /**
+     * Constructs a Waitlist with a specific FirebaseFirestore instance.
+     * Useful for dependency injection in tests.
+     * @param db The Firestore instance to use.
+     */
+    public Waitlist(FirebaseFirestore db) {
+        this.attendeeIds = new ArrayList<>();
+        this.waitlistCount = 0;
+        this.db = db;
+    }
+
+    /**
      * Synchronizes the current state of the Waitlist object to Firebase.
      * Uses eventId as the document ID in the "waitlists" collection.
      */
     public void saveToFirebase() {
+        if (db == null) return;
         if (eventId == null || eventId.isEmpty()) {
             Log.w(TAG, "Cannot save waitlist: eventId is null or empty");
             return;
@@ -87,6 +106,10 @@ public class Waitlist {
      * @param listener Callback for completion.
      */
     public void fetchFromFirebase(OnWaitlistLoadedListener listener) {
+        if (db == null) {
+            if (listener != null) listener.onError(new Exception("Firebase not initialized"));
+            return;
+        }
         if (eventId == null || eventId.isEmpty()) {
             if (listener != null) listener.onError(new Exception("EventId not set"));
             return;
@@ -98,7 +121,6 @@ public class Waitlist {
                         this.attendeeIds = remote.attendeeIds != null ? remote.attendeeIds : new ArrayList<>();
                         this.waitlistLimit = remote.waitlistLimit;
                         this.waitlistCount = remote.waitlistCount;
-                        // Fixed with AI: The next line was added by Gemini to fix build error in Event
                         this.registrationDeadline = remote.registrationDeadline;
                         if (listener != null) listener.onSuccess();
                     } else if (listener != null) {
@@ -182,7 +204,6 @@ public class Waitlist {
         this.waitlistCount = waitlistCount;
     }
 
-    // Fixed with AI: This method was added by Gemini to fix build error in Event
     /**
      * Gets the registration deadline.
      * @return The registration deadline string.
@@ -191,7 +212,6 @@ public class Waitlist {
         return registrationDeadline;
     }
 
-    // Fixed with AI: This method was added by Gemini to fix build error in Event
     /**
      * Sets the registration deadline and updates Firebase.
      * @param registrationDeadline The deadline to set.
