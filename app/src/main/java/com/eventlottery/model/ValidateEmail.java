@@ -9,6 +9,9 @@ public class ValidateEmail {
     }
 
     public static boolean isValidEmail(String email) {
+        // If statement added by Gemini to fix issue with null pointer exception
+        //  when testing deleteUser.
+        if (email == null) return false;
         // Code inspired from this website
         // https://commons.apache.org/proper/commons-validator/
         return EmailValidator.getInstance().isValid(email);

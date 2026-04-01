@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import com.eventlottery.controller.UserController;
 import com.eventlottery.databinding.FragmentProfileBinding;
@@ -83,6 +84,32 @@ public class ProfileFragment extends Fragment {
                         Toast.makeText(getContext(), "Failed to update profile", Toast.LENGTH_SHORT).show();
                     }
                 });
+            }
+        });
+
+        binding.btnDeleteProfile.setOnClickListener(v -> {
+            if (currentUser != null) {
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Delete Profile")
+                        .setMessage("Are you sure you want to delete your profile? This action cannot be undone.")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            userController.deleteUser(currentUser.getId(), new UserController.OnUserOperationListener() {
+                                @Override
+                                public void onSuccess() {
+                                    Toast.makeText(getContext(), "Profile deleted", Toast.LENGTH_SHORT).show();
+                                    if (getActivity() != null) {
+                                        getActivity().finish();
+                                    }
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    Toast.makeText(getContext(), "Failed to delete profile", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
             }
         });
     }

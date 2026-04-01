@@ -94,5 +94,13 @@
             android:text="Save Changes"
             android:layout_marginTop="16dp" />
 
+        <Button
+            android:id="@+id/btnDeleteProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="DELETE PROFILE"
+            app:backgroundTint="@android:color/holo_red_dark" />
+
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
