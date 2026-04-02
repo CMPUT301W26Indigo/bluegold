@@ -7,9 +7,11 @@ import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
@@ -33,13 +35,13 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Extensive UI Instrumented Test Suite for US 01.02.04 (Delete Profile).
- * Updated to verify "Closed Account" behavior: scrubbing associations from all collections.
- * This test suite verifies that when a user deletes their profile, they are scrubbed from
- * all associated event collections (Waitlists and GuestLists).
+ * Verifies that when a user deletes their profile, they are scrubbed from
+ * all associated event collections (Waitlists and GuestLists), effectively
+ * wiping the profile from existence.
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
-public class DeleteUserTest {
+public class DeleteProfileTest {
 
     @Rule
     public ActivityScenarioRule<ProfileActivity> activityRule =
@@ -67,9 +69,9 @@ public class DeleteUserTest {
     }
 
     /**
-     * Helper to set up a mock user with optional association data.
+     * Helper to set up a mock user with multiple association data points.
      */
-    private void setupMockUser(boolean withWaitlists, boolean withGuestLists) throws InterruptedException {
+    private void setupMockUser(int numWaitlists, int numGuestLists) throws InterruptedException {
         Attendee mockAttendee = new Attendee();
         mockAttendee.setAttendeeID(deviceId);
         mockAttendee.setName("Max Power");
@@ -79,27 +81,27 @@ public class DeleteUserTest {
 
         CountDownLatch setupLatch = new CountDownLatch(2);
 
-        if (withWaitlists) {
-            ArrayList<String> waitlists = new ArrayList<>();
-            waitlists.add("event_wait_1");
-            mockAttendee.setWaitListed(waitlists);
-            
-            // Create the waitlist documents in Firestore
-            Waitlist wl = new Waitlist("event_wait_1");
+        // Add to multiple waitlists
+        ArrayList<String> waitlistIds = new ArrayList<>();
+        for (int i = 0; i < numWaitlists; i++) {
+            String eid = "event_wait_" + i;
+            waitlistIds.add(eid);
+            Waitlist wl = new Waitlist(eid);
             wl.addAttendee(deviceId);
             wl.saveToFirebase();
         }
+        mockAttendee.setWaitListed(waitlistIds);
 
-        if (withGuestLists) {
-            ArrayList<AttendeeEventHistory> history = new ArrayList<>();
-            history.add(new AttendeeEventHistory("event_guest_1"));
-            mockAttendee.setEventHistory(history);
-            
-            // Create the guestlist document
-            GuestList gl = new GuestList("event_guest_1");
-            gl.addGuestAttendee(deviceId); // Default status is "maybe"
+        // Add to multiple guest lists
+        ArrayList<AttendeeEventHistory> history = new ArrayList<>();
+        for (int i = 0; i < numGuestLists; i++) {
+            String eid = "event_guest_" + i;
+            history.add(new AttendeeEventHistory(eid));
+            GuestList gl = new GuestList(eid);
+            gl.addGuestAttendee(deviceId);
             gl.saveToFirebase();
         }
+        mockAttendee.setEventHistory(history);
 
         db.collection("attendees").document(deviceId).set(mockAttendee)
                 .addOnCompleteListener(task -> setupLatch.countDown());
@@ -112,18 +114,19 @@ public class DeleteUserTest {
     }
 
     /**
-     * Use Case: Entrant deletes profile successfully.
-     * Verifies basic document removal.
+     * Use Case: Entrant deletes profile successfully (No associations).
+     * Also verifies the Activity finishes.
      */
     @Test
     public void testDeleteProfile_Success() throws InterruptedException {
-        setupMockUser(false, false);
+        setupMockUser(0, 0);
 
         onView(withId(R.id.btnDeleteProfile)).perform(click());
         onView(withText("Delete")).inRoot(isDialog()).perform(click());
 
         Thread.sleep(5000); 
 
+        // Verify documents are gone
         CountDownLatch verifyLatch = new CountDownLatch(2);
         db.collection("users").document(deviceId).get().addOnCompleteListener(task -> {
             assertFalse("User doc should be deleted", task.getResult().exists());
@@ -133,8 +136,12 @@ public class DeleteUserTest {
             assertFalse("Attendee doc should be deleted", task.getResult().exists());
             verifyLatch.countDown();
         });
-        
-        assertTrue("Deletion verification timed out", verifyLatch.await(10, TimeUnit.SECONDS));
+        assertTrue(verifyLatch.await(10, TimeUnit.SECONDS));
+
+        // Verify the activity is finishing/finished
+        activityRule.getScenario().onActivity(activity -> {
+            assertTrue("Activity should be finishing after deletion", activity.isFinishing() || activity.isDestroyed());
+        });
     }
 
     /**
@@ -142,7 +149,7 @@ public class DeleteUserTest {
      */
     @Test
     public void testDeleteProfile_CancelledByUser() throws InterruptedException {
-        setupMockUser(false, false);
+        setupMockUser(0, 0);
 
         onView(withId(R.id.btnDeleteProfile)).perform(click());
         onView(withText("Cancel")).inRoot(isDialog()).perform(click());
@@ -158,86 +165,98 @@ public class DeleteUserTest {
     }
 
     /**
-     * Use Case: Cleanup - Only Waitlist.
-     * Verifies user is cleared from waitlist.
+     * Use Case: Extensive Cleanup - Multiple Waitlists.
+     * Verifies user is scrubbed from ALL waitlists they joined.
      */
     @Test
-    public void testDeleteProfile_OnlyWaitlist() throws InterruptedException {
-        setupMockUser(true, false);
+    public void testDeleteProfile_MultipleWaitlistScrubbing() throws InterruptedException {
+        int numEvents = 3;
+        setupMockUser(numEvents, 0);
 
         onView(withId(R.id.btnDeleteProfile)).perform(click());
         onView(withText("Delete")).inRoot(isDialog()).perform(click());
 
-        Thread.sleep(6000);
+        Thread.sleep(7000);
 
-        CountDownLatch verifyLatch = new CountDownLatch(1);
-        db.collection("waitlists").document("event_wait_1").get().addOnSuccessListener(doc -> {
-            Waitlist wl = doc.toObject(Waitlist.class);
-            if (wl != null) {
-                assertFalse("User should be removed from waitlist", wl.getAttendeeIds().contains(deviceId));
-            }
-            verifyLatch.countDown();
-        });
-        assertTrue(verifyLatch.await(10, TimeUnit.SECONDS));
+        CountDownLatch verifyLatch = new CountDownLatch(numEvents);
+        for (int i = 0; i < numEvents; i++) {
+            String eid = "event_wait_" + i;
+            db.collection("waitlists").document(eid).get().addOnSuccessListener(doc -> {
+                Waitlist wl = doc.toObject(Waitlist.class);
+                if (wl != null) {
+                    assertFalse("User must be removed from waitlist " + eid, wl.getAttendeeIds().contains(deviceId));
+                }
+                verifyLatch.countDown();
+            });
+        }
+        assertTrue("Waitlist scrubbing timed out", verifyLatch.await(15, TimeUnit.SECONDS));
     }
 
     /**
-     * Use Case: Cleanup - Only GuestList.
-     * Verifies user ID is scrubbed from GuestList (Defunct Account handling).
-     * EXPECTED TO FAIL until the Controller is updated to remove the ID.
+     * Use Case: Extensive Cleanup - Multiple GuestLists.
+     * Verifies user is scrubbed from ALL guest lists map.
      */
     @Test
-    public void testDeleteProfile_OnlyGuestListScrubbing() throws InterruptedException {
-        setupMockUser(false, true);
+    public void testDeleteProfile_MultipleGuestListScrubbing() throws InterruptedException {
+        int numEvents = 3;
+        setupMockUser(0, numEvents);
 
         onView(withId(R.id.btnDeleteProfile)).perform(click());
         onView(withText("Delete")).inRoot(isDialog()).perform(click());
 
-        Thread.sleep(6000);
+        Thread.sleep(7000);
 
-        CountDownLatch verifyLatch = new CountDownLatch(1);
-        db.collection("guestlists").document("event_guest_1").get().addOnSuccessListener(doc -> {
-            GuestList gl = doc.toObject(GuestList.class);
-            if (gl != null) {
-                // Assert that the specific deviceId key is NO LONGER in the attendees map
-                assertFalse("User ID should be scrubbed from guest list (Closed Account behavior)", 
-                        gl.getAttendees().containsKey(deviceId));
-            }
-            verifyLatch.countDown();
-        });
-        assertTrue("GuestList scrubbing verification failed (Expected failure)", verifyLatch.await(10, TimeUnit.SECONDS));
+        CountDownLatch verifyLatch = new CountDownLatch(numEvents);
+        for (int i = 0; i < numEvents; i++) {
+            String eid = "event_guest_" + i;
+            db.collection("guestlists").document(eid).get().addOnSuccessListener(doc -> {
+                GuestList gl = doc.toObject(GuestList.class);
+                if (gl != null) {
+                    assertFalse("User ID should be scrubbed from guest list " + eid, 
+                            gl.getAttendees().containsKey(deviceId));
+                }
+                verifyLatch.countDown();
+            });
+        }
+        assertTrue("GuestList scrubbing timed out", verifyLatch.await(15, TimeUnit.SECONDS));
     }
 
     /**
      * Use Case: Cleanup - Both Waitlist and GuestList.
-     * EXPECTED TO FAIL on the GuestList scrubbing portion until implemented.
      */
     @Test
     public void testDeleteProfile_ComplexCleanupScrubbing() throws InterruptedException {
-        setupMockUser(true, true);
+        setupMockUser(2, 2);
 
         onView(withId(R.id.btnDeleteProfile)).perform(click());
         onView(withText("Delete")).inRoot(isDialog()).perform(click());
 
         Thread.sleep(8000); 
 
-        CountDownLatch verifyLatch = new CountDownLatch(3);
+        CountDownLatch verifyLatch = new CountDownLatch(5); // 2 WL + 2 GL + 1 UserDoc
 
+        db.collection("waitlists").document("event_wait_0").get().addOnSuccessListener(doc -> {
+            Waitlist wl = doc.toObject(Waitlist.class);
+            assertFalse(wl != null && wl.getAttendeeIds().contains(deviceId));
+            verifyLatch.countDown();
+        });
+
+        db.collection("guestlists").document("event_guest_0").get().addOnSuccessListener(doc -> {
+            GuestList gl = doc.toObject(GuestList.class);
+            assertFalse(gl != null && gl.getAttendees().containsKey(deviceId));
+            verifyLatch.countDown();
+        });
+        
+        // Check second set
         db.collection("waitlists").document("event_wait_1").get().addOnSuccessListener(doc -> {
             Waitlist wl = doc.toObject(Waitlist.class);
-            if (wl != null) {
-                assertFalse("User ID should be missing from waitlist", wl.getAttendeeIds().contains(deviceId));
-            }
+            assertFalse(wl != null && wl.getAttendeeIds().contains(deviceId));
             verifyLatch.countDown();
         });
 
         db.collection("guestlists").document("event_guest_1").get().addOnSuccessListener(doc -> {
             GuestList gl = doc.toObject(GuestList.class);
-            if (gl != null) {
-                // Verify original ID is scrubbed from guestlist map
-                assertFalse("User ID should be scrubbed from guest list map", 
-                        gl.getAttendees().containsKey(deviceId));
-            }
+            assertFalse(gl != null && gl.getAttendees().containsKey(deviceId));
             verifyLatch.countDown();
         });
 
@@ -246,7 +265,7 @@ public class DeleteUserTest {
             verifyLatch.countDown();
         });
 
-        assertTrue("Cleanup verification timed out", verifyLatch.await(15, TimeUnit.SECONDS));
+        assertTrue("Cleanup verification timed out", verifyLatch.await(20, TimeUnit.SECONDS));
     }
 
     /**
@@ -254,7 +273,7 @@ public class DeleteUserTest {
      */
     @Test
     public void testDeleteProfile_ResiliencePartialData() throws InterruptedException {
-        setupMockUser(false, false);
+        setupMockUser(0, 0);
         
         CountDownLatch breakLatch = new CountDownLatch(1);
         db.collection("attendees").document(deviceId).delete().addOnCompleteListener(t -> breakLatch.countDown());
