@@ -187,9 +187,9 @@ public class Attendee extends AbstractUser {
      * Sets the attendee's unique ID.
      * @param deviceID The ID to set.
      */
-    public void setAttendeeID(String deviceID) {
-        this.deviceID = deviceID;
-    }
+//    public void setAttendeeID(String deviceID) {
+//        this.deviceID = deviceID;
+//    }
 
     /**
      * Adds an event to the attendee's personal waitlist and updates Firebase.
