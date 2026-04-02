@@ -59,6 +59,12 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
                 // Handle invite click
                 Toast.makeText(getContext(), "Invite sent to: " + attendee.getName(), Toast.LENGTH_SHORT).show();
             }
+
+            @Override
+            public void onUninviteClick(Attendee attendee) {
+                // Handle uninvite click
+                Toast.makeText(getContext(), "Invite cancelled for: " + attendee.getName(), Toast.LENGTH_SHORT).show();
+            }
         });
         binding.usersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.usersRecyclerView.setAdapter(userAdapter);
@@ -123,6 +129,10 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
 
     @Override
     public void onInviteClick(Attendee attendee) {
+    }
+
+    @Override
+    public void onUninviteClick(Attendee attendee) {
     }
 
     @Override
