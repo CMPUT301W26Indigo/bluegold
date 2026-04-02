@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+
+import com.eventlottery.controller.UserController;
 import com.eventlottery.databinding.FragmentProfileBinding;
 import com.eventlottery.model.Attendee;
 
@@ -22,6 +24,7 @@ public class ProfileFragment extends Fragment {
     private static final String TAG = "ProfileFragment";
     private FragmentProfileBinding binding;
     private Attendee currentAttendee;
+    private UserController userController;
 
     @Nullable
     @Override
@@ -91,12 +94,12 @@ public class ProfileFragment extends Fragment {
         });
 
         binding.btnDeleteProfile.setOnClickListener(v -> {
-            if (currentUser != null) {
+            if (currentAttendee != null) {
                 new AlertDialog.Builder(getContext())
                         .setTitle("Delete Profile")
                         .setMessage("Are you sure you want to delete your profile? This action cannot be undone.")
                         .setPositiveButton("Delete", (dialog, which) -> {
-                            userController.deleteUser(currentUser.getId(), new UserController.OnUserOperationListener() {
+                            userController.deleteUser(currentAttendee.getAttendeeID(), new UserController.OnUserOperationListener() {
                                 @Override
                                 public void onSuccess() {
                                     Toast.makeText(getContext(), "Profile deleted", Toast.LENGTH_SHORT).show();

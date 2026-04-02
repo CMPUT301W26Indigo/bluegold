@@ -296,7 +296,7 @@ public class Attendee extends AbstractUser {
      * Sets the attendee's ID. Required for tests or loading.
      * @param attendeeID
      */
-    public void setAttendeeID(String attendeeID) {
-        this.deviceID = attendeeID;
-    }
+//    public void setAttendeeID(String attendeeID) {
+//        this.deviceID = attendeeID;
+//    }
 }
