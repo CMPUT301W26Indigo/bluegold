@@ -87,6 +87,9 @@ public class EventDetailsActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Checks if the current attendee is on the waitlist for the event
+     */
     private void checkWaitlistStatus() {
         if (eventId == null || currentAttendeeId == null) return;
         eventController.checkIfAttendeeOnWaitlist(eventId, currentAttendeeId, new EventController.OnWaitlistStatusListener() {
@@ -102,6 +105,10 @@ public class EventDetailsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Updates the UI to reflect the current waitlist status.
+     * @param isOnWaitlist
+     */
     private void updateWaitlistButtonUI(boolean isOnWaitlist) {
         if (isOnWaitlist) {
             binding.joinWaitlistBtn.setBackgroundColor(getColor(com.eventlottery.R.color.status_open_green));
@@ -112,6 +119,9 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets up the UI elements with event data.
+     */
     private void setupUI() {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
@@ -146,10 +156,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         binding.locationNameText.setText(event.getLocation());
 
         // Buttons only appear if event is not private
-        if(!event.isPrivate()) {
-            binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
+        binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
 
-            // View QR button
+        // Can only see the QR button in a public event
+        if(!event.isPrivate()) {
+            binding.viewQrButton.setVisibility(View.VISIBLE);
             binding.viewQrButton.setOnClickListener(v -> {
                 Intent intent = new Intent(this, QRDisplayActivity.class);
                 intent.putExtra("EVENT_ID", eventId);
@@ -158,6 +169,9 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the toggle between joining and leaving the waitlist.
+     */
     private void handleWaitlistToggle() {
         if (currentAttendeeId == null) {
             Toast.makeText(this, "Identifying user...", Toast.LENGTH_SHORT).show();
@@ -186,6 +200,10 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Updates the attendee's waitlist status in the database.
+     * @param isJoining
+     */
     private void updateAttendeeWaitlist(boolean isJoining) {
         Attendee attendee = new Attendee();
         attendee.setAttendeeID(currentAttendeeId);
@@ -213,6 +231,10 @@ public class EventDetailsActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Finishes the toggle and updates the UI.
+     * @param isJoining
+     */
     private void finishToggle(boolean isJoining) {
         updateWaitlistButtonUI(isJoining);
         loadEventStats();
@@ -220,6 +242,9 @@ public class EventDetailsActivity extends AppCompatActivity {
             isJoining ? "Joined waitlist" : "Left waitlist", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Loads the current waitlist count and capacity.
+     */
     private void loadEventStats() {
         // Get waitlist count and fill out capacity card in UI
         db.collection("events").document(eventId)

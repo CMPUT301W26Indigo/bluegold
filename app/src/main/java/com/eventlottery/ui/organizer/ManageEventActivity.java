@@ -79,6 +79,9 @@ public class ManageEventActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Sets up the UI elements with event data.
+     */
     private void setupUI() {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
@@ -113,14 +116,7 @@ public class ManageEventActivity extends AppCompatActivity {
 
         // Draw lottery button
         binding.btnDrawLottery.setOnClickListener(v -> {
-            //code was orginally
-            //Intent intent = new Intent(this, InvitedEntrantsActivity.class);
-            //startActivity(new Intent(this, DrawLotteryActivity.class));
-            //commented out cause it felt weird opening invited entrants
-            //and then backing out to draw lottery, David
-
             Intent intent = new Intent(this, DrawLotteryActivity.class);
-            //startActivity(new Intent(this, DrawLotteryActivity.class));
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
         });
@@ -131,6 +127,17 @@ public class ManageEventActivity extends AppCompatActivity {
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
         });
+
+        // Search and invite users button
+        if (event.isPrivate()) {
+            binding.btnInvitePrivateEntrants.setVisibility(View.VISIBLE);
+
+            binding.btnInvitePrivateEntrants.setOnClickListener(v -> {
+                Intent intent = new Intent(this, SearchUsersActivity.class);
+                intent.putExtra("EVENT_ID", eventId);
+                startActivity(intent);
+            });
+        }
 
         // Export CSV button
         binding.btnExportCSV.setOnClickListener(v -> {
@@ -144,7 +151,9 @@ public class ManageEventActivity extends AppCompatActivity {
         binding = null;
     }
 
-
+    /**
+     * Loads event statistics from Firestore.
+     */
     private void loadEventStats() {
         // Get waitlist count
         db.collection("events").document(eventId)
@@ -172,9 +181,11 @@ public class ManageEventActivity extends AppCompatActivity {
                     binding.tvConfirmedCount.setText(query.size() + " / " + event.getCapacity());
                 });
 
-}
+    }
 
-
+    /**
+     * Exports attendee lists to CSV.
+     */
     private void exportCSV() {
         ArrayList<String> names = new ArrayList<>();
 
@@ -221,6 +232,10 @@ public class ManageEventActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Shares a CSV file.
+     * @param csvContent
+     */
     private void shareCSV(String csvContent) {
         try {
             File file = new File(getExternalFilesDir(null), "entrants.csv");

@@ -485,6 +485,10 @@ public class Event {
         return waitlist.isWaitlistFull();
     }
 
+    /**
+     * Gets the number of spots available for an event
+     * @return int
+     */
     public int getAvailableSpots() {
         if (guestList.getListLimit() == null) return Integer.MAX_VALUE;
         return Math.max(0, guestList.getListLimit() - guestList.getListCount());
@@ -541,10 +545,18 @@ public class Event {
 
     }
 
+    /**
+     * Checks if the waitlist is full
+     * @return boolean
+     */
     public boolean isWaitlistFull() {
         return waitlist.isWaitlistFull();
     }
 
+    /**
+     * Checks if the registration is open
+     * @return boolean
+     */
     public boolean isRegistrationOpen() {
         long currentTime = System.currentTimeMillis();
         return "open".equals(status) &&

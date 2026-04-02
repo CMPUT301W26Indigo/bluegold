@@ -69,6 +69,26 @@ public class EventController {
     }
 
     /**
+     * Fetches only public events from Firestore.
+     * @param listener
+     */
+    public void getAllPublicEvents(OnEventsLoadedListener listener) {
+        db.collection(COLLECTION_NAME)
+                .whereEqualTo("private", false)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Event> events = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Event event = document.toObject(Event.class);
+                        event.setId(document.getId());
+                        events.add(event);
+                    }
+                    listener.onEventsLoaded(events);
+                })
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
      * Fetches specific events from Firestore by their IDs.
      */
     public void getEventsByIds(List<String> eventIds, OnEventsLoadedListener listener) {
