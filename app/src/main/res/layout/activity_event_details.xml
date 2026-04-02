@@ -75,8 +75,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/spacing_sm"
                     android:textColor="@color/text_white"
-                    app:chipBackgroundColor="@color/status_open_green"
-                    tools:text="Registration Open" />
+                    app:chipBackgroundColor="@color/status_open_green" />
 
             </LinearLayout>
 
@@ -315,7 +314,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/status_open"
+                            android:text="Required"
                             android:textAppearance="@style/TextAppearance.App.Title"
                             android:textColor="@color/text_orange_900"
                             android:textStyle="bold"
@@ -372,6 +371,31 @@
                         android:textAppearance="@style/TextAppearance.App.Body"
                         tools:text="Join us for an exciting basketball tournament! Teams will compete in a friendly but competitive environment. All skill levels welcome." />
 
+                    <!-- Join Waiting List Button-->
+                    <Button
+                        android:id="@+id/joinWaitlistBtn"
+                        style="@style/Widget.App.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/spacing_lg"
+                        android:layout_gravity="bottom"
+                        android:text="@string/join_waiting_list"
+                        android:textSize="@dimen/text_lg"
+                        android:paddingVertical="@dimen/spacing_lg"
+                        app:backgroundTint="@color/primary_blue" />
+                    <!-- View QR Button-->
+                    <Button
+                        android:id="@+id/viewQrButton"
+                        style="@style/Widget.App.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/spacing_lg"
+                        android:visibility="gone"
+                        android:text="@string/view_qr_code"
+                        android:textSize="@dimen/text_lg"
+                        android:paddingVertical="@dimen/spacing_lg"
+                        app:backgroundTint="@color/primary_blue" />
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -379,18 +403,5 @@
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
-
-    <!-- Join Waiting List Button (Fixed at bottom) -->
-    <Button
-        android:id="@+id/joinWaitlistButton"
-        style="@style/Widget.App.Button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacing_lg"
-        android:layout_gravity="bottom"
-        android:text="@string/join_waiting_list"
-        android:textSize="@dimen/text_lg"
-        android:paddingVertical="@dimen/spacing_lg"
-        app:backgroundTint="@color/primary_blue" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

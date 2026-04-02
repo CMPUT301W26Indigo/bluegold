@@ -1,25 +1,21 @@
 package com.eventlottery.ui.entrant;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityNotificationsBinding;
-import com.eventlottery.model.Notification;
-import com.eventlottery.ui.adapters.NotificationAdapter;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import java.util.ArrayList;
-import java.util.List;
+import com.eventlottery.model.Attendee;
 
 /**
- * Activity for displaying notifications to the attendee.
+ * Activity hosting NotificationListFragment in ENTRANT mode.
  */
-public class NotificationsActivity extends AppCompatActivity implements NotificationAdapter.OnNotificationClickListener {
+public class NotificationsActivity extends AppCompatActivity {
 
+    private static final String TAG = "NotificationsActivity";
     private ActivityNotificationsBinding binding;
-    private NotificationAdapter adapter;
-    private FirebaseFirestore db;
-    private String attendeeId = "mock_user_id"; // TODO: Replace with actual attendee ID, getter from the controller
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,59 +23,29 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
         binding = ActivityNotificationsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        db = FirebaseFirestore.getInstance();
-
-        setupUI();
-        loadNotifications();
-    }
-
-    private void setupUI() {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
 
-        // Initialize Adapter
-        adapter = new NotificationAdapter(this);
-        
-        // Setup RecyclerView
-        binding.rvNotifications.setLayoutManager(new LinearLayoutManager(this));
-        binding.rvNotifications.setAdapter(adapter);
-    }
-
-    /**
-     * Fetches notifications for the current user from Firestore.
-     */
-    private void loadNotifications() {
-        db.collection("notifications")
-                .whereEqualTo("attendeeId", attendeeId)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) return;
-                    if (value != null) {
-                        List<Notification> notifications = new ArrayList<>();
-                        for (QueryDocumentSnapshot doc : value) {
-                            Notification notification = doc.toObject(Notification.class);
-                            notification.setId(doc.getId());
-                            notifications.add(notification);
-                        }
-                        adapter.setNotifications(notifications);
-                    }
-                });
-    }
-
-    @Override
-    public void onNotificationClick(Notification notification) {
-        // Mark as read if it's not already read
-        if (!notification.isRead()) {
-            notification.setRead(true);
-            
-            // Update in Firestore to persist the "read" state
-            db.collection("notifications").document(notification.getId())
-                    .update("isRead", true);
+        if (savedInstanceState == null) {
+            // Fetch the real Firebase ID asynchronously
+            Attendee.getFirebaseId().addOnSuccessListener(id -> {
+                // Load the reusable fragment in ENTRANT mode with the REAL attendee ID
+                NotificationListFragment fragment = NotificationListFragment.newInstance(
+                        NotificationListFragment.Mode.ENTRANT, id
+                );
+                
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .commit();
+            }).addOnFailureListener(e -> {
+                Log.e(TAG, "Failed to get Firebase ID", e);
+                Toast.makeText(this, "Error identifying user", Toast.LENGTH_SHORT).show();
+                finish();
+            });
         }
-
-        // TODO: Handle notification interaction (out of scope for this branch)
     }
 
     @Override

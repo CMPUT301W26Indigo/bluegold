@@ -8,6 +8,9 @@ public class ValidatePhone {
     }
 
     public static boolean isValidPhoneNumber(String phoneNumber) {
+        // If statement added by Gemini to fix issue with null pointer exception
+        //  when testing deleteUser.
+        if (phoneNumber == null) return false;
         return phoneNumber.matches("\\d{10}");
     }
 }

@@ -73,10 +73,18 @@
 
             <!-- Action Buttons -->
             <Button
+                android:id="@+id/btnInviteUsers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/invite_entrants_to_private_event"
+                android:layout_marginBottom="8dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            <Button
                 android:id="@+id/btnViewInvited"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="View Invited Entrants"
+                android:text="@string/view_invited_entrants"
                 android:layout_marginBottom="8dp"
                 android:backgroundTint="@color/status_waiting_yellow" />
 
@@ -84,7 +92,7 @@
                 android:id="@+id/btnViewConfirmed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="View Confirmed Entrants"
+                android:text="@string/view_confirmed_entrants"
                 android:layout_marginBottom="8dp"
                 android:backgroundTint="@color/status_confirmed_green" />
 
@@ -95,6 +103,14 @@
                 android:text="Draw Lottery"
                 android:layout_marginBottom="8dp"
                 android:backgroundTint="@color/primary_blue" />
+
+            <Button
+                android:id="@+id/btnSendNotifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Send Notifications"
+                android:layout_marginBottom="8dp"
+                android:backgroundTint="@color/secondary_purple" />
 
             <Button
                 android:id="@+id/btnExportCSV"

@@ -1,16 +1,25 @@
 package com.eventlottery.ui.organizer;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
+import com.bumptech.glide.Glide;
 import com.eventlottery.R;
+import com.eventlottery.databinding.ActivityManageEvent1Binding;
 import com.eventlottery.databinding.ActivityManageEventBinding;
+import com.eventlottery.model.Event;
+import com.eventlottery.services.Base64EncodeDecode;
+import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -39,38 +48,75 @@ import java.util.ArrayList;
  */
 public class ManageEventActivity extends AppCompatActivity {
 
-    private ActivityManageEventBinding binding;
+    private @NonNull ActivityManageEvent1Binding binding;
     private FirebaseFirestore db;
     private String eventId;
     private String eventName;
+    private Event event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityManageEventBinding.inflate(getLayoutInflater());
+        binding = ActivityManageEvent1Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        eventId = getIntent().getStringExtra("EVENT_ID");
 
         // Initialize Firebase
         db = FirebaseFirestore.getInstance();
 
-        eventId = getIntent().getStringExtra("EVENT_ID");
-        eventName = getIntent().getStringExtra("EVENT_NAME");
-
-        setupUI();
-        loadEventStats();
+        db.collection("events").document(eventId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        event = documentSnapshot.toObject(Event.class);
+                        setupUI();
+                        loadEventStats();
+                    } else {
+                        Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                });
     }
 
+    /**
+     * Sets up the UI elements with event data.
+     */
     private void setupUI() {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
+        Log.d("ManageEvent", "Loading URL: " + event.getPosterImageUrl());
+        if (event.getPosterImageUrl() != null) {
+            Bitmap bitmap = Base64EncodeDecode.decodeBase64(event.getPosterImageUrl());
+            Glide.with(this)
+                    .load(bitmap)
+                    .error(android.R.drawable.stat_notify_error)
+                    .into(binding.eventPosterImage);
+        }
+        binding.eventNameText.setText(event.getName());
+        binding.statusChip.setText(event.getStatus());
+        for (String tag : event.getTags()) {
+            Chip chip = new Chip(this);
+            chip.setText(tag);
+            binding.tagChipGroup.addView(chip);
+        }
+
+        if (event.getGeolocationRadius() != null) {
+            binding.geolocationCard.setVisibility(View.VISIBLE);
+            binding.geolocationRadiusText.setText("Within " + event.getGeolocationRadius() + "km radius");
+        }
+
+        binding.eventDateText.setText(event.getDate());
+        binding.eventTimeText.setText(event.getTime());
+        binding.descriptionText.setText(event.getDescription());
+        binding.locationNameText.setText(event.getLocation());
 
         // Draw lottery button
         binding.btnDrawLottery.setOnClickListener(v -> {
-            Intent intent = new Intent(this, InvitedEntrantsActivity.class);
-            startActivity(new Intent(this, DrawLotteryActivity.class));
+            Intent intent = new Intent(this, DrawLotteryActivity.class);
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
         });
@@ -81,6 +127,17 @@ public class ManageEventActivity extends AppCompatActivity {
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
         });
+
+        // Search and invite users button
+        if (event.isPrivate()) {
+            binding.btnInvitePrivateEntrants.setVisibility(View.VISIBLE);
+
+            binding.btnInvitePrivateEntrants.setOnClickListener(v -> {
+                Intent intent = new Intent(this, SearchUsersActivity.class);
+                intent.putExtra("EVENT_ID", eventId);
+                startActivity(intent);
+            });
+        }
 
         // Export CSV button
         binding.btnExportCSV.setOnClickListener(v -> {
@@ -94,14 +151,16 @@ public class ManageEventActivity extends AppCompatActivity {
         binding = null;
     }
 
-
+    /**
+     * Loads event statistics from Firestore.
+     */
     private void loadEventStats() {
         // Get waitlist count
         db.collection("events").document(eventId)
                 .collection("waitlist")
                 .get()
                 .addOnSuccessListener(query -> {
-                    binding.tvWaitlistCount.setText("Waitlist: " + query.size());
+                    binding.tvWaitlistCount.setText(query.size() + " in the waitlist");
                 });
 
         // Get invited count
@@ -110,7 +169,7 @@ public class ManageEventActivity extends AppCompatActivity {
                 .whereEqualTo("status", "invited")
                 .get()
                 .addOnSuccessListener(query -> {
-                    binding.tvInvitedCount.setText("Invited: " + query.size());
+                    binding.tvInvitedCount.setText(query.size() + " not confirmed");
                 });
 
         // Get confirmed count
@@ -119,12 +178,14 @@ public class ManageEventActivity extends AppCompatActivity {
                 .whereEqualTo("status", "confirmed")
                 .get()
                 .addOnSuccessListener(query -> {
-                    binding.tvConfirmedCount.setText("Confirmed: " + query.size());
+                    binding.tvConfirmedCount.setText(query.size() + " / " + event.getCapacity());
                 });
 
-}
+    }
 
-
+    /**
+     * Exports attendee lists to CSV.
+     */
     private void exportCSV() {
         ArrayList<String> names = new ArrayList<>();
 
@@ -171,6 +232,10 @@ public class ManageEventActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Shares a CSV file.
+     * @param csvContent
+     */
     private void shareCSV(String csvContent) {
         try {
             File file = new File(getExternalFilesDir(null), "entrants.csv");

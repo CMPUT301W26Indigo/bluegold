@@ -1,13 +1,19 @@
 package com.eventlottery.controller;
 
-import com.eventlottery.model.EventTemp;
+import com.eventlottery.model.Event;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Deals with database operations for events.
+ * Part of the 'Controller' in MVC.
  */
 public class EventController {
     private final FirebaseFirestore db;
@@ -17,7 +23,7 @@ public class EventController {
      * Interface for handling events loaded from Firestore.
      */
     public interface OnEventsLoadedListener {
-        void onEventsLoaded(List<EventTemp> events);
+        void onEventsLoaded(List<Event> events);
         void onError(Exception e);
     }
 
@@ -26,6 +32,14 @@ public class EventController {
      */
     public interface OnEventOperationListener {
         void onSuccess();
+        void onError(Exception e);
+    }
+
+    /**
+     * Interface for checking waitlist status.
+     */
+    public interface OnWaitlistStatusListener {
+        void onStatusChecked(boolean isOnWaitlist);
         void onError(Exception e);
     }
 
@@ -43,9 +57,54 @@ public class EventController {
         db.collection(COLLECTION_NAME)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<EventTemp> events = new ArrayList<>();
+                    List<Event> events = new ArrayList<>();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        EventTemp event = document.toObject(EventTemp.class);
+                        Event event = document.toObject(Event.class);
+                        event.setId(document.getId());
+                        events.add(event);
+                    }
+                    listener.onEventsLoaded(events);
+                })
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Fetches only public events from Firestore.
+     * @param listener
+     */
+    public void getAllPublicEvents(OnEventsLoadedListener listener) {
+        db.collection(COLLECTION_NAME)
+                .whereEqualTo("private", false)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Event> events = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Event event = document.toObject(Event.class);
+                        event.setId(document.getId());
+                        events.add(event);
+                    }
+                    listener.onEventsLoaded(events);
+                })
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Fetches specific events from Firestore by their IDs.
+     */
+    public void getEventsByIds(List<String> eventIds, OnEventsLoadedListener listener) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            listener.onEventsLoaded(new ArrayList<>());
+            return;
+        }
+
+        // Firestore 'in' query limit is 10 (or 30 in some cases), but for simplicity:
+        db.collection(COLLECTION_NAME)
+                .whereIn(FieldPath.documentId(), eventIds)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Event> events = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Event event = document.toObject(Event.class);
                         event.setId(document.getId());
                         events.add(event);
                     }
@@ -57,20 +116,22 @@ public class EventController {
     /**
      * Adds a new event to Firestore.
      */
-    public void addEvent(EventTemp event, OnEventOperationListener listener) {
-        db.collection(COLLECTION_NAME)
-                .add(event)
-                .addOnSuccessListener(documentReference -> {
-                    event.setId(documentReference.getId());
-                    listener.onSuccess();
-                })
+    public void addEvent(Event event, OnEventOperationListener listener) {
+        DocumentReference docRef = db.collection(COLLECTION_NAME).document();
+        String eventId = docRef.getId();
+
+        event.setId(eventId);
+        event.setQrCodeUrl("eventlottery://event/" + eventId);
+
+        docRef.set(event)
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
     }
 
     /**
      * Updates an existing event in Firestore.
      */
-    public void updateEvent(EventTemp event, OnEventOperationListener listener) {
+    public void updateEvent(Event event, OnEventOperationListener listener) {
         if (event.getId() == null || event.getId().isEmpty()) {
             listener.onError(new IllegalArgumentException("Event ID is required for update"));
             return;
@@ -93,6 +154,62 @@ public class EventController {
                 .addOnFailureListener(listener::onError);
     }
 
-    // todo Call functions that create and present url
+    /**
+     * Adds an attendee to an event's waitlist.
+     * @param eventId The ID of the event.
+     * @param attendeeId The ID of the attendee.
+     * @param listener Callback for completion.
+     */
+    public void joinWaitlist(String eventId, String attendeeId, OnEventOperationListener listener) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("status", "waiting"); // Default status
 
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("waitlist").document(attendeeId)
+                .set(data)
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnFailureListener(listener::onError);
+
+        db.collection("attendees").document(attendeeId)
+                .collection("waitListed").document(eventId)
+                .set(data)
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Removes an attendee from an event's waitlist.
+     * @param eventId The ID of the event.
+     * @param attendeeId The ID of the attendee.
+     * @param listener Callback for completion.
+     */
+    public void leaveWaitlist(String eventId, String attendeeId, OnEventOperationListener listener) {
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("waitlist").document(attendeeId)
+                .delete()
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnFailureListener(listener::onError);
+
+        db.collection("attendees").document(attendeeId)
+                .collection("waitListed").document(eventId)
+                .delete()
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Checks if an attendee is currently on the waitlist for a specific event.
+     * @param eventId The ID of the event.
+     * @param attendeeId The ID of the attendee.
+     * @param listener Callback for the result.
+     */
+    public void checkIfAttendeeOnWaitlist(String eventId, String attendeeId, OnWaitlistStatusListener listener) {
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("waitlist").document(attendeeId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    listener.onStatusChecked(documentSnapshot.exists());
+                })
+                .addOnFailureListener(listener::onError);
+    }
 }

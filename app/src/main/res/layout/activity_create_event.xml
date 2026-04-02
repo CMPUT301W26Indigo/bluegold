@@ -338,6 +338,67 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+        <!--        Private Event Card-->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_md"
+            app:cardElevation="@dimen/elevation_sm"
+            app:cardCornerRadius="@dimen/radius_md"
+            app:cardBackgroundColor="@color/background_gray_300"
+            app:strokeColor="@color/border_gray_300"
+            app:strokeWidth="@dimen/border_medium">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding">
+
+                <!-- Header with Toggle -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/spacing_sm">
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_md"
+                        android:layout_height="@dimen/icon_md"
+                        android:src="@android:drawable/ic_lock_lock"
+                        android:contentDescription="@string/private_event"
+                        app:tint="@color/status_closed_gray" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:text="@string/private_event"
+                        android:textAppearance="@style/TextAppearance.App.Title"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/privacySwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/privacy_desc"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="@dimen/spacing_md" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- Event Tags -->
         <TextView
             android:layout_width="match_parent"
@@ -389,31 +450,59 @@
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/uploadPosterCard"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="240dp"
             android:layout_marginBottom="@dimen/spacing_md"
-            android:clickable="true"
-            android:focusable="true"
             app:cardElevation="@dimen/elevation_sm"
             app:cardCornerRadius="@dimen/radius_md"
             app:cardBackgroundColor="@color/background_gray_50"
             app:strokeColor="@color/border_gray_300"
             app:strokeWidth="@dimen/border_medium">
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:padding="@dimen/spacing_xl">
+                android:layout_height="match_parent">
 
+                <!-- The Actual Image (starts as icon) -->
                 <ImageView
                     android:id="@+id/posterImageView"
-                    android:layout_width="@dimen/icon_xl"
-                    android:layout_height="@dimen/icon_xl"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:scaleType="centerInside"
                     android:src="@android:drawable/ic_menu_upload"
-                    android:contentDescription="@string/upload_event_poster"
-                    app:tint="@color/text_tertiary"
-                    android:layout_marginBottom="@dimen/spacing_sm" />
+                    app:layout_constraintBottom_toTopOf="@+id/browseFilesButton"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="@color/text_tertiary" />
+
+                <!-- Placeholder content -->
+                <LinearLayout
+                    android:id="@+id/placeholderContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toTopOf="@+id/browseFilesButton"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.88"
+                    app:layout_constraintVertical_chainStyle="packed">
+
+                </LinearLayout>
+
+                <!-- Button at bottom -->
+                <Button
+                    android:id="@+id/browseFilesButton"
+                    style="@style/Widget.App.Button.Outlined"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/browse_files"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.85" />
 
                 <TextView
                     android:id="@+id/uploadTitleText"
@@ -421,7 +510,11 @@
                     android:layout_height="wrap_content"
                     android:text="@string/upload_event_poster"
                     android:textAppearance="@style/TextAppearance.App.Title"
-                    android:layout_marginBottom="@dimen/spacing_xs" />
+                    app:layout_constraintBottom_toTopOf="@+id/placeholderContainer"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/posterImageView"
+                    app:layout_constraintVertical_bias="0.39" />
 
                 <TextView
                     android:id="@+id/uploadSubtitleText"
@@ -429,16 +522,11 @@
                     android:layout_height="wrap_content"
                     android:text="@string/image_format"
                     android:textAppearance="@style/TextAppearance.App.Caption"
-                    android:layout_marginBottom="@dimen/spacing_md" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/uploadTitleText" />
 
-                <Button
-                    android:id="@+id/browseFilesButton"
-                    style="@style/Widget.App.Button.Outlined"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/browse_files" />
-
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </com.google.android.material.card.MaterialCardView>
 
