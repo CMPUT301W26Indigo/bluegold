@@ -146,10 +146,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         binding.locationNameText.setText(event.getLocation());
 
         // Buttons only appear if event is not private
-        if(!event.isPrivate()) {
-            binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
+        binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
 
-            // View QR button
+        // Can only see the QR button in a public event
+        if(!event.isPrivate()) {
+            binding.viewQrButton.setVisibility(View.VISIBLE);
             binding.viewQrButton.setOnClickListener(v -> {
                 Intent intent = new Intent(this, QRDisplayActivity.class);
                 intent.putExtra("EVENT_ID", eventId);
