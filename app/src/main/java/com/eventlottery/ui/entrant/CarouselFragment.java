@@ -39,10 +39,6 @@ public class CarouselFragment extends Fragment {
         void onEventClick(Event event);
     }
 
-    public CarouselFragment() {
-        // Required empty public constructor
-    }
-
     public void setOnEventClickListener(OnEventClickListener listener) {
         this.listener = listener;
     }
@@ -169,5 +165,33 @@ public class CarouselFragment extends Fragment {
                 }
             }
         }
+    }
+
+    public void defaultSort() {
+        sortByMostRecent();
+    }
+
+    public void sortByMostRecent() {
+
+    }
+
+    public void sortByClosestDeadline() {
+
+    }
+
+    public void sortByGeolocationRange() {
+
+    }
+
+    public void sortByMostEmpty() {
+
+    }
+
+    public void sortByMostFull() {
+
+    }
+
+    public void sortByCheapest() {
+
     }
 }
