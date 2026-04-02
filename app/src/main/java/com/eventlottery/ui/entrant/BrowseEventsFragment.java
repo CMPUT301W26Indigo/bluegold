@@ -88,7 +88,10 @@ public class BrowseEventsFragment extends Fragment {
     }
 
     private void loadEvents() {
-        eventController.getAllEvents(new EventController.OnEventsLoadedListener() {
+        // NOTE: Currently, entrants only see public events.
+        // If you need to see all the events from the entrant POV for debugging
+        // Replace getAllPublicEvents with getAllEvents
+        eventController.getAllPublicEvents(new EventController.OnEventsLoadedListener() {
             @Override
             public void onEventsLoaded(List<Event> events) {
                 allEvents = events;
@@ -146,23 +149,24 @@ public class BrowseEventsFragment extends Fragment {
         binding = null;
     }
 
-    private void loadJoinableEvents() {
-        long now = System.currentTimeMillis();
-
-        db.collection("events")
-                .whereEqualTo("status", "open")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<Event> joinable = new ArrayList<>();
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        Event event = doc.toObject(Event.class);
-                        if (now >= event.getRegistrationOpens() && now <= event.getRegistrationCloses()) {
-                            joinable.add(event);
-                        }
-                    }
-                    eventAdapter.submitList(joinable);
-                });
-    }
+    // TODO: What is this for? It had no usages: should we delete?
+//    private void loadJoinableEvents() {
+//        long now = System.currentTimeMillis();
+//
+//        db.collection("events")
+//                .whereEqualTo("status", "open")
+//                .get()
+//                .addOnSuccessListener(queryDocumentSnapshots -> {
+//                    List<Event> joinable = new ArrayList<>();
+//                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+//                        Event event = doc.toObject(Event.class);
+//                        if (now >= event.getRegistrationOpens() && now <= event.getRegistrationCloses()) {
+//                            joinable.add(event);
+//                        }
+//                    }
+//                    eventAdapter.submitList(joinable);
+//                });
+//    }
 
 
 }
