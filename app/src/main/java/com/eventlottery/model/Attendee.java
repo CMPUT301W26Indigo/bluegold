@@ -9,6 +9,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.installations.FirebaseInstallations;
 import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents an Attendee in the Event Lottery System.
@@ -89,7 +91,7 @@ public class Attendee extends AbstractUser {
                         }
                         this.waitListed = remote.waitListed != null ? remote.waitListed : new ArrayList<>();
                         this.notification = remote.notification;
-//                        if (listener != null) listener.onSuccess();
+                        if (listener != null) listener.onSuccess(this);
                     } else if (listener != null) {
                         listener.onError(new Exception("Attendee document not found"));
                     }
@@ -161,23 +163,6 @@ public class Attendee extends AbstractUser {
     }
 
     /**
-     * Retrieves the unique Android device ID for this app installation.
-     * @param context The application context.
-     * @return The unique Android ID string.
-     */
-    public static String getDeviceId(Context context) {
-        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-    }
-
-    /**
-     * Asynchronously retrieves the unique Firebase Installation ID.
-     * @return A Task that will resolve to the Firebase Installation ID.
-     */
-    public static Task<String> getFirebaseId() {
-        return FirebaseInstallations.getInstance().getId();
-    }
-
-    /**
      * Gets the attendee's unique ID.
      * @return The attendee ID.
      */
@@ -186,14 +171,24 @@ public class Attendee extends AbstractUser {
     }
 
     /**
+     * Sets the attendee's unique ID.
+     * @param deviceID The ID to set.
+     */
+    public void setAttendeeID(String deviceID) {
+        this.deviceID = deviceID;
+    }
+
+    /**
      * Adds an event to the attendee's personal waitlist and updates Firebase.
      * @param eventID The unique identifier of the event.
      */
     public void joinWaitList(String eventID) {
-        if (!waitListed.contains(eventID)) {
-            waitListed.add(eventID);
-            saveToFirebase();
-        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("status", "waiting");
+
+        db.collection("attendees").document(getAttendeeID())
+                .collection("waitListed").document(eventID)
+                .set(data);
     }
 
     /**

@@ -124,13 +124,13 @@ public abstract class AbstractUser {
     }
 
     /**
+     * @deprecated Use {@link #getFirebaseId()} for consistent cross-device/install identification.
      * Retrieves the unique Android device ID for this app installation.
-     * Source - https://stackoverflow.com/a/60505449
-     * Posted by Rahul Samaddar
-     * Retrieved 2026-03-09, License - CC BY-SA 4.0
+     *
      * @param context The application context.
      * @return The unique Android ID string.
      */
+    @Deprecated
     public static String getDeviceId(Context context) {
         return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
