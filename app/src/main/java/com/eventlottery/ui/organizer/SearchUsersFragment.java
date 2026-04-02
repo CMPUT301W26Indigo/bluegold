@@ -109,7 +109,8 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
         for (Attendee attendee : allAttendees) {
             boolean matchesName = attendee.getName() != null && attendee.getName().toLowerCase().contains(lowerQuery);
             boolean matchesEmail = attendee.getEmail() != null && attendee.getEmail().toLowerCase().contains(lowerQuery);
-            if (matchesName || matchesEmail) {
+            boolean matchesPhone = attendee.getPhoneNumber() != null && attendee.getPhoneNumber().toLowerCase().contains(lowerQuery);
+            if (matchesName || matchesEmail || matchesPhone) {
                 filtered.add(attendee);
             }
         }
