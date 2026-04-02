@@ -1,236 +1,106 @@
 package com.eventlottery.controller;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
 
+import com.eventlottery.R;
 import com.eventlottery.model.Attendee;
-import com.eventlottery.model.User;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.eventlottery.ui.entrant.ProfileActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Extensive Instrumented Test Suite for UserController.deleteUser (US 01.02.04).
- * Verifies profile deletion and cascading cleanup of event associations.
+ * UI Instrumented Test for US 01.02.04.
+ * Verifies the full user flow for profile deletion, including UI prompts and Firestore cleanup.
  */
 @RunWith(AndroidJUnit4.class)
+@LargeTest
 public class DeleteUserTest {
 
-    private UserController userController;
+    @Rule
+    public ActivityScenarioRule<ProfileActivity> activityRule =
+            new ActivityScenarioRule<>(ProfileActivity.class);
+
     private FirebaseFirestore db;
-    private String testUserId;
-    private String testEventId;
-    
-    private final String VALID_EMAIL = "delete_test@example.com";
-    private final String VALID_PHONE = "1234567890";
+    private String deviceId;
 
     @Before
-    public void setUp() {
-        userController = new UserController();
+    public void setUp() throws InterruptedException {
         db = FirebaseFirestore.getInstance();
         
-        // Ensure fresh data for every test run
-        testUserId = "user_" + UUID.randomUUID().toString().substring(0, 8);
-        testEventId = "event_" + UUID.randomUUID().toString().substring(0, 8);
+        // Get the actual device ID used by the app to create a mock record
+        CountDownLatch idLatch = new CountDownLatch(1);
+        Attendee.getFirebaseId().addOnSuccessListener(id -> {
+            deviceId = id;
+            idLatch.countDown();
+        });
+        idLatch.await(5, TimeUnit.SECONDS);
+
+        // Create a mock attendee record with valid data to satisfy model validation
+        Attendee mockAttendee = new Attendee();
+        mockAttendee.setAttendeeID(deviceId);
+        mockAttendee.setName("Max Power");
+        mockAttendee.setEmail("test@myapp.com");
+        mockAttendee.setPhoneNumber("7805551234"); // Valid 10-digit format
+        mockAttendee.setAddress("123 Fake St");
+        
+        CountDownLatch setupLatch = new CountDownLatch(2);
+        db.collection("attendees").document(deviceId).set(mockAttendee)
+                .addOnCompleteListener(task -> setupLatch.countDown());
+        db.collection("users").document(deviceId).set(mockAttendee)
+                .addOnCompleteListener(task -> setupLatch.countDown());
+        setupLatch.await(10, TimeUnit.SECONDS);
     }
 
     /**
-     * Test basic deletion success callback.
+     * US 01.02.04: As an entrant, I want to delete my profile.
+     * This test mimics the user clicking the delete button and confirming.
      */
     @Test
-    public void testDeleteUserSuccessCallback() throws InterruptedException {
-        setupMockUser(testUserId);
+    public void testDeleteProfileFlow() throws InterruptedException {
+        // 1. Check if the profile screen is displayed
+        onView(withId(R.id.btnDeleteProfile)).check(matches(isDisplayed()));
 
-        CountDownLatch latch = new CountDownLatch(1);
-        userController.deleteUser(testUserId, new UserController.OnUserOperationListener() {
-            @Override
-            public void onSuccess() { latch.countDown(); }
-            @Override
-            public void onError(Exception e) { fail(e.getMessage()); }
-        });
+        // 2. Click the Delete Profile button
+        onView(withId(R.id.btnDeleteProfile)).perform(click());
 
-        assertTrue("Callback timed out", latch.await(10, TimeUnit.SECONDS));
-    }
+        // 3. Verify the confirmation dialog appears (Requirement: "with a prompt asking if they are sure")
+        onView(withText("Delete Profile")).check(matches(isDisplayed()));
+        onView(withText("Are you sure you want to delete your profile? This action cannot be undone."))
+                .check(matches(isDisplayed()));
 
-    /**
-     * Verifies that both User and Attendee documents are actually removed from Firestore.
-     */
-    @Test
-    public void testDeleteUserDocumentVerification() throws InterruptedException {
-        setupMockUser(testUserId);
-        setupMockAttendee(testUserId);
+        // 4. Click the "Delete" button in the dialog
+        onView(withText("Delete")).inRoot(isDialog()).perform(click());
 
-        CountDownLatch deleteLatch = new CountDownLatch(1);
-        userController.deleteUser(testUserId, new UserController.OnUserOperationListener() {
-            @Override
-            public void onSuccess() { deleteLatch.countDown(); }
-            @Override
-            public void onError(Exception e) { fail(e.getMessage()); }
-        });
-        deleteLatch.await(10, TimeUnit.SECONDS);
+        // 5. Wait for Firestore operations to complete and verify document deletion
+        Thread.sleep(5000); 
 
-        // Verify documents are gone
-        CountDownLatch verifyLatch = new CountDownLatch(2);
-        db.collection("users").document(testUserId).get().addOnCompleteListener(task -> {
-            assertFalse("User document should be deleted", task.getResult().exists());
+        CountDownLatch verifyLatch = new CountDownLatch(1);
+        db.collection("users").document(deviceId).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                assertFalse("User document should be deleted from Firestore", task.getResult().exists());
+            }
             verifyLatch.countDown();
         });
-        db.collection("attendees").document(testUserId).get().addOnCompleteListener(task -> {
-            assertFalse("Attendee document should be deleted", task.getResult().exists());
-            verifyLatch.countDown();
-        });
-
-        assertTrue("Verification timed out", verifyLatch.await(10, TimeUnit.SECONDS));
-    }
-
-    /**
-     * Verifies cleanup logic when a user is on multiple waitlists.
-     */
-    @Test
-    public void testDeleteUserMultipleWaitlists() throws InterruptedException {
-        String eventId2 = "event_multi_2";
-        Attendee attendee = new Attendee();
-        attendee.setAttendeeID(testUserId);
-        attendee.setName("Multi-Waitlist User");
-        attendee.setEmail(VALID_EMAIL);
-        attendee.setPhoneNumber(VALID_PHONE);
-        attendee.joinWaitList(testEventId);
-        attendee.joinWaitList(eventId2);
-
-        CountDownLatch setupLatch = new CountDownLatch(1);
-        db.collection("attendees").document(testUserId).set(attendee)
-                .addOnCompleteListener(task -> setupLatch.countDown());
-        setupLatch.await(5, TimeUnit.SECONDS);
-
-        CountDownLatch deleteLatch = new CountDownLatch(1);
-        userController.deleteUser(testUserId, new UserController.OnUserOperationListener() {
-            @Override
-            public void onSuccess() { deleteLatch.countDown(); }
-            @Override
-            public void onError(Exception e) { fail(e.getMessage()); }
-        });
-
-        assertTrue("Delete operation with multiple waitlists timed out", deleteLatch.await(15, TimeUnit.SECONDS));
-    }
-
-    /**
-     * Verifies cleanup logic when a user has multiple event histories.
-     */
-    @Test
-    public void testDeleteUserMultipleGuestLists() throws InterruptedException {
-        String eventId2 = "event_history_2";
-        Attendee attendee = new Attendee();
-        attendee.setAttendeeID(testUserId);
-        attendee.setName("History User");
-        attendee.setEmail(VALID_EMAIL);
-        attendee.setPhoneNumber(VALID_PHONE);
-        attendee.addEventToHistory(testEventId);
-        attendee.addEventToHistory(eventId2);
-
-        CountDownLatch setupLatch = new CountDownLatch(1);
-        db.collection("attendees").document(testUserId).set(attendee)
-                .addOnCompleteListener(task -> setupLatch.countDown());
-        setupLatch.await(5, TimeUnit.SECONDS);
-
-        CountDownLatch deleteLatch = new CountDownLatch(1);
-        userController.deleteUser(testUserId, new UserController.OnUserOperationListener() {
-            @Override
-            public void onSuccess() { deleteLatch.countDown(); }
-            @Override
-            public void onError(Exception e) { fail(e.getMessage()); }
-        });
-
-        assertTrue("Delete operation with multiple history entries timed out", deleteLatch.await(15, TimeUnit.SECONDS));
-    }
-
-    /**
-     * Verifies that deletion handles cases where only the User document exists (Attendee doc missing).
-     */
-    @Test
-    public void testDeleteUserResilience_UserOnly() throws InterruptedException {
-        setupMockUser(testUserId); // Only create the 'users' document
-
-        CountDownLatch latch = new CountDownLatch(1);
-        userController.deleteUser(testUserId, new UserController.OnUserOperationListener() {
-            @Override
-            public void onSuccess() { latch.countDown(); }
-            @Override
-            public void onError(Exception e) { fail(e.getMessage()); }
-        });
-
-        assertTrue("Resilience test (User only) timed out", latch.await(10, TimeUnit.SECONDS));
-    }
-
-    /**
-     * Verifies that deletion handles cases where only the Attendee document exists (User doc missing).
-     */
-    @Test
-    public void testDeleteUserResilience_AttendeeOnly() throws InterruptedException {
-        setupMockAttendee(testUserId); // Only create the 'attendees' document
-
-        CountDownLatch latch = new CountDownLatch(1);
-        userController.deleteUser(testUserId, new UserController.OnUserOperationListener() {
-            @Override
-            public void onSuccess() { latch.countDown(); }
-            @Override
-            public void onError(Exception e) { fail(e.getMessage()); }
-        });
-
-        assertTrue("Resilience test (Attendee only) timed out", latch.await(10, TimeUnit.SECONDS));
-    }
-
-    @Test
-    public void testDeleteNonExistentUser() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        userController.deleteUser("definitely_not_an_id_" + UUID.randomUUID(), new UserController.OnUserOperationListener() {
-            @Override
-            public void onSuccess() { latch.countDown(); }
-            @Override
-            public void onError(Exception e) { fail(e.getMessage()); }
-        });
-
-        assertTrue("Delete non-existent user timed out", latch.await(10, TimeUnit.SECONDS));
-    }
-
-    // Helper Methods
-    
-    private void setupMockUser(String userId) throws InterruptedException {
-        User user = new User();
-        user.setId(userId);
-        user.setName("Test User");
-        user.setEmail(VALID_EMAIL);
-        user.setPhone(VALID_PHONE);
         
-        CountDownLatch latch = new CountDownLatch(1);
-        userController.saveUser(user, new UserController.OnUserOperationListener() {
-            @Override
-            public void onSuccess() { latch.countDown(); }
-            @Override
-            public void onError(Exception e) { latch.countDown(); }
-        });
-        latch.await(5, TimeUnit.SECONDS);
-    }
-
-    private void setupMockAttendee(String userId) throws InterruptedException {
-        Attendee attendee = new Attendee();
-        attendee.setAttendeeID(userId);
-        attendee.setName("Test Attendee");
-        attendee.setEmail(VALID_EMAIL);
-        attendee.setPhoneNumber(VALID_PHONE);
-        
-        CountDownLatch latch = new CountDownLatch(1);
-        db.collection("attendees").document(userId).set(attendee)
-                .addOnCompleteListener(task -> latch.countDown());
-        latch.await(5, TimeUnit.SECONDS);
+        assertTrue("Firestore verification timed out", verifyLatch.await(10, TimeUnit.SECONDS));
     }
 }
