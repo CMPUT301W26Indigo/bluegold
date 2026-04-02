@@ -21,6 +21,8 @@ import com.eventlottery.ui.qr.QRDisplayActivity;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.DecimalFormat;
+
 /**
  * EventDetailsActivity
  * 
@@ -138,6 +140,13 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
         binding.eventNameText.setText(event.getName());
         binding.statusChip.setText(event.getStatus());
+
+        DecimalFormat df = new DecimalFormat("0.00");
+        if (event.getPrice() == 0 || event.getPrice() == 0.0) {
+            binding.priceChip.setText("Price: Free");
+        } else {
+            binding.priceChip.setText("Price: $" + df.format(event.getPrice()));
+        }
         binding.tagChipGroup.removeAllViews();
         for (String tag : event.getTags()) {
             Chip chip = new Chip(this);
