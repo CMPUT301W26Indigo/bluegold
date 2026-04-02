@@ -5,7 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,9 +21,9 @@ import com.eventlottery.databinding.CarouselCardBinding;
 import com.eventlottery.databinding.FragmentCarouselBinding;
 import com.eventlottery.model.Event;
 import com.eventlottery.services.Base64EncodeDecode;
-import com.google.android.material.chip.Chip;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -53,6 +54,7 @@ public class CarouselFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupRecyclerView();
+        setupSpinner();
     }
 
     private void setupRecyclerView() {
@@ -65,10 +67,41 @@ public class CarouselFragment extends Fragment {
         snapHelper.attachToRecyclerView(binding.carouselRecyclerView);
     }
 
+    private void setupSpinner() {
+        String[] options = {"Newest", "Popular", "Closing Soon", "Within 3KM", "Hidden Gems", "Less than $10"};
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, options);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.sortDropdown.setAdapter(spinnerAdapter);
+
+        binding.sortDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                applySort(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
+    private void applySort(int position) {
+        switch (position) {
+            case 0: getNewest(); break;
+            case 1: getMostFull(); break;
+            case 2: getClosestDeadline(); break;
+            case 3: getNearest(); break;
+            case 4: getMostEmpty(); break;
+            case 5: getCheap(); break;
+            default: defaultSort(); break;
+        }
+    }
+
     public void setEvents(List<Event> newEvents) {
-        this.events = newEvents;
-        if (adapter != null) {
-            adapter.updateEvents(newEvents);
+        this.events = new ArrayList<>(newEvents);
+        if (binding != null) {
+            applySort(binding.sortDropdown.getSelectedItemPosition());
+        } else if (adapter != null) {
+            adapter.updateEvents(this.events);
         }
     }
 
@@ -108,7 +141,7 @@ public class CarouselFragment extends Fragment {
 
         @Override
         public int getItemCount() {
-            return eventList.size();
+            return Math.min(eventList.size(), 5);
         }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
@@ -145,53 +178,88 @@ public class CarouselFragment extends Fragment {
 
             private String getStatusText(String status) {
                 if (status == null) return "Unknown";
-                switch (status) {
-                    case "open": return "Open";
-                    case "closed": return "Closed";
-                    case "lottery_drawn": return "Lottery Drawn";
-                    case "completed": return "Completed";
-                    default: return status;
-                }
+                return switch (status) {
+                    case "open" -> "Open";
+                    case "closed" -> "Closed";
+                    case "lottery_drawn" -> "Lottery Drawn";
+                    case "completed" -> "Completed";
+                    default -> status;
+                };
             }
 
             private int getStatusColor(String status) {
                 if (status == null) return R.color.status_closed_gray;
-                switch (status) {
-                    case "open": return R.color.status_open_green;
-                    case "closed": return R.color.status_closed_gray;
-                    case "lottery_drawn": return R.color.status_waiting_yellow;
-                    case "completed": return R.color.status_closed_gray;
-                    default: return R.color.status_closed_gray;
-                }
+                return switch (status) {
+                    case "open" -> R.color.status_open_green;
+                    case "closed" -> R.color.status_closed_gray;
+                    case "lottery_drawn" -> R.color.status_waiting_yellow;
+                    case "completed" -> R.color.status_closed_gray;
+                    default -> R.color.status_closed_gray;
+                };
             }
         }
     }
 
     public void defaultSort() {
-        sortByMostRecent();
+        getNewest();
     }
 
-    public void sortByMostRecent() {
-
+    public void getNewest() {
+        events.sort((e1, e2) -> Long.compare(e2.getCreatedAt(), e1.getCreatedAt()));
+        if (adapter != null) adapter.updateEvents(events);
     }
 
-    public void sortByClosestDeadline() {
-
+    public void getClosestDeadline() {
+        List<Event> closestDeadlineEvents = new ArrayList<>();
+        long threeDaysInMs = 3L * 24 * 60 * 60 * 1000;
+        long now = System.currentTimeMillis();
+        for (Event event : events) {
+            long deadline = event.getRegistrationCloses();
+            if (deadline > now && deadline <= now + threeDaysInMs) {
+                closestDeadlineEvents.add(event);
+            }
+        }
+        if (adapter != null) adapter.updateEvents(closestDeadlineEvents);
     }
 
-    public void sortByGeolocationRange() {
-
+    public void getNearest() {
+        List<Event> nearestEvents = new ArrayList<>();
+        for (Event event : events) {
+            Integer radius = event.getGeolocationRadius();
+            if (radius == null || radius <= 3) {
+                nearestEvents.add(event);
+            }
+        }
+        if (adapter != null) adapter.updateEvents(nearestEvents);
     }
 
-    public void sortByMostEmpty() {
-
+    public void getMostEmpty() {
+        List<Event> emptiestEvents = new ArrayList<>();
+        for (Event event : events) {
+            if (event.getWaitlistCount() <= 5) {
+                emptiestEvents.add(event);
+            }
+        }
+        if (adapter != null) adapter.updateEvents(emptiestEvents);
     }
 
-    public void sortByMostFull() {
-
+    public void getMostFull() {
+        List<Event> fullestEvents = new ArrayList<>();
+        for (Event event : events) {
+            if (event.getCapacity() - event.getWaitlistCount() <= 5) {
+                fullestEvents.add(event);
+            }
+        }
+        if (adapter != null) adapter.updateEvents(fullestEvents);
     }
 
-    public void sortByCheapest() {
-
+    public void getCheap() {
+        List<Event> cheapEvents = new ArrayList<>();
+        for (Event event : events) {
+            if (event.getPrice() < 10.0) {
+                cheapEvents.add(event);
+            }
+        }
+        if (adapter != null) adapter.updateEvents(cheapEvents);
     }
 }
