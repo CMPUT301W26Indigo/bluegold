@@ -79,6 +79,9 @@ public class ManageEventActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Sets up the UI elements with event data.
+     */
     private void setupUI() {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
@@ -148,7 +151,9 @@ public class ManageEventActivity extends AppCompatActivity {
         binding = null;
     }
 
-
+    /**
+     * Loads event statistics from Firestore.
+     */
     private void loadEventStats() {
         // Get waitlist count
         db.collection("events").document(eventId)
@@ -176,9 +181,11 @@ public class ManageEventActivity extends AppCompatActivity {
                     binding.tvConfirmedCount.setText(query.size() + " / " + event.getCapacity());
                 });
 
-}
+    }
 
-
+    /**
+     * Exports attendee lists to CSV.
+     */
     private void exportCSV() {
         ArrayList<String> names = new ArrayList<>();
 
@@ -225,6 +232,10 @@ public class ManageEventActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Shares a CSV file.
+     * @param csvContent
+     */
     private void shareCSV(String csvContent) {
         try {
             File file = new File(getExternalFilesDir(null), "entrants.csv");

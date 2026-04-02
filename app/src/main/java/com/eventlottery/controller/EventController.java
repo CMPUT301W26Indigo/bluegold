@@ -68,6 +68,10 @@ public class EventController {
                 .addOnFailureListener(listener::onError);
     }
 
+    /**
+     * Fetches only public events from Firestore.
+     * @param listener
+     */
     public void getAllPublicEvents(OnEventsLoadedListener listener) {
         db.collection(COLLECTION_NAME)
                 .whereEqualTo("private", false)

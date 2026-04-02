@@ -59,6 +59,9 @@ public class BrowseEventsFragment extends Fragment {
         binding.eventsRecyclerView.setAdapter(eventAdapter);
     }
 
+    /**
+     * Sets up the search functionality.
+     */
     private void setupSearch() {
         binding.searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -74,6 +77,9 @@ public class BrowseEventsFragment extends Fragment {
         });
     }
 
+    /**
+     * Sets up the filter functionality.
+     */
     private void setupFilters() {
         binding.tagChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
             List<String> selectedTags = new ArrayList<>();
@@ -87,8 +93,11 @@ public class BrowseEventsFragment extends Fragment {
         });
     }
 
+    /**
+     * Loads all PUBLIC events from the DB
+     */
     private void loadEvents() {
-        // NOTE: Currently, entrants only see public events.
+        // TODO: Currently, entrants only see public events.
         // If you need to see all the events from the entrant POV for debugging
         // Replace getAllPublicEvents with getAllEvents
         eventController.getAllPublicEvents(new EventController.OnEventsLoadedListener() {
@@ -105,6 +114,10 @@ public class BrowseEventsFragment extends Fragment {
         });
     }
 
+    /**
+     * Filters the event list based on a query string.
+     * @param query The search query.
+     */
     private void filterEvents(String query) {
         List<Event> filtered = new ArrayList<>();
         String lowerQuery = query.toLowerCase();
@@ -117,6 +130,9 @@ public class BrowseEventsFragment extends Fragment {
         eventAdapter.submitList(filtered);
     }
 
+    /**
+     * Filters the event list based on selected tags.
+     */
     private void filterByTags(List<String> tags) {
         if (tags.isEmpty()) {
             eventAdapter.submitList(new ArrayList<>(allEvents));
@@ -134,6 +150,10 @@ public class BrowseEventsFragment extends Fragment {
         eventAdapter.submitList(filtered);
     }
 
+    /*
+     * Navigates to the EventDetailsActivity when an event is clicked.
+     * @param event The selected event.
+     */
     private void navigateToEventDetails(Event event) {
         Intent intent = new Intent(getActivity(), EventDetailsActivity.class);
         // Since EventTemp had serializable properties and Event does not, I had to pass the eventId

@@ -54,11 +54,18 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         holder.bind(attendee, listener);
     }
 
+    /**
+     * Returns the number of attendees
+     * @return int
+     */
     @Override
     public int getItemCount() {
         return attendees.size();
     }
 
+    /**
+     * ViewHolder for each attendee card
+     */
     static class UserViewHolder extends RecyclerView.ViewHolder {
         private final ItemUserCardBinding binding;
 
@@ -89,7 +96,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                 boolean isCurrentlyInvited = binding.statusBadge.getText().toString().equalsIgnoreCase("Invited");
 
                 if (isCurrentlyInvited) {
-                    // Uninvite logic - update UI immediately
+                    // Uninvite
                     binding.statusBadge.setText("Invite");
                     binding.statusBadge.setBackgroundTintList(
                             binding.getRoot().getContext().getColorStateList(R.color.status_closed_gray)
@@ -99,7 +106,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                         listener.onUninviteClick(attendee);
                     }
                 } else {
-                    // Invite logic - update UI immediately
+                    // Invite logic
                     binding.statusBadge.setText("Invited");
                     binding.statusBadge.setBackgroundTintList(
                             binding.getRoot().getContext().getColorStateList(R.color.status_open_green)
