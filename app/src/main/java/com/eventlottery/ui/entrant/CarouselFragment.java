@@ -65,8 +65,24 @@ public class CarouselFragment extends Fragment {
         // Add snapping behavior for carousel effect
         PagerSnapHelper snapHelper = new PagerSnapHelper();
         snapHelper.attachToRecyclerView(binding.carouselRecyclerView);
+
+        scrollToMiddle();
     }
 
+    /**
+     * Scrolls the carousel to a middle position to enable infinite swiping in both directions.
+     */
+    private void scrollToMiddle() {
+        if (adapter != null && adapter.getActualItemCount() > 0) {
+            int middle = Integer.MAX_VALUE / 2;
+            int offset = middle % adapter.getActualItemCount();
+            binding.carouselRecyclerView.scrollToPosition(middle - offset);
+        }
+    }
+
+    /**
+     * Sets up the spinner for sorting events.
+     */
     private void setupSpinner() {
         String[] options = {"Newest", "Popular", "Closing Soon", "Within 3KM", "Hidden Gems", "Less than $10"};
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, options);
@@ -84,6 +100,10 @@ public class CarouselFragment extends Fragment {
         });
     }
 
+    /**
+     * Applies the selected sorting option.
+     * @param position
+     */
     private void applySort(int position) {
         switch (position) {
             case 0: getNewest(); break;
@@ -94,12 +114,18 @@ public class CarouselFragment extends Fragment {
             case 5: getCheap(); break;
             default: defaultSort(); break;
         }
+        scrollToMiddle();
     }
 
+    /**
+     * Sets the list of events to display.
+     * @param newEvents
+     */
     public void setEvents(List<Event> newEvents) {
         this.events = new ArrayList<>(newEvents);
         if (binding != null) {
             applySort(binding.sortDropdown.getSelectedItemPosition());
+            scrollToMiddle();
         } else if (adapter != null) {
             adapter.updateEvents(this.events);
         }
@@ -111,19 +137,38 @@ public class CarouselFragment extends Fragment {
         binding = null;
     }
 
-    // Inner Adapter Class
+    /**
+     * Adapter for the carousel.
+     */
     private static class CarouselAdapter extends RecyclerView.Adapter<CarouselAdapter.ViewHolder> {
-        private List<Event> eventList;
+        private List<Event> eventList = new ArrayList<>();
         private final OnEventClickListener listener;
 
         CarouselAdapter(List<Event> eventList, OnEventClickListener listener) {
-            this.eventList = eventList;
+            updateEvents(eventList);
             this.listener = listener;
         }
 
+        /**
+         * Updates the events displayed in the carousel.
+         * @param newEvents
+         */
         void updateEvents(List<Event> newEvents) {
-            this.eventList = newEvents;
+            if (newEvents == null || newEvents.isEmpty()) {
+                this.eventList = new ArrayList<>();
+            } else {
+                // Ensure we only use the top 5 events
+                this.eventList = new ArrayList<>(newEvents.subList(0, Math.min(newEvents.size(), 5)));
+            }
             notifyDataSetChanged();
+        }
+
+        /**
+         * Gets the actual number of items in the carousel.
+         * @return
+         */
+        public int getActualItemCount() {
+            return eventList.size();
         }
 
         @NonNull
@@ -135,15 +180,25 @@ public class CarouselFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            Event event = eventList.get(position);
+            if (eventList.isEmpty()) return;
+            // Use modulo to cycle through events infinitely
+            Event event = eventList.get(position % eventList.size());
             holder.bind(event, listener);
         }
 
+        /**
+         * Gets the number of items in the carousel.
+         * @return int
+         */
         @Override
         public int getItemCount() {
-            return Math.min(eventList.size(), 5);
+            // Return a very large number for infinite swiping
+            return eventList.isEmpty() ? 0 : Integer.MAX_VALUE;
         }
 
+        /**
+         * ViewHolder Class for the carousel items
+         */
         static class ViewHolder extends RecyclerView.ViewHolder {
             private final CarouselCardBinding binding;
 
@@ -200,15 +255,24 @@ public class CarouselFragment extends Fragment {
         }
     }
 
+    /**
+     * Default sort for the carousel
+     */
     public void defaultSort() {
         getNewest();
     }
 
+    /**
+     * Gets five newest events
+     */
     public void getNewest() {
         events.sort((e1, e2) -> Long.compare(e2.getCreatedAt(), e1.getCreatedAt()));
         if (adapter != null) adapter.updateEvents(events);
     }
 
+    /**
+     * Gets events that close within 3 days
+     */
     public void getClosestDeadline() {
         List<Event> closestDeadlineEvents = new ArrayList<>();
         long threeDaysInMs = 3L * 24 * 60 * 60 * 1000;
@@ -222,17 +286,23 @@ public class CarouselFragment extends Fragment {
         if (adapter != null) adapter.updateEvents(closestDeadlineEvents);
     }
 
+    /**
+     * Gets events within 3KM
+     */
     public void getNearest() {
         List<Event> nearestEvents = new ArrayList<>();
         for (Event event : events) {
             Integer radius = event.getGeolocationRadius();
-            if (radius == null || radius <= 3) {
+            if (radius != null && radius <= 3) {
                 nearestEvents.add(event);
             }
         }
         if (adapter != null) adapter.updateEvents(nearestEvents);
     }
 
+    /**
+     * Gets events with less than 5 people signed up
+     */
     public void getMostEmpty() {
         List<Event> emptiestEvents = new ArrayList<>();
         for (Event event : events) {
@@ -243,6 +313,9 @@ public class CarouselFragment extends Fragment {
         if (adapter != null) adapter.updateEvents(emptiestEvents);
     }
 
+    /**
+     * Gets events with less than 5 spots available
+     */
     public void getMostFull() {
         List<Event> fullestEvents = new ArrayList<>();
         for (Event event : events) {
@@ -253,6 +326,9 @@ public class CarouselFragment extends Fragment {
         if (adapter != null) adapter.updateEvents(fullestEvents);
     }
 
+    /**
+     * Gets events < $10
+     */
     public void getCheap() {
         List<Event> cheapEvents = new ArrayList<>();
         for (Event event : events) {
