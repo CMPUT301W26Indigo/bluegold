@@ -1,26 +1,27 @@
 package com.eventlottery.ui.entrant;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import com.eventlottery.controller.UserController;
 import com.eventlottery.databinding.FragmentProfileBinding;
-import com.eventlottery.model.User;
+import com.eventlottery.model.Attendee;
 
 /**
  * Fragment for the User Profile.
- * Part of the 'View' in MVC.
+ * Part of the 'View' in MVC, interacting with the Attendee 'Model'.
  */
 public class ProfileFragment extends Fragment {
 
+    private static final String TAG = "ProfileFragment";
     private FragmentProfileBinding binding;
-    private UserController userController;
-    private User currentUser;
+    private Attendee currentAttendee;
 
     @Nullable
     @Override
@@ -32,57 +33,86 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        userController = new UserController();
         
-        // In a real app, we would get the current user ID from Firebase Auth
-        String currentUserId = "mock_user_id";
-        loadUserProfile(currentUserId);
+        currentAttendee = new Attendee();
+        
+        // Retrieve the unique ID and load the profile
+        Attendee.getFirebaseId().addOnSuccessListener(id -> {
+            currentAttendee.setAttendeeID(id);
+            loadAttendeeProfile();
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Failed to get Firebase ID", e);
+            Toast.makeText(getContext(), "Error identifying device", Toast.LENGTH_SHORT).show();
+        });
 
         setupListeners();
     }
 
-    private void loadUserProfile(String userId) {
-        userController.getUser(userId, new UserController.OnUserLoadedListener() {
+    private void loadAttendeeProfile() {
+        currentAttendee.fetchFromFirebase(new Attendee.OnAttendeeLoadedListener() {
             @Override
-            public void onUserLoaded(User user) {
-                currentUser = user;
-                binding.etFullName.setText(user.getName());
-                binding.etEmail.setText(user.getEmail());
-                binding.etPhone.setText(user.getPhone());
-                binding.switchNotifications.setChecked(user.isNotificationsEnabled());
+            public void onSuccess(Attendee attendee) {
+                if (isAdded() && binding != null) {
+                    binding.etFullName.setText(attendee.getName());
+                    binding.etEmail.setText(attendee.getEmail());
+                    binding.etPhone.setText(attendee.getPhoneNumber());
+                    binding.switchNotifications.setChecked(attendee.getNotification());
+                }
             }
 
             @Override
             public void onError(Exception e) {
-                // If user doesn't exist, create a new one
-                currentUser = new User();
-                currentUser.setId(userId);
+                Log.d(TAG, "No existing profile found or error loading: " + e.getMessage());
+                // This is fine for new users; the fields will just remain empty.
             }
         });
     }
 
     private void setupListeners() {
         binding.btnSaveChanges.setOnClickListener(v -> {
+            if (currentAttendee != null) {
+                try {
+                    // Updating the model automatically triggers its saveToFirebase() method
+                    currentAttendee.setName(binding.etFullName.getText().toString());
+                    currentAttendee.setEmail(binding.etEmail.getText().toString());
+                    currentAttendee.setPhoneNumber(binding.etPhone.getText().toString());
+                    currentAttendee.setNotification(binding.switchNotifications.isChecked());
+
+                    Toast.makeText(getContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
+                    
+                    // Optional: Close fragment or navigate back
+                    if (getActivity() != null) {
+                        getActivity().onBackPressed();
+                    }
+                } catch (IllegalArgumentException e) {
+                    Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        binding.btnDeleteProfile.setOnClickListener(v -> {
             if (currentUser != null) {
-                currentUser.setName(binding.etFullName.getText().toString());
-                currentUser.setEmail(binding.etEmail.getText().toString());
-                currentUser.setPhone(binding.etPhone.getText().toString());
-                currentUser.setNotificationsEnabled(binding.switchNotifications.isChecked());
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Delete Profile")
+                        .setMessage("Are you sure you want to delete your profile? This action cannot be undone.")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            userController.deleteUser(currentUser.getId(), new UserController.OnUserOperationListener() {
+                                @Override
+                                public void onSuccess() {
+                                    Toast.makeText(getContext(), "Profile deleted", Toast.LENGTH_SHORT).show();
+                                    if (getActivity() != null) {
+                                        getActivity().finish();
+                                    }
+                                }
 
-                userController.saveUser(currentUser, new UserController.OnUserOperationListener() {
-                    @Override
-                    public void onSuccess() {
-                        Toast.makeText(getContext(), "Profile updated", Toast.LENGTH_SHORT).show();
-                        if (getActivity() != null) {
-                            getActivity().finish();
-                        }
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Toast.makeText(getContext(), "Failed to update profile", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                                @Override
+                                public void onError(Exception e) {
+                                    Toast.makeText(getContext(), "Failed to delete profile", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
             }
         });
     }

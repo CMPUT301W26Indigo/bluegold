@@ -1,15 +1,20 @@
 package com.eventlottery.ui.entrant;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityNotificationsBinding;
+import com.eventlottery.model.Attendee;
 
 /**
  * Activity hosting NotificationListFragment in ENTRANT mode.
  */
 public class NotificationsActivity extends AppCompatActivity {
 
+    private static final String TAG = "NotificationsActivity";
     private ActivityNotificationsBinding binding;
 
     @Override
@@ -24,18 +29,22 @@ public class NotificationsActivity extends AppCompatActivity {
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
 
-        // The rest of this method was modified by Gemini on March 26, 2026
-        //  when prompted to move the Notifications UI from an activity based
-        //  system to a fragment based system.
         if (savedInstanceState == null) {
-            // Load the reusable fragment in ENTRANT mode
-            NotificationListFragment fragment = NotificationListFragment.newInstance(
-                    NotificationListFragment.Mode.ENTRANT, "mock_user_id"
-            ); // TODO: Replace with actual user ID
-            
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .commit();
+            // Fetch the real Firebase ID asynchronously
+            Attendee.getFirebaseId().addOnSuccessListener(id -> {
+                // Load the reusable fragment in ENTRANT mode with the REAL attendee ID
+                NotificationListFragment fragment = NotificationListFragment.newInstance(
+                        NotificationListFragment.Mode.ENTRANT, id
+                );
+                
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .commit();
+            }).addOnFailureListener(e -> {
+                Log.e(TAG, "Failed to get Firebase ID", e);
+                Toast.makeText(this, "Error identifying user", Toast.LENGTH_SHORT).show();
+                finish();
+            });
         }
     }
 

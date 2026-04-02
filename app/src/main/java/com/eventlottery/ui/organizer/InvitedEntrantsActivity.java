@@ -1,6 +1,7 @@
 package com.eventlottery.ui.organizer;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -12,24 +13,22 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventlottery.R;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Displays a list of entrants who have been invited but haven't responded yet.
- *
- * This activity implements Deliverable 1, showing organizers all users with
- * "invited" status. Organizers can manually update status or send reminders.
- *
- * User stories implemented:
- * - As an organizer, I want to view a list of all chosen entrants who are invited (Deliverable 1)
  */
 public class InvitedEntrantsActivity extends AppCompatActivity {
 
+    private static final String TAG = "InvitedEntrantsActivity";
     private ListView listView;
     private EntrantAdapter adapter;
     private FirebaseFirestore db;
@@ -58,27 +57,30 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     entrants.clear();
+                    TextView emptyView = findViewById(R.id.tvEmptyState);
 
                     if (queryDocumentSnapshots.isEmpty()) {
-                        TextView emptyView = findViewById(R.id.tvEmptyState);
                         if (emptyView != null) emptyView.setVisibility(View.VISIBLE);
                         adapter.notifyDataSetChanged();
                         return;
                     }
 
+                    if (emptyView != null) emptyView.setVisibility(View.GONE);
+
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         String userId = doc.getId();
                         long invitedAt = doc.getLong("invitedAt") != null ? doc.getLong("invitedAt") : 0;
 
-                        db.collection("users").document(userId).get()
+                        // Important: Check 'attendees' collection (not 'users') as that's where profiles are stored
+                        db.collection("attendees").document(userId).get()
                                 .addOnSuccessListener(userDoc -> {
                                     String name = userDoc.getString("name");
                                     String email = userDoc.getString("email");
-                                    String phone = userDoc.getString("phone");
+                                    String phone = userDoc.getString("phoneNumber"); // Using phoneNumber from Attendee model
 
                                     InvitedEntrant entrant = new InvitedEntrant(
                                             userId,
-                                            name != null ? name : "Unknown",
+                                            name != null ? name : "Unknown ID: " + userId,
                                             email != null ? email : "",
                                             phone != null ? phone : "",
                                             invitedAt
@@ -94,38 +96,47 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
     }
 
     private void updateStatus(String userId, String newStatus) {
-        HashMap<String, Object> updates = new HashMap<>();
-        updates.put("status", newStatus);
+        WriteBatch batch = db.batch();
+
+        // 1. Update EVENT'S guestList
+        Map<String, Object> eventUpdates = new HashMap<>();
+        eventUpdates.put("status", newStatus);
         if ("confirmed".equals(newStatus)) {
-            updates.put("confirmedAt", System.currentTimeMillis());
+            eventUpdates.put("confirmedAt", System.currentTimeMillis());
         } else if ("declined".equals(newStatus)) {
-            updates.put("declinedAt", System.currentTimeMillis());
+            eventUpdates.put("declinedAt", System.currentTimeMillis());
         }
+        batch.update(db.collection("events").document(eventId)
+                .collection("guestList").document(userId), eventUpdates);
 
-        db.collection("events").document(eventId)
-                .collection("guestList").document(userId)
-                .update(updates)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Status updated to " + newStatus, Toast.LENGTH_SHORT).show();
-                    loadInvitedEntrants(); // Refresh list
+        // 2. Update ATTENDEE'S Selected sub-collection
+        Map<String, Object> attendeeUpdates = new HashMap<>();
+        attendeeUpdates.put("status", newStatus);
+        batch.update(db.collection("attendees").document(userId)
+                .collection("Selected").document(eventId), attendeeUpdates);
 
-                    // If declined, trigger replacement draw
-                    if ("declined".equals(newStatus)) {
-                        triggerReplacementDraw();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error updating status", Toast.LENGTH_SHORT).show();
-                });
+        batch.commit().addOnSuccessListener(aVoid -> {
+            Toast.makeText(this, "Status updated to " + newStatus, Toast.LENGTH_SHORT).show();
+            loadInvitedEntrants(); // Refresh list
+
+            if ("declined".equals(newStatus)) {
+                triggerReplacementDraw();
+            }
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Error updating status batch", e);
+            Toast.makeText(this, "Error updating status", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void triggerReplacementDraw() {
-        // Get event capacity
         db.collection("events").document(eventId).get()
                 .addOnSuccessListener(eventDoc -> {
-                    int capacity = eventDoc.getLong("capacity").intValue();
+                    if (!eventDoc.exists()) return;
+                    
+                    Long capacityLong = eventDoc.getLong("capacity");
+                    int capacity = (capacityLong != null) ? capacityLong.intValue() : 0;
+                    String eventName = eventDoc.getString("name");
 
-                    // Get current confirmed count
                     db.collection("events").document(eventId)
                             .collection("guestList")
                             .whereEqualTo("status", "confirmed")
@@ -134,34 +145,18 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
                                 int confirmedCount = confirmedQuery.size();
 
                                 if (confirmedCount < capacity) {
-                                    // Need to draw replacement
                                     db.collection("events").document(eventId)
                                             .collection("waitlist")
                                             .get()
                                             .addOnSuccessListener(waitlistQuery -> {
                                                 if (!waitlistQuery.isEmpty()) {
-                                                    // Randomly select replacement
-                                                    int randomIndex = (int) (Math.random() * waitlistQuery.size());
-                                                    QueryDocumentSnapshot replacement = (QueryDocumentSnapshot) waitlistQuery.getDocuments().get(randomIndex);
+                                                    List<DocumentSnapshot> docs = waitlistQuery.getDocuments();
+                                                    int randomIndex = (int) (Math.random() * docs.size());
+                                                    DocumentSnapshot replacement = docs.get(randomIndex);
                                                     String replacementId = replacement.getId();
 
-                                                    // Move to guestList as invited
-                                                    HashMap<String, Object> guestEntry = new HashMap<>();
-                                                    guestEntry.put("status", "invited");
-                                                    guestEntry.put("invitedAt", System.currentTimeMillis());
-
-                                                    db.collection("events").document(eventId)
-                                                            .collection("guestList").document(replacementId)
-                                                            .set(guestEntry)
-                                                            .addOnSuccessListener(aVoid -> {
-                                                                // Remove from waitlist
-                                                                db.collection("events").document(eventId)
-                                                                        .collection("waitlist").document(replacementId)
-                                                                        .delete();
-
-                                                                Toast.makeText(this, "Replacement selected!", Toast.LENGTH_SHORT).show();
-                                                                loadInvitedEntrants();
-                                                            });
+                                                    // Call performReplacementDraw to handle all sub-collections
+                                                    performReplacementDraw(replacementId, eventName);
                                                 }
                                             });
                                 }
@@ -169,7 +164,48 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
                 });
     }
 
-    // Inner class for entrant data
+    private void performReplacementDraw(String userId, String eventName) {
+        WriteBatch batch = db.batch();
+
+        // 1. Event guestList (invited)
+        Map<String, Object> guestEntry = new HashMap<>();
+        guestEntry.put("status", "invited");
+        guestEntry.put("invitedAt", System.currentTimeMillis());
+        batch.set(db.collection("events").document(eventId)
+                .collection("guestList").document(userId), guestEntry);
+
+        // 2. Event waitlist (delete)
+        batch.delete(db.collection("events").document(eventId)
+                .collection("waitlist").document(userId));
+
+        // 3. Attendee waitlist (delete)
+        batch.delete(db.collection("attendees").document(userId)
+                .collection("waitListed").document(eventId));
+
+        // 4. Attendee Selected (add)
+        Map<String, Object> selectedEntry = new HashMap<>();
+        selectedEntry.put("status", "invited");
+        selectedEntry.put("selectedAt", System.currentTimeMillis());
+        batch.set(db.collection("attendees").document(userId)
+                .collection("Selected").document(eventId), selectedEntry);
+
+        // 5. Notification
+        Map<String, Object> notif = new HashMap<>();
+        notif.put("attendeeId", userId);
+        notif.put("eventId", eventId);
+        notif.put("message", "Good news! A spot opened up for " + eventName + ". You've been selected!");
+        notif.put("type", "INVITATION");
+        notif.put("status", "PENDING");
+        notif.put("isRead", false);
+        notif.put("timestamp", new java.util.Date());
+        batch.set(db.collection("notifications").document(java.util.UUID.randomUUID().toString()), notif);
+
+        batch.commit().addOnSuccessListener(aVoid -> {
+            Toast.makeText(this, "Replacement selected and notified!", Toast.LENGTH_SHORT).show();
+            loadInvitedEntrants();
+        });
+    }
+
     private static class InvitedEntrant {
         String id, name, email, phone;
         long invitedAt;
@@ -183,9 +219,7 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
         }
     }
 
-    // Custom adapter with confirm/decline buttons
     private class EntrantAdapter extends ArrayAdapter<InvitedEntrant> {
-
         EntrantAdapter() {
             super(InvitedEntrantsActivity.this, 0, entrants);
         }

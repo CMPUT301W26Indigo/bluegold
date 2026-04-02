@@ -9,6 +9,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.installations.FirebaseInstallations;
 import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents an Attendee in the Event Lottery System.
@@ -48,7 +50,15 @@ public class Attendee extends AbstractUser {
         this.notification = true;
         this.eventHistory = new ArrayList<AttendeeEventHistory>();
         this.waitListed = new ArrayList<String>();
-        this.db = FirebaseFirestore.getInstance();
+        
+        FirebaseFirestore tempDb = null;
+        try {
+            tempDb = FirebaseFirestore.getInstance();
+        } catch (IllegalStateException e) {
+            tempDb = null;
+            Log.w(TAG, "Firebase not initialized, Firestore operations will be unavailable");
+        }
+        this.db = tempDb;
     }
 
     /**
@@ -56,6 +66,7 @@ public class Attendee extends AbstractUser {
      * Only works if deviceID is set.
      */
     public void saveToFirebase() {
+        if (db == null) return;
         if (deviceID == null || deviceID.isEmpty()) {
             Log.w(TAG, "Cannot save attendee: deviceID is null or empty");
             return;
@@ -70,6 +81,10 @@ public class Attendee extends AbstractUser {
      * @param listener Callback for completion.
      */
     public void fetchFromFirebase(OnAttendeeLoadedListener listener) {
+        if (db == null) {
+            if (listener != null) listener.onError(new Exception("Firebase not initialized"));
+            return;
+        }
         if (deviceID == null || deviceID.isEmpty()) {
             if (listener != null) listener.onError(new Exception("DeviceID not set"));
             return;
@@ -89,7 +104,7 @@ public class Attendee extends AbstractUser {
                         }
                         this.waitListed = remote.waitListed != null ? remote.waitListed : new ArrayList<>();
                         this.notification = remote.notification;
-//                        if (listener != null) listener.onSuccess();
+                        if (listener != null) listener.onSuccess(this);
                     } else if (listener != null) {
                         listener.onError(new Exception("Attendee document not found"));
                     }
@@ -161,23 +176,6 @@ public class Attendee extends AbstractUser {
     }
 
     /**
-     * Retrieves the unique Android device ID for this app installation.
-     * @param context The application context.
-     * @return The unique Android ID string.
-     */
-    public static String getDeviceId(Context context) {
-        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-    }
-
-    /**
-     * Asynchronously retrieves the unique Firebase Installation ID.
-     * @return A Task that will resolve to the Firebase Installation ID.
-     */
-    public static Task<String> getFirebaseId() {
-        return FirebaseInstallations.getInstance().getId();
-    }
-
-    /**
      * Gets the attendee's unique ID.
      * @return The attendee ID.
      */
@@ -186,14 +184,24 @@ public class Attendee extends AbstractUser {
     }
 
     /**
+     * Sets the attendee's unique ID.
+     * @param deviceID The ID to set.
+     */
+    public void setAttendeeID(String deviceID) {
+        this.deviceID = deviceID;
+    }
+
+    /**
      * Adds an event to the attendee's personal waitlist and updates Firebase.
      * @param eventID The unique identifier of the event.
      */
     public void joinWaitList(String eventID) {
-        if (!waitListed.contains(eventID)) {
-            waitListed.add(eventID);
-            saveToFirebase();
-        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("status", "waiting");
+
+        db.collection("attendees").document(getAttendeeID())
+                .collection("waitListed").document(eventID)
+                .set(data);
     }
 
     /**
@@ -282,5 +290,13 @@ public class Attendee extends AbstractUser {
      */
     public void setEventHistory(ArrayList<AttendeeEventHistory> eventHistory) {
         this.eventHistory = eventHistory;
+    }
+
+    /**
+     * Sets the attendee's ID. Required for tests or loading.
+     * @param attendeeID
+     */
+    public void setAttendeeID(String attendeeID) {
+        this.deviceID = attendeeID;
     }
 }

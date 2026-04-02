@@ -1,36 +1,38 @@
 package com.eventlottery.ui.organizer;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventlottery.databinding.ActivityDrawLotteryBinding;
+import com.eventlottery.model.Notification;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * Handles the lottery draw for an event.
  *
  * Randomly selects winners from the waitlist and moves them to the guest list
  * with "invited" status. Winners receive notifications.
- *
- * User stories implemented:
- * - Lottery draw system
- *
- * Issues:
- * - Need to send actual push notifications to winners
  */
 public class DrawLotteryActivity extends AppCompatActivity {
 
+    private static final String TAG = "DrawLotteryActivity";
     private ActivityDrawLotteryBinding binding;
     private FirebaseFirestore db;
     private String eventId;
+    private String eventName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,12 +65,17 @@ public class DrawLotteryActivity extends AppCompatActivity {
     }
 
     private void drawLottery(int numWinners) {
-        // Get event capacity and current confirmed count
         db.collection("events").document(eventId).get()
                 .addOnSuccessListener(eventDoc -> {
-                    int capacity = eventDoc.getLong("capacity").intValue();
+                    if (!eventDoc.exists()) {
+                        Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
-                    // Get current confirmed count from guestList
+                    eventName = eventDoc.getString("name");
+                    Long capacityLong = eventDoc.getLong("capacity");
+                    int capacity = (capacityLong != null) ? capacityLong.intValue() : 0;
+
                     db.collection("events").document(eventId)
                             .collection("guestList")
                             .whereEqualTo("status", "confirmed")
@@ -79,75 +86,86 @@ public class DrawLotteryActivity extends AppCompatActivity {
 
                                 if (spotsAvailable <= 0) {
                                     Toast.makeText(this, "Event is full!", Toast.LENGTH_SHORT).show();
-                                    finish();
                                     return;
                                 }
 
                                 int winnersToDraw = Math.min(numWinners, spotsAvailable);
 
-                                // Get waitlist
                                 db.collection("events").document(eventId)
                                         .collection("waitlist")
                                         .get()
                                         .addOnSuccessListener(waitlistQuery -> {
                                             if (waitlistQuery.isEmpty()) {
                                                 Toast.makeText(this, "Waitlist is empty", Toast.LENGTH_SHORT).show();
-                                                finish();
                                                 return;
                                             }
 
-                                            // Convert to list for random selection
                                             List<QueryDocumentSnapshot> waitlist = new ArrayList<>();
                                             for (QueryDocumentSnapshot doc : waitlistQuery) {
                                                 waitlist.add(doc);
                                             }
 
-                                            // Randomly select winners
                                             Random random = new Random();
                                             int winnersToDrawFinal = Math.min(winnersToDraw, waitlist.size());
-                                            int winnersSelected = 0;
+                                            
+                                            WriteBatch batch = db.batch();
 
                                             for (int i = 0; i < winnersToDrawFinal; i++) {
                                                 int index = random.nextInt(waitlist.size());
                                                 String winnerId = waitlist.get(index).getId();
 
-                                                // Add to guestList with "invited" status
-                                                HashMap<String, Object> guestEntry = new HashMap<>();
-                                                guestEntry.put("status", "invited");
-                                                guestEntry.put("invitedAt", System.currentTimeMillis());
+                                                // 1. Update EVENT'S guestList
+                                                Map<String, Object> eventGuestEntry = new HashMap<>();
+                                                eventGuestEntry.put("status", "invited");
+                                                eventGuestEntry.put("invitedAt", System.currentTimeMillis());
+                                                batch.set(db.collection("events").document(eventId)
+                                                        .collection("guestList").document(winnerId), eventGuestEntry);
 
-                                                db.collection("events").document(eventId)
-                                                        .collection("guestList").document(winnerId)
-                                                        .set(guestEntry);
+                                                // 2. Remove from EVENT'S waitlist
+                                                batch.delete(db.collection("events").document(eventId)
+                                                        .collection("waitlist").document(winnerId));
 
-                                                // Remove from waitlist
-                                                db.collection("events").document(eventId)
-                                                        .collection("waitlist").document(winnerId)
-                                                        .delete();
+                                                // 3. Remove from ATTENDEE'S waitlist
+                                                batch.delete(db.collection("attendees").document(winnerId)
+                                                        .collection("waitListed").document(eventId));
 
-                                                // Remove from list to avoid duplicate selection
+                                                // 4. Add to ATTENDEE'S Selected subcollection
+                                                Map<String, Object> selectedEntry = new HashMap<>();
+                                                selectedEntry.put("status", "invited");
+                                                selectedEntry.put("selectedAt", System.currentTimeMillis());
+                                                batch.set(db.collection("attendees").document(winnerId)
+                                                        .collection("Selected").document(eventId), selectedEntry);
+
+                                                // 5. Create NOTIFICATION
+                                                String notifId = UUID.randomUUID().toString();
+                                                Notification notification = new Notification(
+                                                        notifId,
+                                                        "Congratulations! You've been selected for " + eventName + ". Please confirm your attendance.",
+                                                        winnerId,
+                                                        eventId,
+                                                        "INVITATION",
+                                                        new Date()
+                                                );
+                                                batch.set(db.collection("notifications").document(notifId), notification);
+
                                                 waitlist.remove(index);
-                                                winnersSelected++;
                                             }
 
-                                            // Update event status
-                                            db.collection("events").document(eventId)
-                                                    .update("status", "lottery_drawn");
+                                            batch.update(db.collection("events").document(eventId), "status", "lottery_drawn");
 
-                                            Toast.makeText(this, winnersSelected + " winners selected!", Toast.LENGTH_SHORT).show();
-                                            finish();
+                                            batch.commit().addOnSuccessListener(aVoid -> {
+                                                Toast.makeText(this, winnersToDrawFinal + " winners selected and notified!", Toast.LENGTH_SHORT).show();
+                                                finish();
+                                            }).addOnFailureListener(e -> {
+                                                Log.e(TAG, "Error committing lottery batch", e);
+                                                Toast.makeText(this, "Error updating winners: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            });
                                         })
-                                        .addOnFailureListener(e -> {
-                                            Toast.makeText(this, "Error loading waitlist: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                        });
+                                        .addOnFailureListener(e -> Toast.makeText(this, "Error loading waitlist: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                             })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(this, "Error loading confirmed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            });
+                            .addOnFailureListener(e -> Toast.makeText(this, "Error loading confirmed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error loading event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e -> Toast.makeText(this, "Error loading event: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     @Override

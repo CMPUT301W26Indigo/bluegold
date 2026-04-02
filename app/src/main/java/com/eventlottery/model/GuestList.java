@@ -31,8 +31,14 @@ public class GuestList {
         this.attendees = new HashMap<>();
         this.listCount = 0;
         this.listLimit = null;
-        this.db = FirebaseFirestore.getInstance();
-
+        FirebaseFirestore dbInstance = null;
+        try {
+            dbInstance = FirebaseFirestore.getInstance();
+        } catch (IllegalStateException e) {
+            dbInstance = null;
+            Log.w(TAG, "Firebase not initialized, Firestore operations will be unavailable");
+        }
+        this.db = dbInstance;
     }
 
     /**
@@ -62,11 +68,19 @@ public class GuestList {
         this.listLimit = null;
     }
 
+    public GuestList(FirebaseFirestore db) {
+        this.db = db;
+        this.attendees = new HashMap<>();
+        this.listCount = 0;
+        this.listLimit = null;
+    }
+
     /**
      * Synchronizes the current state of the GuestList object to Firebase.
      * Uses eventId as the document ID in the "guestlists" collection.
      */
     public void saveToFirebase() {
+        if (db == null) return;
         if (eventId == null || eventId.isEmpty()) {
             Log.w(TAG, "Cannot save guest list: eventId is null or empty");
             return;
@@ -81,6 +95,10 @@ public class GuestList {
      * @param listener Callback for completion.
      */
     public void fetchFromFirebase(OnGuestListLoadedListener listener) {
+        if (db == null) {
+            if (listener != null) listener.onError(new Exception("Firebase not initialized"));
+            return;
+        }
         if (eventId == null || eventId.isEmpty()) {
             if (listener != null) listener.onError(new Exception("EventId not set"));
             return;
