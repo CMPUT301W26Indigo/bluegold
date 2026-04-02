@@ -26,6 +26,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     public interface OnAttendeeClickListener {
         void onAttendeeClick(Attendee attendee);
         void onInviteClick(Attendee attendee);
+        void onUninviteClick(Attendee attendee);
     }
 
     public UserAdapter(OnAttendeeClickListener listener) {
@@ -53,11 +54,18 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         holder.bind(attendee, listener);
     }
 
+    /**
+     * Returns the number of attendees
+     * @return int
+     */
     @Override
     public int getItemCount() {
         return attendees.size();
     }
 
+    /**
+     * ViewHolder for each attendee card
+     */
     static class UserViewHolder extends RecyclerView.ViewHolder {
         private final ItemUserCardBinding binding;
 
@@ -83,24 +91,30 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             );
             binding.statusBadge.setEnabled(true);
 
-            // Set click listener for the card
-            binding.getRoot().setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onAttendeeClick(attendee);
-                }
-            });
-
-            // Set invite button click listener
+            // Set invite button click listener with toggle functionality
             binding.statusBadge.setOnClickListener(v -> {
-                // Update UI immediately
-                binding.statusBadge.setText("Invited");
-                binding.statusBadge.setBackgroundTintList(
-                        binding.getRoot().getContext().getColorStateList(R.color.status_open_green)
-                );
-                binding.statusBadge.setEnabled(false);
+                boolean isCurrentlyInvited = binding.statusBadge.getText().toString().equalsIgnoreCase("Invited");
 
-                if (listener != null) {
-                    listener.onInviteClick(attendee);
+                if (isCurrentlyInvited) {
+                    // Uninvite
+                    binding.statusBadge.setText("Invite");
+                    binding.statusBadge.setBackgroundTintList(
+                            binding.getRoot().getContext().getColorStateList(R.color.status_closed_gray)
+                    );
+                    
+                    if (listener != null) {
+                        listener.onUninviteClick(attendee);
+                    }
+                } else {
+                    // Invite logic
+                    binding.statusBadge.setText("Invited");
+                    binding.statusBadge.setBackgroundTintList(
+                            binding.getRoot().getContext().getColorStateList(R.color.status_open_green)
+                    );
+
+                    if (listener != null) {
+                        listener.onInviteClick(attendee);
+                    }
                 }
             });
         }

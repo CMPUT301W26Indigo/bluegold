@@ -383,13 +383,14 @@
                         android:textSize="@dimen/text_lg"
                         android:paddingVertical="@dimen/spacing_lg"
                         app:backgroundTint="@color/primary_blue" />
-
+                    <!-- View QR Button-->
                     <Button
                         android:id="@+id/viewQrButton"
                         style="@style/Widget.App.Button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/spacing_lg"
+                        android:visibility="gone"
                         android:text="@string/view_qr_code"
                         android:textSize="@dimen/text_lg"
                         android:paddingVertical="@dimen/spacing_lg"

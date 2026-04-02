@@ -258,6 +258,6 @@
     <string name="invite">Invite</string>
     <string name="search_users_bar">Search users...</string>
     <string name="send_notifications_text">Send Notifications</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="private_event">Private Event</string>
+    <string name="privacy_desc">Only users you invite can join this event. You can find users to invite in the Manage Events page for this event after it is created.</string>
 </resources>

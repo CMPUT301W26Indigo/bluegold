@@ -58,6 +58,7 @@ public class CreateEventActivity extends AppCompatActivity {
     private Long registrationOpensTime = 0L;
     private Long registrationClosesTime = 0L;
     private boolean limitWaitlist;
+    private boolean eventPrivacy;
     private EventController eventController = new EventController();
     private Uri selectedImageUri;
     private String organizerId;
@@ -210,6 +211,11 @@ public class CreateEventActivity extends AppCompatActivity {
             binding.radiusLayout.setEnabled(isChecked);
         });
 
+        binding.privacySwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            binding.radiusEditText.setEnabled(isChecked);
+            binding.radiusLayout.setEnabled(isChecked);
+        });
+
         //specifies to only browse images
         binding.browseFilesButton.setOnClickListener(v -> {
             imagePickerLauncher.launch("image/*");
@@ -237,6 +243,7 @@ public class CreateEventActivity extends AppCompatActivity {
                 event.setCapacity(0);
             }
 
+            // Set waitlist limits if they exist
             limitWaitlist = binding.waitlistLimitSwitch.isChecked();
             event.setWaitlistLimit(limitWaitlist ? 1 : 0);
             if (limitWaitlist) {
@@ -247,7 +254,10 @@ public class CreateEventActivity extends AppCompatActivity {
                 }
             }
 
-            
+            // Set event privacy if it exists
+            eventPrivacy = binding.privacySwitch.isChecked();
+            event.setPrivate(eventPrivacy);
+
             event.setLocation(binding.locationEditText.getText().toString());
             event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());
             if (binding.geolocationSwitch.isChecked()) {
@@ -258,6 +268,7 @@ public class CreateEventActivity extends AppCompatActivity {
                 }
             }
 
+            // Set the tags for an event
             List<String> selectedTags = new ArrayList<>();
             for (Integer id : binding.tagChipGroup.getCheckedChipIds()) {
                 Chip chip = binding.tagChipGroup.findViewById(id);
@@ -265,8 +276,10 @@ public class CreateEventActivity extends AppCompatActivity {
             }
             event.setTags(selectedTags);
 
+            // Upload an image
             uploadImage(event, selectedImageUri);
 
+            // Set the price
             try {
                 event.setPrice(Double.parseDouble(binding.priceEditText.getText().toString()));
             } catch (NumberFormatException e) {
@@ -274,7 +287,6 @@ public class CreateEventActivity extends AppCompatActivity {
             }
 
             //adding the event to the database
-            //First generate QRs
             eventController.addEvent(event, new EventController.OnEventOperationListener() {
                 @Override
                 public void onSuccess() {

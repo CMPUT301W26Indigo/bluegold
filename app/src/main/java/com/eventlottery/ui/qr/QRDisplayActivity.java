@@ -43,6 +43,9 @@ public class QRDisplayActivity extends AppCompatActivity {
         binding = null;
     }
 
+    /**
+     * Sets up the UI elements with the QR Code
+     */
     private void setupUI() {
         setSupportActionBar(binding.toolbar);
 
