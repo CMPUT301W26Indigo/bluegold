@@ -38,9 +38,9 @@
     <!-- Event Details -->
     <string name="join_waiting_list">Join Waiting List</string>
     <string name="leave_waiting_list">Leave Waiting List</string>
-    <string name="event_date">Event Date *</string>
+    <string name="event_date">Event Date</string>
     <string name="capacity">Capacity</string>
-    <string name="location">Location*</string>
+    <string name="location">Location</string>
     <string name="geolocation_required">Geolocation</string>
     <string name="within_radius">Within %1$d km radius</string>
     <string name="description">Description</string>

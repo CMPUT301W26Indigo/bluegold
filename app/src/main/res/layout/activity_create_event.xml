@@ -73,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="@dimen/spacing_sm"
-                android:hint="@string/event_date"
+                android:hint="Event Date*"
                 app:startIconDrawable="@android:drawable/ic_menu_my_calendar">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -246,7 +246,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/spacing_md"
-            android:hint="@string/location"
+            android:hint="Location*"
             app:startIconDrawable="@android:drawable/ic_dialog_map">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -445,56 +445,56 @@
                 android:text="@string/tag_food_drink" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipFoodDrink"
+                android:id="@+id/chipDance"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Dance" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipFoodDrink"
+                android:id="@+id/chipSocial"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Social" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipFoodDrink"
+                android:id="@+id/chipTourism"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Tourism" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipFoodDrink"
+                android:id="@+id/chipEducational"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Educational" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipFoodDrink"
+                android:id="@+id/chipVolunteer"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Volunteer" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipFoodDrink"
+                android:id="@+id/chipCorporate"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Corporate" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipFoodDrink"
+                android:id="@+id/chipFormal"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Formal" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/chipFoodDrink"
+                android:id="@+id/chipCasual"
                 style="@style/Widget.Material3.Chip.Filter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
