@@ -56,8 +56,16 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
 
             @Override
             public void onInviteClick(Attendee attendee) {
+                // TODO: Actually send the notification
                 // Handle invite click
                 Toast.makeText(getContext(), "Invite sent to: " + attendee.getName(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onUninviteClick(Attendee attendee) {
+                // TODO: Actually send the notification
+                // Handle uninvite click
+                Toast.makeText(getContext(), "Invite cancelled for: " + attendee.getName(), Toast.LENGTH_SHORT).show();
             }
         });
         binding.usersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -72,7 +80,13 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
                 for (User user : users) {
                     Attendee attendee = new Attendee();
                     attendee.setName(user.getName());
-                    attendee.setEmail(user.getEmail());
+                    try {
+                        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+                            attendee.setEmail(user.getEmail());
+                        }
+                    } catch (IllegalArgumentException e) {
+                        attendee.setEmail("Unknown");
+                    }
                     attendee.setPhoneNumber(user.getPhone());
                     attendee.setAttendeeID(user.getId());
                     allAttendees.add(attendee);
@@ -103,7 +117,8 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
         for (Attendee attendee : allAttendees) {
             boolean matchesName = attendee.getName() != null && attendee.getName().toLowerCase().contains(lowerQuery);
             boolean matchesEmail = attendee.getEmail() != null && attendee.getEmail().toLowerCase().contains(lowerQuery);
-            if (matchesName || matchesEmail) {
+            boolean matchesPhone = attendee.getPhoneNumber() != null && attendee.getPhoneNumber().toLowerCase().contains(lowerQuery);
+            if (matchesName || matchesEmail || matchesPhone) {
                 filtered.add(attendee);
             }
         }
@@ -116,6 +131,10 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
 
     @Override
     public void onInviteClick(Attendee attendee) {
+    }
+
+    @Override
+    public void onUninviteClick(Attendee attendee) {
     }
 
     @Override

@@ -69,13 +69,30 @@
                     android:textAppearance="@style/TextAppearance.App.Headline2"
                     tools:text="Summer Basketball Tournament" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/statusChip"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_sm"
-                    android:textColor="@color/text_white"
-                    app:chipBackgroundColor="@color/status_open_green" />
+                    android:orientation="vertical">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/statusChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:textColor="@color/text_white"
+                        app:chipBackgroundColor="@color/status_open_green" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/priceChip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:textColor="@color/text_white"
+                        app:chipBackgroundColor="@color/background_gray_300" />
+
+                </LinearLayout>
+
+
 
             </LinearLayout>
 
@@ -383,13 +400,14 @@
                         android:textSize="@dimen/text_lg"
                         android:paddingVertical="@dimen/spacing_lg"
                         app:backgroundTint="@color/primary_blue" />
-
+                    <!-- View QR Button-->
                     <Button
                         android:id="@+id/viewQrButton"
                         style="@style/Widget.App.Button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="@dimen/spacing_lg"
+                        android:visibility="gone"
                         android:text="@string/view_qr_code"
                         android:textSize="@dimen/text_lg"
                         android:paddingVertical="@dimen/spacing_lg"

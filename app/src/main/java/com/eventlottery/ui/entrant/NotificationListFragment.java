@@ -1,6 +1,7 @@
 package com.eventlottery.ui.entrant;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,18 +16,17 @@ import com.eventlottery.ui.adapters.NotificationAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 import java.util.ArrayList;
 import java.util.List;
 
-
-// This class was created by Gemini on March 26, 2026 when prompted to move the
-//  Notifications UI from an activity based system to a fragment based system.
 /**
  * Reusable Fragment for displaying a list of notifications.
  * Supports both ENTRANT (Inbox) and ADMIN (System Logs) modes.
  */
 public class NotificationListFragment extends Fragment implements NotificationAdapter.OnNotificationActionListener {
 
+    private static final String TAG = "NotificationListFragment";
     public enum Mode { ENTRANT, ADMIN }
     
     private static final String ARG_MODE = "mode";
@@ -80,10 +80,8 @@ public class NotificationListFragment extends Fragment implements NotificationAd
     private void loadNotifications() {
         Query query;
         if (currentMode == Mode.ADMIN) {
-            // Admin mode: See all notifications system-wide
             query = db.collection("notifications").orderBy("timestamp", Query.Direction.DESCENDING);
         } else {
-            // Entrant mode: See only personal notifications
             query = db.collection("notifications")
                     .whereEqualTo("attendeeId", attendeeId != null ? attendeeId : "mock_user_id")
                     .orderBy("timestamp", Query.Direction.DESCENDING);
@@ -113,17 +111,47 @@ public class NotificationListFragment extends Fragment implements NotificationAd
 
     @Override
     public void onAcceptInvitation(Notification notification) {
-        if (currentMode == Mode.ENTRANT) updateStatus(notification, "ACCEPTED");
+        if (currentMode == Mode.ENTRANT) {
+            processInvitationResponse(notification, "confirmed", "ACCEPTED");
+        }
     }
 
     @Override
     public void onDeclineInvitation(Notification notification) {
-        if (currentMode == Mode.ENTRANT) updateStatus(notification, "DECLINED");
+        if (currentMode == Mode.ENTRANT) {
+            processInvitationResponse(notification, "declined", "DECLINED");
+        }
     }
 
-    private void updateStatus(Notification n, String status) {
-        db.collection("notifications").document(n.getId())
-                .update("status", status, "isRead", true);
+    /**
+     * Updates status in three places:
+     * 1. Notification document (status: ACCEPTED/DECLINED)
+     * 2. Event's guestList (status: confirmed/declined)
+     * 3. Attendee's Selected sub-collection (status: confirmed/declined)
+     */
+    private void processInvitationResponse(Notification n, String businessStatus, String notificationStatus) {
+        WriteBatch batch = db.batch();
+        
+        // 1. Update Notification status
+        batch.update(db.collection("notifications").document(n.getId()), 
+                "status", notificationStatus, "isRead", true);
+        
+        // 2. Update Event's guestList
+        batch.update(db.collection("events").document(n.getEventId())
+                .collection("guestList").document(n.getAttendeeId()), 
+                "status", businessStatus);
+        
+        // 3. Update Attendee's Selected sub-collection
+        batch.update(db.collection("attendees").document(n.getAttendeeId())
+                .collection("Selected").document(n.getEventId()), 
+                "status", businessStatus);
+
+        batch.commit().addOnSuccessListener(aVoid -> {
+            Toast.makeText(getContext(), "Response sent: " + notificationStatus, Toast.LENGTH_SHORT).show();
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Error processing invitation response", e);
+            Toast.makeText(getContext(), "Error sending response", Toast.LENGTH_SHORT).show();
+        });
     }
 
     @Override

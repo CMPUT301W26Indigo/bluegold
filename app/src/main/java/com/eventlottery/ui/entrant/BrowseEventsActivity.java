@@ -32,6 +32,9 @@ public class BrowseEventsActivity extends AppCompatActivity {
         setupBottomNavigation();
     }
 
+    /**
+     * Sets up the bottom navigation bar.
+     */
     private void setupBottomNavigation() {
         binding.bottomNavigation.setSelectedItemId(R.id.navigation_events);
         binding.bottomNavigation.setOnItemSelectedListener(item -> {

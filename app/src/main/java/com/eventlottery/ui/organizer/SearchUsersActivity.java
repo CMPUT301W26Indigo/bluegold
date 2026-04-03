@@ -38,6 +38,9 @@ public class SearchUsersActivity extends AppCompatActivity {
         setupSearch();
     }
 
+    /**
+     * Sets up the search bar and its functionality.
+     */
     private void setupSearch() {
         binding.searchEditText.addTextChangedListener(new TextWatcher() {
             @Override

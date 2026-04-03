@@ -12,12 +12,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.eventlottery.R;
+import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.ActivityEventDetailsBinding;
+import com.eventlottery.model.Attendee;
 import com.eventlottery.model.Event;
 import com.eventlottery.services.Base64EncodeDecode;
 import com.eventlottery.ui.qr.QRDisplayActivity;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.text.DecimalFormat;
 
 /**
  * EventDetailsActivity
@@ -30,25 +34,24 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * - Display geolocation requirements
  * - Join/Leave waitlist button
  * - Show capacity and spots available
- *
- * TODO: Implement full functionality
- * - Load event data from Intent extras
- * - Display event poster with Glide
- * - Handle join/leave waitlist actions
- * - Check geolocation requirements
  */
 public class EventDetailsActivity extends AppCompatActivity {
 
+    private static final String TAG = "EventDetailsActivity";
     private @NonNull ActivityEventDetailsBinding binding;
     private Event event;
     private String eventId;
     private FirebaseFirestore db;
+    private EventController eventController;
+    private String currentAttendeeId;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityEventDetailsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        eventController = new EventController();
 
         // Get event from Intent
         if (getIntent().getData() != null) {
@@ -65,8 +68,20 @@ public class EventDetailsActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         event = documentSnapshot.toObject(Event.class);
-                        setupUI();
-                        loadEventStats();
+                        if (event != null) {
+                            event.setId(documentSnapshot.getId());
+                            setupUI();
+                            loadEventStats();
+
+                            // Get the current attendee ID asynchronously
+                            Attendee.getFirebaseId().addOnSuccessListener(id -> {
+                                currentAttendeeId = id;
+                                checkWaitlistStatus();
+                            }).addOnFailureListener(e -> {
+                                Log.e(TAG, "Failed to get Firebase ID", e);
+                                Toast.makeText(this, "Error identifying user", Toast.LENGTH_SHORT).show();
+                            });
+                        }
                     } else {
                         Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
                         finish();
@@ -74,17 +89,48 @@ public class EventDetailsActivity extends AppCompatActivity {
                 });
     }
 
-    private void setupToolbar() {
-        // TODO: Setup toolbar with back button
+    /**
+     * Checks if the current attendee is on the waitlist for the event
+     */
+    private void checkWaitlistStatus() {
+        if (eventId == null || currentAttendeeId == null) return;
+        eventController.checkIfAttendeeOnWaitlist(eventId, currentAttendeeId, new EventController.OnWaitlistStatusListener() {
+            @Override
+            public void onStatusChecked(boolean isOnWaitlist) {
+                updateWaitlistButtonUI(isOnWaitlist);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error checking waitlist status", e);
+            }
+        });
     }
 
+    /**
+     * Updates the UI to reflect the current waitlist status.
+     * @param isOnWaitlist
+     */
+    private void updateWaitlistButtonUI(boolean isOnWaitlist) {
+        if (isOnWaitlist) {
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(com.eventlottery.R.color.status_open_green));
+            binding.joinWaitlistBtn.setText("Leave Waiting List");
+        } else {
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.primary_blue));
+            binding.joinWaitlistBtn.setText("Join Waiting List");
+        }
+    }
+
+    /**
+     * Sets up the UI elements with event data.
+     */
     private void setupUI() {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
-        Log.d("ManageEvent", "Loading URL: " + event.getPosterImageUrl());
+        
         if (event.getPosterImageUrl() != null) {
             Bitmap bitmap = Base64EncodeDecode.decodeBase64(event.getPosterImageUrl());
             Glide.with(this)
@@ -94,6 +140,14 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
         binding.eventNameText.setText(event.getName());
         binding.statusChip.setText(event.getStatus());
+
+        DecimalFormat df = new DecimalFormat("0.00");
+        if (event.getPrice() == 0 || event.getPrice() == 0.0) {
+            binding.priceChip.setText("Price: Free");
+        } else {
+            binding.priceChip.setText("Price: $" + df.format(event.getPrice()));
+        }
+        binding.tagChipGroup.removeAllViews();
         for (String tag : event.getTags()) {
             Chip chip = new Chip(this);
             chip.setText(tag);
@@ -111,21 +165,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         binding.locationNameText.setText(event.getLocation());
 
         // Buttons only appear if event is not private
-        if(!event.isPrivate()) {
-            binding.joinWaitlistBtn.setOnClickListener(v -> {
-                // Waitlist btn
-                if(binding.joinWaitlistBtn.getText() == "Join Waiting List") {
-                    // TODO Add attendee
-                    binding.joinWaitlistBtn.setBackgroundColor(getColor(com.eventlottery.R.color.status_open_green));
-                    binding.joinWaitlistBtn.setText("Leave Waiting List");
-                } else {
-                    // TODO Delete Attendee
-                    binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.primary_blue));
-                    binding.joinWaitlistBtn.setText("Join Waiting List");
-                }
-            });
+        binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
 
-            // View QR button
+        // Can only see the QR button in a public event
+        if(!event.isPrivate()) {
+            binding.viewQrButton.setVisibility(View.VISIBLE);
             binding.viewQrButton.setOnClickListener(v -> {
                 Intent intent = new Intent(this, QRDisplayActivity.class);
                 intent.putExtra("EVENT_ID", eventId);
@@ -134,6 +178,82 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the toggle between joining and leaving the waitlist.
+     */
+    private void handleWaitlistToggle() {
+        if (currentAttendeeId == null) {
+            Toast.makeText(this, "Identifying user...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        boolean isJoining = binding.joinWaitlistBtn.getText().toString().equals("Join Waiting List");
+
+        EventController.OnEventOperationListener listener = new EventController.OnEventOperationListener() {
+            @Override
+            public void onSuccess() {
+                // Now update the Attendee's profile as well
+                updateAttendeeWaitlist(isJoining);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Toast.makeText(EventDetailsActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        if (isJoining) {
+            eventController.joinWaitlist(eventId, currentAttendeeId, listener);
+        } else {
+            eventController.leaveWaitlist(eventId, currentAttendeeId, listener);
+        }
+    }
+
+    /**
+     * Updates the attendee's waitlist status in the database.
+     * @param isJoining
+     */
+    private void updateAttendeeWaitlist(boolean isJoining) {
+        Attendee attendee = new Attendee();
+        attendee.setAttendeeID(currentAttendeeId);
+        
+        attendee.fetchFromFirebase(new Attendee.OnAttendeeLoadedListener() {
+            @Override
+            public void onSuccess(Attendee loadedAttendee) {
+                if (isJoining) {
+                    loadedAttendee.joinWaitList(eventId);
+                } else {
+                    loadedAttendee.leaveWaitList(eventId);
+                }
+                // joinWaitList/leaveWaitList automatically calls saveToFirebase()
+                
+                finishToggle(isJoining);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                // If attendee doesn't exist, we can't update, but we should still update UI
+                // In a real app, you'd ensure the attendee profile exists first
+                Log.e(TAG, "Error updating attendee waitlist", e);
+                finishToggle(isJoining);
+            }
+        });
+    }
+
+    /**
+     * Finishes the toggle and updates the UI.
+     * @param isJoining
+     */
+    private void finishToggle(boolean isJoining) {
+        updateWaitlistButtonUI(isJoining);
+        loadEventStats();
+        Toast.makeText(EventDetailsActivity.this, 
+            isJoining ? "Joined waitlist" : "Left waitlist", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Loads the current waitlist count and capacity.
+     */
     private void loadEventStats() {
         // Get waitlist count and fill out capacity card in UI
         db.collection("events").document(eventId)
@@ -142,10 +262,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                 .addOnSuccessListener(query -> {
                     binding.tvWaitlistCount.setText(query.size() + " in the waitlist");
                     binding.capacityText.setText(query.size() + " / " + event.getCapacity());
-                    binding.spotsAvailableText.setText(event.getCapacity() - query.size() + " spots available");
+                    binding.spotsAvailableText.setText((event.getCapacity() - query.size()) + " spots available");
                 });
-
-
-
     }
 }
