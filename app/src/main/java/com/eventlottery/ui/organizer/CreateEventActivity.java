@@ -3,11 +3,16 @@ package com.eventlottery.ui.organizer;
 import static com.eventlottery.services.Base64EncodeDecode.encodeImageToBase64;
 
 import android.content.Intent;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -25,8 +30,19 @@ import com.google.android.material.timepicker.TimeFormat;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.osmdroid.bonuspack.location.NominatimPOIProvider;
+import org.osmdroid.bonuspack.location.POI;
+import org.osmdroid.util.BoundingBox;
 
 
 /**
@@ -111,6 +127,38 @@ public class CreateEventActivity extends AppCompatActivity {
         }
     }
 
+    private List<String[]> searchNominatim(String query) {
+        List<String[]> results = new ArrayList<>();
+        try{
+            String encoded = URLEncoder.encode(query, "UTF-8");
+            String url = "https://nominatim.openstreetmap.org/search?q="
+                    + encoded
+                    + "&format=json&limit=5";
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setRequestProperty("User-Agent", "com.eventLottery");
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+
+            JSONArray json = new JSONArray(response.toString());
+            for (int i = 0; i < json.length(); i++) {
+                JSONObject obj = json.getJSONObject(i);
+                String name = obj.getString("display_name");
+                String lat = obj.getString("lat");
+                String lon = obj.getString("lon");
+                results.add(new String[]{name, lat, lon});
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
     /**
      * Called when the activity is first created.
      * @param savedInstanceState Saved data when the instance was last closed
@@ -122,11 +170,15 @@ public class CreateEventActivity extends AppCompatActivity {
         binding = ActivityCreateEventBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        org.osmdroid.config.Configuration.getInstance().load(this,
+                androidx.preference.PreferenceManager.getDefaultSharedPreferences(this));
+
         /* OrganizerId commented out for now as login not fully implemented
         organizerId = getIntent().getStringExtra("ORGANIZER_ID");
         if (organizerId == null) {
             makeToast()
         } */
+
 
         setupUI();
 
@@ -215,6 +267,34 @@ public class CreateEventActivity extends AppCompatActivity {
             imagePickerLauncher.launch("image/*");
         });
 
+        binding.locationSearchButton.setOnClickListener(v -> {
+            String query = binding.locationEditText.getText().toString();
+            Log.d("Nominatim","entering");
+            new Thread(() -> {
+                List<String[]> results = searchNominatim(query);
+                runOnUiThread(() -> {
+                    if (results.size() > 0) {
+                        List<String> names = new ArrayList<>();
+                        for (String[] result : results) {
+                            names.add(result[0]);
+                        }
+
+                        ArrayAdapter<String> dropDownAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, names);
+                        binding.locationResultsList.setAdapter(dropDownAdapter);
+                        binding.locationResultsList.setVisibility(View.VISIBLE);
+                        binding.locationResultsList.setNestedScrollingEnabled(true);
+                    }
+                    Log.d("Nominatim","passed through");
+                });
+            }).start();
+        });
+
+        binding.locationResultsList.setOnItemClickListener((parent, view, position, id) -> {
+            String[] picked = (String[]) parent.getItemAtPosition(position);
+            binding.locationEditText.setText(picked[0]);
+            binding.locationResultsList.setVisibility(View.GONE);
+        });
+
 
         //beginning to create the event and assign its details and push it to the database
         binding.createEventButton.setOnClickListener(v -> {
@@ -246,9 +326,8 @@ public class CreateEventActivity extends AppCompatActivity {
                     event.setWaitlistLimit(null);
                 }
             }
+            //event.setLocation(binding.locationEditText.getText().toString());
 
-            
-            event.setLocation(binding.locationEditText.getText().toString());
             event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());
             if (binding.geolocationSwitch.isChecked()) {
                 try {
@@ -273,15 +352,15 @@ public class CreateEventActivity extends AppCompatActivity {
                 event.setPrice(0.0);
             }
 
+
             //adding the event to the database
-            //First generate QRs
+            // First generate QRs
             eventController.addEvent(event, new EventController.OnEventOperationListener() {
                 @Override
                 public void onSuccess() {
                     Toast.makeText(CreateEventActivity.this, "Event created successfully", Toast.LENGTH_SHORT).show();
                     finish();
                 }
-
                 @Override
                 public void onError(Exception e) {
                     Toast.makeText(CreateEventActivity.this, "Error creating event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
