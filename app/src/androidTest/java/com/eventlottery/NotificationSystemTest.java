@@ -57,19 +57,36 @@ public class NotificationSystemTest {
         waitlistData.put("status", "waiting");
 
         CountDownLatch setupLatch = new CountDownLatch(2);
+        final Exception[] setupError = {null};
+
         db.collection("events").document(eventId).collection("waitlist").document(userAId).set(waitlistData)
-                .addOnCompleteListener(task -> setupLatch.countDown());
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        setupError[0] = task.getException();
+                        Log.e(TAG, "Setup User A failed", task.getException());
+                    }
+                    setupLatch.countDown();
+                });
         db.collection("events").document(eventId).collection("waitlist").document(userBId).set(waitlistData)
-                .addOnCompleteListener(task -> setupLatch.countDown());
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        setupError[0] = task.getException();
+                        Log.e(TAG, "Setup User B failed", task.getException());
+                    }
+                    setupLatch.countDown();
+                });
         
-        if (!setupLatch.await(5, TimeUnit.SECONDS)) fail("Setup timed out");
+        if (!setupLatch.await(15, TimeUnit.SECONDS)) {
+            fail("Setup timed out. Check connection or Security Rules. " + (setupError[0] != null ? setupError[0].getMessage() : ""));
+        }
+        if (setupError[0] != null) fail("Setup failed: " + setupError[0].getMessage());
 
         // 2. User A Withdraws
         CountDownLatch withdrawLatch = new CountDownLatch(1);
         db.collection("events").document(eventId).collection("waitlist").document(userAId).delete()
                 .addOnCompleteListener(task -> withdrawLatch.countDown());
         
-        if (!withdrawLatch.await(5, TimeUnit.SECONDS)) fail("Withdraw timed out");
+        if (!withdrawLatch.await(10, TimeUnit.SECONDS)) fail("Withdraw timed out");
 
         // 3. User B is Selected (Simulating DrawLotteryActivity logic)
         String notifId = UUID.randomUUID().toString();
@@ -81,7 +98,6 @@ public class NotificationSystemTest {
                 "INVITATION",
                 new Date()
         );
-        // Explicitly set isRead to false as seen in DrawLotteryActivity
         notification.setRead(false);
 
         CountDownLatch selectLatch = new CountDownLatch(3);
@@ -97,10 +113,9 @@ public class NotificationSystemTest {
         db.collection("notifications").document(notifId).set(notification)
                 .addOnCompleteListener(task -> selectLatch.countDown());
 
-        if (!selectLatch.await(5, TimeUnit.SECONDS)) fail("Selection timed out");
+        if (!selectLatch.await(15, TimeUnit.SECONDS)) fail("Selection timed out");
 
         // 4. Verification: Query notifications as User B (Exactly as in NotificationListFragment)
-        // This is the part that fails in production
         CountDownLatch queryLatch = new CountDownLatch(1);
         final boolean[] success = {false};
         final Exception[] errorHolder = {null};
@@ -114,7 +129,8 @@ public class NotificationSystemTest {
                 int count = 0;
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     Notification n = document.toObject(Notification.class);
-                    if (n.getAttendeeId().equals(userBId)) {
+                    // Ensure the data matches our simulated device ID
+                    if (n.getAttendeeId() != null && n.getAttendeeId().equals(userBId)) {
                         count++;
                     }
                 }
@@ -130,22 +146,22 @@ public class NotificationSystemTest {
             queryLatch.countDown();
         });
 
-        if (!queryLatch.await(10, TimeUnit.SECONDS)) fail("Query timed out");
+        if (!queryLatch.await(20, TimeUnit.SECONDS)) fail("Query timed out");
 
         // Analysis of results
         if (errorHolder[0] != null) {
             String msg = errorHolder[0].getMessage();
             if (msg != null && msg.contains("FAILED_PRECONDITION") && msg.contains("index")) {
-                fail("REPLICATED: Missing Firestore Composite Index. You must create the index for attendeeId (Asc) and timestamp (Desc). Error: " + msg);
+                fail("REPLICATED: Missing Firestore Composite Index. Link: " + msg);
             } else {
-                fail("Query failed with unexpected error: " + msg);
+                fail("Query failed with error: " + msg);
             }
         }
 
         if (!success[0]) {
-            fail("REPLICATED: Query returned 0 results despite notification existing in Firestore. This often happens if 'timestamp' is missing or if there is an ID mismatch.");
+            fail("REPLICATED: Query returned 0 results. Check if the index is still building or if there's a delay in Firestore propagation.");
         }
 
-        Log.d(TAG, "Test Passed: Notification retrieved successfully for User B");
+        Log.d(TAG, "Test Passed: Notification retrieved successfully for User B after index creation.");
     }
 }
