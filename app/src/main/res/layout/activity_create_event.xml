@@ -288,6 +288,12 @@
                 android:elevation="4dp"
                 android:divider="@android:color/darker_gray"
                 android:dividerHeight="0.5dp" />
+
+            <org.osmdroid.views.MapView
+                android:id="@+id/createEventMap"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:visibility="gone" />
         </LinearLayout>
 
         <!-- Geolocation Requirement Card -->

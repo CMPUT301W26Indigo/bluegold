@@ -36,13 +36,19 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.location.NominatimPOIProvider;
 import org.osmdroid.bonuspack.location.POI;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
 
 
 /**
@@ -78,6 +84,7 @@ public class CreateEventActivity extends AppCompatActivity {
     private EventController eventController = new EventController();
     private Uri selectedImageUri;
     private String organizerId;
+    private String[] pickedResults;
     private FirebaseStorage storage = FirebaseStorage.getInstance();
     private StorageReference storageRef = storage.getReference();
 
@@ -274,7 +281,6 @@ public class CreateEventActivity extends AppCompatActivity {
 
         binding.locationSearchButton.setOnClickListener(v -> {
             String query = binding.locationEditText.getText().toString();
-            Log.d("Nominatim","entering");
             new Thread(() -> {
                 List<String[]> results = searchNominatim(query);
                 runOnUiThread(() -> {
@@ -284,21 +290,46 @@ public class CreateEventActivity extends AppCompatActivity {
                             names.add(result[0]);
                         }
 
+                        MapView map = binding.createEventMap;
+                        map.setVisibility(View.GONE);
+                        map.setTileSource(TileSourceFactory.MAPNIK); // standard OSM map style
+                        map.setMultiTouchControls(true); // lets user pinch to zoom
+
+                        IMapController mapController = map.getController();
+                        mapController.setZoom(12.0); // default zoom level
+
                         ArrayAdapter<String> dropDownAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, names);
                         binding.locationResultsList.setAdapter(dropDownAdapter);
                         binding.locationResultsList.setVisibility(View.VISIBLE);
                         binding.locationResultsList.setNestedScrollingEnabled(true);
+
+                        binding.locationResultsList.setOnItemClickListener((parent, view, position, id) -> {
+                            binding.locationEditText.setText(names.get(position));
+                            binding.locationResultsList.setVisibility(View.GONE);
+                            pickedResults = results.get(position);
+                            Log.d("Nominatim", Arrays.toString(pickedResults));
+
+                            GeoPoint point = new GeoPoint(Double.parseDouble(pickedResults[1]), Double.parseDouble(pickedResults[2]));
+
+                            // Move the map
+                            mapController.animateTo(point); // animateTo is smoother than setCenter
+                            mapController.setZoom(16.0);   // zoom in close
+
+                            // Drop a marker
+                            map.getOverlays().clear();
+                            Marker marker = new Marker(map);
+                            marker.setPosition(point);
+                            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                            marker.setTitle("Event Location");
+                            map.getOverlays().add(marker);
+                            map.invalidate(); // tells the map to redraw
+                            map.setVisibility(View.VISIBLE);
+                        });
                     }
-                    Log.d("Nominatim","passed through");
                 });
             }).start();
         });
 
-        binding.locationResultsList.setOnItemClickListener((parent, view, position, id) -> {
-            String[] picked = (String[]) parent.getItemAtPosition(position);
-            binding.locationEditText.setText(picked[0]);
-            binding.locationResultsList.setVisibility(View.GONE);
-        });
 
 
         //beginning to create the event and assign its details and push it to the database
@@ -337,7 +368,10 @@ public class CreateEventActivity extends AppCompatActivity {
             eventPrivacy = binding.privacySwitch.isChecked();
             event.setPrivate(eventPrivacy);
 
+            // Set the location and geolocation
             event.setLocation(binding.locationEditText.getText().toString());
+            event.setLatitude(Double.parseDouble(pickedResults[1]));
+            event.setLongitude(Double.parseDouble(pickedResults[2]));
             event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());
             if (binding.geolocationSwitch.isChecked()) {
                 try {
