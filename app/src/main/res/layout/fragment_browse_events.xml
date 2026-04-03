@@ -71,6 +71,7 @@
                         android:layout_width="0dp"
                         app:layout_columnWeight="1"
                         android:hint="Date"
+                        android:paddingEnd="8dp"
                         app:startIconDrawable="@android:drawable/ic_menu_my_calendar">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -106,14 +107,15 @@
                         style="@style/Widget.App.TextInputLayout"
                         android:layout_width="0dp"
                         app:layout_columnWeight="1"
-                        android:hint="Space"
+                        android:hint="Max Capacity"
+                        android:paddingEnd="8dp"
                         app:startIconDrawable="@android:drawable/ic_menu_sort_by_size">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/eventCapacityEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:focusable="false"
+                            android:focusable="true"
                             android:clickable="true"
                             android:inputType="none" />
 
@@ -123,7 +125,6 @@
                         android:id="@+id/clearFiltersButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        app:layout_gravity="bottom"
                         app:layout_columnWeight="1"
                         android:text="Clear All Filters" />
 
