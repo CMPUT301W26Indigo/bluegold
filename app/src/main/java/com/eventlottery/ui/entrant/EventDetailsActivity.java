@@ -33,6 +33,7 @@ import java.text.DecimalFormat;
  * - Show event poster image
  * - Display geolocation requirements
  * - Join/Leave waitlist button
+ * - Accept/Decline invitation UI (US 01.05.02 & US 01.05.03)
  * - Show capacity and spots available
  */
 public class EventDetailsActivity extends AppCompatActivity {
@@ -77,6 +78,8 @@ public class EventDetailsActivity extends AppCompatActivity {
                             Attendee.getFirebaseId().addOnSuccessListener(id -> {
                                 currentAttendeeId = id;
                                 checkWaitlistStatus();
+                                // Note: Invitation status check and UI toggling (invitationActionsLayout) 
+                                // will be implemented in the logic branch.
                             }).addOnFailureListener(e -> {
                                 Log.e(TAG, "Failed to get Firebase ID", e);
                                 Toast.makeText(this, "Error identifying user", Toast.LENGTH_SHORT).show();
@@ -164,8 +167,19 @@ public class EventDetailsActivity extends AppCompatActivity {
         binding.descriptionText.setText(event.getDescription());
         binding.locationNameText.setText(event.getLocation());
 
-        // Buttons only appear if event is not private
+        // Waitlist Toggle
         binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
+
+        // Invitation Actions (US 01.05.02 & US 01.05.03)
+        binding.btnAcceptInvitation.setOnClickListener(v -> {
+            // UI Only: Placeholder for acceptance logic
+            Toast.makeText(this, "Invitation Accepted", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.btnDeclineInvitation.setOnClickListener(v -> {
+            // UI Only: Placeholder for decline logic
+            Toast.makeText(this, "Invitation Declined", Toast.LENGTH_SHORT).show();
+        });
 
         // Can only see the QR button in a public event
         if(!event.isPrivate()) {

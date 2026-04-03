@@ -400,6 +400,41 @@
                         android:textSize="@dimen/text_lg"
                         android:paddingVertical="@dimen/spacing_lg"
                         app:backgroundTint="@color/primary_blue" />
+
+                    <!-- Invitation Actions (US 01.05.02 & US 01.05.03) -->
+                    <LinearLayout
+                        android:id="@+id/invitationActionsLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_margin="@dimen/spacing_lg"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <Button
+                            android:id="@+id/btnDeclineInvitation"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="@dimen/spacing_sm"
+                            android:text="@string/decline"
+                            android:textColor="@color/secondary_red"
+                            app:strokeColor="@color/secondary_red" />
+
+                        <Button
+                            android:id="@+id/btnAcceptInvitation"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="@dimen/spacing_sm"
+                            android:text="@string/accept"
+                            app:backgroundTint="@color/secondary_green"
+                            android:textColor="@color/text_white" />
+
+                    </LinearLayout>
+
                     <!-- View QR Button-->
                     <Button
                         android:id="@+id/viewQrButton"
