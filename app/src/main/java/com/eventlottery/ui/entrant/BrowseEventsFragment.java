@@ -21,7 +21,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Fragment for browsing events.
@@ -92,16 +94,16 @@ public class BrowseEventsFragment extends Fragment {
      * Sets up the filter functionality.
      */
     private void setupFilters() {
-        binding.tagChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            List<String> selectedTags = new ArrayList<>();
-            for (int id : checkedIds) {
-                Chip chip = group.findViewById(id);
-                if (chip != null) {
-                    selectedTags.add(chip.getText().toString());
-                }
-            }
-            filterByTags(selectedTags);
-        });
+//        binding.tagChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
+//            List<String> selectedTags = new ArrayList<>();
+//            for (int id : checkedIds) {
+//                Chip chip = group.findViewById(id);
+//                if (chip != null) {
+//                    selectedTags.add(chip.getText().toString());
+//                }
+//            }
+//            filterByTags(selectedTags);
+//        });
     }
 
     /**
