@@ -28,8 +28,8 @@
     <string name="profile_title">My Profile</string>
 
     <!-- Event Status -->
-    <string name="status_open">Registration Open</string>
-    <string name="status_closed">Registration Closed</string>
+    <string name="status_open">Registration Open*</string>
+    <string name="status_closed">Registration Closed*</string>
     <string name="status_waiting">Waiting</string>
     <string name="status_selected">Selected</string>
     <string name="status_confirmed">Confirmed</string>
@@ -38,9 +38,9 @@
     <!-- Event Details -->
     <string name="join_waiting_list">Join Waiting List</string>
     <string name="leave_waiting_list">Leave Waiting List</string>
-    <string name="event_date">Event Date</string>
+    <string name="event_date">Event Date *</string>
     <string name="capacity">Capacity</string>
-    <string name="location">Location</string>
+    <string name="location">Location*</string>
     <string name="geolocation_required">Geolocation</string>
     <string name="within_radius">Within %1$d km radius</string>
     <string name="description">Description</string>
@@ -122,7 +122,7 @@
     <string name="event_description">Description *</string>
     <string name="describe_event_hint">Describe your event…</string>
     <string name="event_time">Event Time *</string>
-    <string name="registration_period">Registration Period</string>
+    <string name="registration_period">Registration Period*</string>
     <string name="opens">Opens</string>
     <string name="closes">Closes</string>
     <string name="event_capacity">Event Capacity *</string>
@@ -132,15 +132,15 @@
     <string name="geolocation_desc">Only users within specified radius can view and register</string>
     <string name="radius_km">Radius (km) *</string>
     <string name="radius_range">Range: 1 - 500 km</string>
-    <string name="event_tags">Event Tags</string>
+    <string name="event_tags">Event Tags*</string>
     <string name="upload_event_poster">Upload Event Poster</string>
     <string name="image_format">PNG, JPG up to 10MB</string>
     <string name="browse_files">Browse Files</string>
-    <string name="price">Price</string>
+    <string name="price">Price*</string>
     <string name="price_hint">0.00</string>
-    <string name="free_events_note">Leave as 0 for free events</string>
+    <string name="free_events_note">Leave blank for free events</string>
     <string name="cancel">Cancel</string>
-    <string name="create_event_generate_qr">Create Event &amp; Generate QR</string>
+    <string name="create_event_generate_qr">Create Event</string>
 
     <!-- Manage Event -->
     <string name="overview">Overview</string>
