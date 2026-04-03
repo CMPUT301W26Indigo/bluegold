@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import com.eventlottery.R;
 import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.FragmentBrowseEventsBinding;
 import com.eventlottery.model.Event;
@@ -32,7 +33,7 @@ public class BrowseEventsFragment extends Fragment {
     private EventAdapter eventAdapter;
     private EventController eventController;
     private List<Event> allEvents = new ArrayList<>();
-    private FirebaseFirestore db;
+    private CarouselFragment carouselFragment;
 
 
     @Nullable
@@ -47,16 +48,26 @@ public class BrowseEventsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         
         eventController = new EventController();
+        setupCarousel();
         setupRecyclerView();
         setupSearch();
         setupFilters();
         loadEvents();
     }
 
+    private void setupCarousel() {
+        carouselFragment = new CarouselFragment();
+        carouselFragment.setOnEventClickListener(this::navigateToEventDetails);
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.carousel_container, carouselFragment)
+                .commit();
+    }
+
     private void setupRecyclerView() {
         eventAdapter = new EventAdapter(this::navigateToEventDetails);
         binding.eventsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.eventsRecyclerView.setAdapter(eventAdapter);
+        binding.eventsRecyclerView.setNestedScrollingEnabled(false);
     }
 
     /**
@@ -105,11 +116,14 @@ public class BrowseEventsFragment extends Fragment {
             public void onEventsLoaded(List<Event> events) {
                 allEvents = events;
                 eventAdapter.submitList(new ArrayList<>(allEvents));
+                if (carouselFragment != null) {
+                    carouselFragment.setEvents(new ArrayList<>(allEvents));
+                }
             }
 
             @Override
             public void onError(Exception e) {
-                // Handle error (e.g., show Toast)
+                // Handle error
             }
         });
     }
@@ -156,9 +170,6 @@ public class BrowseEventsFragment extends Fragment {
      */
     private void navigateToEventDetails(Event event) {
         Intent intent = new Intent(getActivity(), EventDetailsActivity.class);
-        // Since EventTemp had serializable properties and Event does not, I had to pass the eventId
-        // Instead of the whole event into Firebase.
-        // This seems to work, but be wary of this line if errors start cropping up.
         intent.putExtra("EVENT_ID", event.getId());
         startActivity(intent);
     }
