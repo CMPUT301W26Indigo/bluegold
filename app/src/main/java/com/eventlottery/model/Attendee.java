@@ -183,13 +183,6 @@ public class Attendee extends AbstractUser {
         return deviceID;
     }
 
-    /**
-     * Sets the attendee's unique ID.
-     * @param deviceID The ID to set.
-     */
-//    public void setAttendeeID(String deviceID) {
-//        this.deviceID = deviceID;
-//    }
 
     /**
      * Adds an event to the attendee's personal waitlist and updates Firebase.
@@ -259,13 +252,6 @@ public class Attendee extends AbstractUser {
         return notification;
     }
 
-    /**
-     * Sets the list of event IDs the attendee is waitlisted for.
-     * @param waitListed
-     */
-    public void setWaitListed(ArrayList<String> waitListed) {
-        this.waitListed = waitListed;
-    }
 
     /**
      * Gets the attendee's physical address.
@@ -296,7 +282,7 @@ public class Attendee extends AbstractUser {
      * Sets the attendee's ID. Required for tests or loading.
      * @param attendeeID
      */
-//    public void setAttendeeID(String attendeeID) {
-//        this.deviceID = attendeeID;
-//    }
+    public void setAttendeeID(String attendeeID) {
+        this.deviceID = attendeeID;
+    }
 }
