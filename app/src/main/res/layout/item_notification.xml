@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="4dp"
             android:gravity="center_vertical">
 
             <!-- Unread Dot -->
@@ -60,6 +60,16 @@
                 tools:visibility="visible" />
 
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvNotificationTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="Emergency Update" />
 
         <TextView
             android:id="@+id/tvNotificationMessage"
