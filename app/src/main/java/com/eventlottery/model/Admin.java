@@ -481,8 +481,22 @@ public class Admin extends AbstractUser {
         });
     }
 
-    public void removeImage(String imageUrl) {
+    // The following image deletion methods require that when the admin clicks on an image to remove it, it returns
+    // whether the image belongs to a user (any kind) or an event and then calls the appropriate method while passing
+    // in the associated ID.
 
+    /**
+     * Removes an attendee's profile image from the database
+     * @param userId
+     */
+    public void removeImageProfile(String userId) {
+        DocumentReference userRef = db.collection("users").document(userId);
+        userRef.update("profileImageUrl", null);
+    }
+
+    public void removeImageEvent(String eventId) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        eventRef.update("posterImageUrl", null);
     }
 
     public void removeEventComments(String eventId) {
