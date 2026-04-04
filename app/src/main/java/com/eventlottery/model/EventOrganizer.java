@@ -165,6 +165,16 @@ public class EventOrganizer extends AbstractUser {
         throw new IllegalArgumentException("No event found with ID: " + eventId);
     }
 
+    public void removeEvent(String eventId) {
+        try {
+            Event event = findEvent(eventId);
+            events.remove(event);
+            saveToFirebase();
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "No event found with ID: " + eventId, e);
+        }
+    }
+
     /**
      * Retrieves all attendees for a specific event asynchronously.
      * This function and the following one are from Gemini - "How to properly fetch attendees from Firebase"

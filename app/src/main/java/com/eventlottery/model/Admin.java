@@ -8,6 +8,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 
@@ -368,11 +369,22 @@ public class Admin extends AbstractUser {
         eventRef.get().addOnCompleteListener(doc -> {
             Event event = doc.getResult().toObject(Event.class);
             if (event == null) return;
+
+            WriteBatch batch = db.batch();
+
+            // remove event from organizer's list of events
+            String organizerId = event.getOrganizerId();
+            if (organizerId != null) {
+                DocumentReference organizerRef = db.collection("eventOrganizers").document(organizerId);
+                batch.update(organizerRef, "events", FieldValue.arrayRemove(event));
+            }
+
+            // remove event from attendee's event history and waitlist
             GuestList guestList = event.getGuestList();
             if (guestList != null) {
                 ArrayList<String> attendeeIds = guestList.getAttendeeIds();
                 for (String id : attendeeIds) {
-                    db.collection("attendees").document(id).update("eventHistory", FieldValue.arrayRemove(eventId));
+                    batch.update(db.collection("attendees").document(id), "eventHistory", FieldValue.arrayRemove(eventId));
                 }
             }
             Waitlist waitlist = event.getWaitlist();
@@ -380,28 +392,22 @@ public class Admin extends AbstractUser {
                 ArrayList<String> waitlistAttendeeIds = waitlist.getAttendeeIds();
                 if (waitlistAttendeeIds != null) {
                     for (String id : waitlistAttendeeIds) {
-                        db.collection("attendees").document(id).update(
+                        batch.update(db.collection("attendees").document(id),
                                 "eventHistory", FieldValue.arrayRemove(eventId),
                                 "waitListed", FieldValue.arrayRemove(eventId)
                         );
                     }
                 }
             }
-            CollectionReference guestListRef = eventRef.collection("guestList");
-            // Delete all documents inside the guestList collection
-            guestListRef.get().addOnSuccessListener(querySnapshot -> {
-                for (DocumentSnapshot document : querySnapshot) {
-                    document.getReference().delete();
-                }
-                CollectionReference waitlistRef = eventRef.collection("waitlist");
-                // Delete all documents inside the waitlList collection
-                waitlistRef.get().addOnSuccessListener(querySnapshotAgain -> {
-                    for (DocumentSnapshot document : querySnapshot) {
-                        document.getReference().delete();
-                    }
-                    eventRef.delete();
-                });
-            });
+            
+            // Delete the event document
+            batch.delete(eventRef);
+
+            batch.commit().addOnSuccessListener(aVoid -> {
+                Log.d(TAG, "Main event data deleted. Cleaning up sub-collections...");
+                deleteCollectionDocs(eventRef.collection("guestList"));
+                deleteCollectionDocs(eventRef.collection("waitlist"));
+            }).addOnFailureListener(e -> Log.e(TAG, "Failed to remove event", e));
         });
     }
 
@@ -410,29 +416,39 @@ public class Admin extends AbstractUser {
         attendeeRef.get().addOnCompleteListener(doc -> {
             Attendee attendee = doc.getResult().toObject(Attendee.class);
             if (attendee == null) return;
+            
+            WriteBatch batch = db.batch();
+            
             ArrayList<AttendeeEventHistory> eventHistory = attendee.getEventHistory();
             ArrayList<String> waitListed = attendee.getWaitListed();
             if (waitListed != null) {
                 for (String eventId : waitListed) {
                     DocumentReference eventRef = db.collection("events").document(eventId);
-                    eventRef.collection("waitlist").document(attendeeId).delete();
-                    eventRef.collection("guestList").document(attendeeId).delete();
-                    db.collection("events").document(eventId).update("waitlistCount", FieldValue.increment(-1));
+                    batch.delete(eventRef.collection("waitlist").document(attendeeId));
+                    batch.delete(eventRef.collection("guestList").document(attendeeId));
+                    batch.update(eventRef, "waitlistCount", FieldValue.increment(-1));
                 }
             }
             if (eventHistory != null) {
                 for (AttendeeEventHistory history : eventHistory) {
                     DocumentReference eventRef = db.collection("events").document(history.getEventID());
-                    eventRef.collection("guestList").document(attendeeId).delete();
-                    db.collection("events").document(history.getEventID()).update("confirmedCount", FieldValue.increment(-1));
-
+                    batch.delete(eventRef.collection("guestList").document(attendeeId));
+                    batch.update(eventRef, "confirmedCount", FieldValue.increment(-1));
                 }
             }
-            attendeeRef.delete();
+            batch.delete(attendeeRef);
+            
+            batch.commit()
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Attendee profile removed successfully"))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to remove attendee profile", e));
         });
 
     }
 
+    /**
+     * Removes an event organizer's profile from the database
+     * @param eventOrganizerId
+     */
     public void removeEventOrganizerProfile(String eventOrganizerId) {
         DocumentReference eventOrganizerRef = db.collection("eventOrganizers").document(eventOrganizerId);
         eventOrganizerRef.get().addOnCompleteListener(doc -> {
@@ -444,7 +460,24 @@ public class Admin extends AbstractUser {
                     removeEvent(event.getId());
                 }
             }
-            eventOrganizerRef.delete();
+            eventOrganizerRef.delete()
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Organizer profile removed"))
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to remove organizer profile", e));
+        });
+    }
+
+    /**
+     * Deletes all documents in a collection
+     * @param collection
+     */
+    private void deleteCollectionDocs(CollectionReference collection) {
+        collection.get().addOnSuccessListener(querySnapshot -> {
+            if (querySnapshot.isEmpty()) return;
+            WriteBatch batch = db.batch();
+            for (DocumentSnapshot doc : querySnapshot) {
+                batch.delete(doc.getReference());
+            }
+            batch.commit();
         });
     }
 
