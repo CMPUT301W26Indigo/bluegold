@@ -116,6 +116,7 @@
     <string name="message_title">Message Title</string>
     <string name="notification_message_hint">Notification Message</string>
     <string name="send_notification_now">Send Notification Now</string>
+    <string name="notify_unselected">Notify Unselected Entrants</string>
 
     <!-- Create Event -->
     <string name="create_event_title">Create New Event</string>
