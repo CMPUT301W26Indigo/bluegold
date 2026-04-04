@@ -124,6 +124,12 @@
             android:exported="false"
             android:label="@string/lottery_draw_title"
             android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ui.organizer.SendNotificationsActivity"
+            android:exported="false"
+            android:label="@string/send_notifications"
+            android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" /> <!-- Admin Activities -->
         <activity
             android:name=".ui.admin.AdminDashboardActivity"
