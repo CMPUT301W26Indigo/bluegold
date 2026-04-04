@@ -76,12 +76,12 @@ public class Admin extends AbstractUser {
         saveToFirebase();
     }
 
-    public String getID() {
-        return deviceID;
-    }
-
+    @Override
     public void setID(String deviceID) {
         this.deviceID = deviceID;
+        if (attendee != null) attendee.setID(deviceID);
+        if (eventOrganizer != null) eventOrganizer.setID(deviceID);
+        //saveToFirebase(); - needed??
     }
 
     @Override
