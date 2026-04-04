@@ -2,6 +2,7 @@ package com.eventlottery.model;
 
 import android.util.Log;
 
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Exclude;
@@ -386,8 +387,21 @@ public class Admin extends AbstractUser {
                     }
                 }
             }
-            eventRef.delete();
-
+            CollectionReference guestListRef = eventRef.collection("guestList");
+            // Delete all documents inside the guestList collection
+            guestListRef.get().addOnSuccessListener(querySnapshot -> {
+                for (DocumentSnapshot document : querySnapshot) {
+                    document.getReference().delete();
+                }
+                CollectionReference waitlistRef = eventRef.collection("waitlist");
+                // Delete all documents inside the waitlList collection
+                waitlistRef.get().addOnSuccessListener(querySnapshotAgain -> {
+                    for (DocumentSnapshot document : querySnapshot) {
+                        document.getReference().delete();
+                    }
+                    eventRef.delete();
+                });
+            });
         });
     }
 
@@ -395,12 +409,43 @@ public class Admin extends AbstractUser {
         DocumentReference attendeeRef = db.collection("attendees").document(attendeeId);
         attendeeRef.get().addOnCompleteListener(doc -> {
             Attendee attendee = doc.getResult().toObject(Attendee.class);
+            if (attendee == null) return;
+            ArrayList<AttendeeEventHistory> eventHistory = attendee.getEventHistory();
+            ArrayList<String> waitListed = attendee.getWaitListed();
+            if (waitListed != null) {
+                for (String eventId : waitListed) {
+                    DocumentReference eventRef = db.collection("events").document(eventId);
+                    eventRef.collection("waitlist").document(attendeeId).delete();
+                    eventRef.collection("guestList").document(attendeeId).delete();
+                    db.collection("events").document(eventId).update("waitlistCount", FieldValue.increment(-1));
+                }
+            }
+            if (eventHistory != null) {
+                for (AttendeeEventHistory history : eventHistory) {
+                    DocumentReference eventRef = db.collection("events").document(history.getEventID());
+                    eventRef.collection("guestList").document(attendeeId).delete();
+                    db.collection("events").document(history.getEventID()).update("confirmedCount", FieldValue.increment(-1));
+
+                }
+            }
+            attendeeRef.delete();
         });
 
     }
 
     public void removeEventOrganizerProfile(String eventOrganizerId) {
-
+        DocumentReference eventOrganizerRef = db.collection("eventOrganizers").document(eventOrganizerId);
+        eventOrganizerRef.get().addOnCompleteListener(doc -> {
+            EventOrganizer eventOrganizer = doc.getResult().toObject(EventOrganizer.class);
+            if (eventOrganizer == null) return;
+            ArrayList<Event> events = eventOrganizer.getEvents();
+            if (events != null) {
+                for (Event event : events) {
+                    removeEvent(event.getId());
+                }
+            }
+            eventOrganizerRef.delete();
+        });
     }
 
     public void removeImage(String imageUrl) {

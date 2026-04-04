@@ -37,8 +37,26 @@ public class EventOrganizer extends AbstractUser {
         this.db = tempDb;
     }
 
-    // Methods to create an event with or without parameters based on UI implementation
+    // Getters and Setters
 
+    /**
+     * Gets the list of events associated with this organizer.
+     * @return events
+     */
+    public ArrayList<Event> getEvents() {
+        return events;
+    }
+
+    /**
+     * Sets the list of events associated with this organizer.
+     * @param events
+     */
+    public void setEvents(ArrayList<Event> events) {
+        this.events = events;
+    }
+
+
+    // Methods to create an event with or without parameters based on UI implementation
     /**
      * Creates an event with no parameters.
      * @return created event
