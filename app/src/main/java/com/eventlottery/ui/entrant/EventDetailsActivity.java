@@ -215,7 +215,7 @@ public class EventDetailsActivity extends AppCompatActivity {
      */
     private void updateAttendeeWaitlist(boolean isJoining) {
         Attendee attendee = new Attendee();
-        attendee.setAttendeeID(currentAttendeeId);
+        attendee.setID(currentAttendeeId);
         
         attendee.fetchFromFirebase(new Attendee.OnAttendeeLoadedListener() {
             @Override

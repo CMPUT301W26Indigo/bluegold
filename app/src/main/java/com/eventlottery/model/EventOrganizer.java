@@ -3,6 +3,7 @@ package com.eventlottery.model;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -10,11 +11,30 @@ import java.util.List;
 
 public class EventOrganizer extends AbstractUser {
     private static final String TAG = "EventOrganizer";
+    private static final String COLLECTION_NAME = "Event Organizers";
+
     private ArrayList<Event> events;
+
+    @Exclude
+    private final FirebaseFirestore db;
+
+    public interface OnAdminLoadedListener {
+        void onSuccess(Admin admin);
+        void onError(Exception e);
+    }
 
     public EventOrganizer() {
         super();
         this.events = new ArrayList<Event>();
+
+        FirebaseFirestore tempDb = null;
+        try {
+            tempDb = FirebaseFirestore.getInstance();
+        } catch (IllegalStateException e) {
+            tempDb = null;
+            Log.w(TAG, "Firebase not initialized, Firestore operations will be unavailable");
+        }
+        this.db = tempDb;
     }
 
     // Methods to create an event with or without parameters based on UI implementation
@@ -109,6 +129,7 @@ public class EventOrganizer extends AbstractUser {
      */
     public void addEvent(Event event) {
         events.add(event);
+        saveToFirebase();
     }
 
     /**
@@ -187,7 +208,7 @@ public class EventOrganizer extends AbstractUser {
                 .addOnSuccessListener(documentSnapshot -> {
                     Attendee attendee = documentSnapshot.toObject(Attendee.class);
                     if (attendee != null) {
-                        attendee.setAttendeeID(attendeeId);
+                        attendee.setID(attendeeId);
                         if (listener != null) listener.onSuccess(attendee);
                     } else if (listener != null) {
                         listener.onError(new Exception("Attendee document not found"));
@@ -243,6 +264,17 @@ public class EventOrganizer extends AbstractUser {
         event.getGuestList().cancelEntrants();
     }
 
+    @Override
+    public void saveToFirebase() {
+        if (db == null) return;
+        if (deviceID == null || deviceID.isEmpty()) {
+            Log.w(TAG, "Cannot save attendee: deviceID is null or empty");
+            return;
+        }
+        db.collection(COLLECTION_NAME).document(deviceID).set(this)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Attendee successfully updated on Firebase"))
+                .addOnFailureListener(e -> Log.e(TAG, "Error updating attendee on Firebase", e));
+    }
 
 
     public interface OnAttendeesLoadedListener {
