@@ -13,6 +13,7 @@ public abstract class AbstractUser {
     protected String address;
     protected String deviceID;
     private String profileImageUrl;
+    private boolean isAdmin;
 
     public AbstractUser() {
         this.name = null;
@@ -20,6 +21,7 @@ public abstract class AbstractUser {
         this.phoneNumber = null;
         this.address = null;
         this.deviceID = null;
+        this.isAdmin = false;
     }
 
 
