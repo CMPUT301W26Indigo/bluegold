@@ -68,7 +68,7 @@
     <string name="notification_selected_title">You\'ve Been Selected!</string>
     <string name="notification_selected_msg">Congratulations! You\'ve been selected for %1$s. Please confirm your attendance by %2$s.</string>
     <string name="notification_not_selected_title">Lottery Results</string>
-    <string name="notification_not_selected_msg">Unfortunately, you were not selected for %1$s. You\'ve been added to the replacement pool.</string>
+    <string name="notification_not_selected_msg">Unfortunately, you were not selected for %1$s. You\'ve been added to the replacement pool for redraw if another entrant declines.</string>
     <string name="notification_event_update">Event Update</string>
     <string name="view_event">View Event</string>
     <string name="empty_notifications">You have no notifications</string>
