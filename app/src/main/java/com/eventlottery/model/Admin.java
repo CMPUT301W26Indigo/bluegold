@@ -3,6 +3,7 @@ package com.eventlottery.model;
 import android.util.Log;
 
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -364,18 +365,20 @@ public class Admin extends AbstractUser {
     public void removeEvent(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
         eventRef.get().addOnCompleteListener(doc -> {
-            GuestList guestList = doc.getResult().toObject(GuestList.class);
+            Event event = doc.getResult().toObject(Event.class);
+            if (event == null) return;
+            GuestList guestList = event.getGuestList();
             if (guestList != null) {
                 ArrayList<String> attendeeIds = guestList.getAttendeeIds();
-                for (String id: attendeeIds) {
+                for (String id : attendeeIds) {
                     db.collection("attendees").document(id).update("eventHistory", FieldValue.arrayRemove(eventId));
                 }
             }
-            Waitlist waitlist = doc.getResult().toObject(Waitlist.class);
+            Waitlist waitlist = event.getWaitlist();
             if (waitlist != null) {
                 ArrayList<String> waitlistAttendeeIds = waitlist.getAttendeeIds();
                 if (waitlistAttendeeIds != null) {
-                    for (String id: waitlistAttendeeIds) {
+                    for (String id : waitlistAttendeeIds) {
                         db.collection("attendees").document(id).update(
                                 "eventHistory", FieldValue.arrayRemove(eventId),
                                 "waitListed", FieldValue.arrayRemove(eventId)
@@ -384,6 +387,7 @@ public class Admin extends AbstractUser {
                 }
             }
             eventRef.delete();
+
         });
     }
 

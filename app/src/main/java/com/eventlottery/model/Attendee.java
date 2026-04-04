@@ -127,6 +127,7 @@ public class Attendee extends AbstractUser {
      * @param eventID The unique identifier of the event.
      */
     public void joinWaitList(String eventID) {
+        // should update event history as well??
         Map<String, Object> data = new HashMap<>();
         data.put("status", "waiting");
 
