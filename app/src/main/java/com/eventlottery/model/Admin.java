@@ -5,12 +5,23 @@ import android.util.Log;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
+
+/**
+ * Represents an Admin user who can also act as an Attendee and Event Organizer.
+ */
 public class Admin extends AbstractUser {
     private static final String TAG = "Admin";
     private static final String COLLECTION_NAME = "admins";
 
     private Attendee attendee;
     private EventOrganizer eventOrganizer;
+
+    private boolean isAdmin;
+    private boolean isAttendee;
+    private boolean isEventOrganizer;
+    private boolean notification;
+
     @Exclude
     private final FirebaseFirestore db;
 
@@ -28,6 +39,9 @@ public class Admin extends AbstractUser {
         this.attendee = null;
         this.eventOrganizer = null;
         this.isAdmin = true;
+        this.isAttendee = false;
+        this.isEventOrganizer = false;
+        this.notification = true;
 
         FirebaseFirestore tempDb = null;
         try {
@@ -37,7 +51,6 @@ public class Admin extends AbstractUser {
             Log.w(TAG, "Firebase not initialized, Firestore operations will be unavailable");
         }
         this.db = tempDb;
-
     }
 
     // Getters and Setters
@@ -51,8 +64,14 @@ public class Admin extends AbstractUser {
     @Override
     public void setName(String name) {
         this.name = name;
-        if (attendee != null) attendee.setName(name);
-        if (eventOrganizer != null) eventOrganizer.setName(name);
+        if (attendee != null) {
+            attendee.setName(name);
+            attendee.saveToFirebase();
+        }
+        if (eventOrganizer != null) {
+            eventOrganizer.setName(name);
+            eventOrganizer.saveToFirebase();
+        }
         saveToFirebase();
     }
 
@@ -68,8 +87,14 @@ public class Admin extends AbstractUser {
             throw new IllegalArgumentException("Invalid email format");
         }
         this.email = email;
-        if (attendee != null) attendee.setEmail(email);
-        if (eventOrganizer != null) eventOrganizer.setEmail(email);
+        if (attendee != null) {
+            attendee.setEmail(email);
+            attendee.saveToFirebase();
+        }
+        if (eventOrganizer != null) {
+            eventOrganizer.setEmail(email);
+            eventOrganizer.saveToFirebase();
+        }
         saveToFirebase();
     }
 
@@ -85,8 +110,14 @@ public class Admin extends AbstractUser {
             throw new IllegalArgumentException("Invalid phone number format");
         }
         this.phoneNumber = phoneNumber;
-        if (attendee != null) attendee.setPhoneNumber(phoneNumber);
-        if (eventOrganizer != null) eventOrganizer.setPhoneNumber(phoneNumber);
+        if (attendee != null) {
+            attendee.setPhoneNumber(phoneNumber);
+            attendee.saveToFirebase();
+        }
+        if (eventOrganizer != null) {
+            eventOrganizer.setPhoneNumber(phoneNumber);
+            eventOrganizer.saveToFirebase();
+        }
         saveToFirebase();
     }
 
@@ -100,8 +131,14 @@ public class Admin extends AbstractUser {
     @Override
     public void setAddress(String address) {
         this.address = address;
-        if (attendee != null) attendee.setAddress(address);
-        if (eventOrganizer != null) eventOrganizer.setAddress(address);
+        if (attendee != null) {
+            attendee.setAddress(address);
+            attendee.saveToFirebase();
+        }
+        if (eventOrganizer != null) {
+            eventOrganizer.setAddress(address);
+            eventOrganizer.saveToFirebase();
+        }
         saveToFirebase();
     }
 
@@ -127,9 +164,15 @@ public class Admin extends AbstractUser {
      */
     @Override
     public void setProfileImageUrl(String profileImageUrl) {
-        this.profileImageUrl = profileImageUrl;
-        if (attendee != null) attendee.setProfileImageUrl(profileImageUrl);
-        if (eventOrganizer != null) eventOrganizer.setProfileImageUrl(profileImageUrl);
+        super.setProfileImageUrl(profileImageUrl);
+        if (attendee != null) {
+            attendee.setProfileImageUrl(profileImageUrl);
+            attendee.saveToFirebase();
+        }
+        if (eventOrganizer != null) {
+            eventOrganizer.setProfileImageUrl(profileImageUrl);
+            eventOrganizer.saveToFirebase();
+        }
         saveToFirebase();
     }
 
@@ -142,8 +185,14 @@ public class Admin extends AbstractUser {
     @Override
     public void setNotification(boolean notification) {
         this.notification = notification;
-        if (attendee != null) attendee.setNotification(notification);
-        if (eventOrganizer != null) eventOrganizer.setNotification(notification);
+        if (attendee != null) {
+            attendee.setNotification(notification);
+            attendee.saveToFirebase();
+        }
+        if (eventOrganizer != null) {
+            eventOrganizer.setNotification(notification);
+            eventOrganizer.saveToFirebase();
+        }
         saveToFirebase();
     }
 
@@ -153,6 +202,22 @@ public class Admin extends AbstractUser {
      */
     public boolean isAdmin() {
         return isAdmin;
+    }
+
+    /**
+     * Returns if the user is an attendee boolean.
+     * @return isAttendee
+     */
+    public boolean isAttendee() {
+        return isAttendee;
+    }
+
+    /**
+     * Returns if the user is an event organizer boolean.
+     * @return isEventOrganizer
+     */
+    public boolean isEventOrganizer() {
+        return isEventOrganizer;
     }
 
     /**
@@ -199,6 +264,10 @@ public class Admin extends AbstractUser {
             attendee.setEmail(this.email);
             attendee.setPhoneNumber(this.phoneNumber);
             attendee.setAddress(this.address);
+            attendee.setProfileImageUrl(this.profileImageUrl);
+            attendee.setNotification(this.notification);
+            attendee.saveToFirebase();
+            isAttendee = true;
             saveToFirebase();
         }
         return attendee;
@@ -216,24 +285,25 @@ public class Admin extends AbstractUser {
             eventOrganizer.setEmail(this.email);
             eventOrganizer.setPhoneNumber(this.phoneNumber);
             eventOrganizer.setAddress(this.address);
+            eventOrganizer.setProfileImageUrl(this.profileImageUrl);
+            eventOrganizer.setNotification(this.notification);
+            eventOrganizer.saveToFirebase();
+            isEventOrganizer = true;
             saveToFirebase();
         }
         return eventOrganizer;
     }
 
-    /**
-     * Saves the admin to Firebase.
-     */
     @Override
     public void saveToFirebase() {
         if (db == null) return;
         if (deviceID == null || deviceID.isEmpty()) {
-            Log.w(TAG, "Cannot save attendee: deviceID is null or empty");
+            Log.w(TAG, "Cannot save admin: deviceID is null or empty");
             return;
         }
         db.collection(COLLECTION_NAME).document(deviceID).set(this)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Attendee successfully updated on Firebase"))
-                .addOnFailureListener(e -> Log.e(TAG, "Error updating attendee on Firebase", e));
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Admin successfully updated on Firebase"))
+                .addOnFailureListener(e -> Log.e(TAG, "Error updating admin on Firebase", e));
     }
 
     /**
@@ -241,10 +311,70 @@ public class Admin extends AbstractUser {
      * @param listener Callback for completion.
      */
     public void fetchFromFirebase(OnAdminLoadedListener listener) {
+        if (db == null) {
+            if (listener != null) listener.onError(new Exception("Firebase not initialized"));
+            return;
+        }
+        if (deviceID == null || deviceID.isEmpty()) {
+            if (listener != null) listener.onError(new Exception("DeviceID not set"));
+            return;
+        }
+        db.collection(COLLECTION_NAME).document(deviceID).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Admin remote = documentSnapshot.toObject(Admin.class);
+                    if (remote != null) {
+                        this.name = remote.name;
+                        this.email = remote.email;
+                        this.phoneNumber = remote.phoneNumber;
+                        this.address = remote.address;
+                        this.attendee = remote.attendee;
+                        this.eventOrganizer = remote.eventOrganizer;
+                        this.isAttendee = remote.isAttendee;
+                        this.isEventOrganizer = remote.isEventOrganizer;
+                        this.notification = remote.notification;
+
+                        // Re-attach listeners to nested attendee's history
+                        if (this.attendee != null && this.attendee.getEventHistory() != null) {
+                            for (AttendeeEventHistory history : this.attendee.getEventHistory()) {
+                                history.setOnChangeListener(() -> {
+                                    this.attendee.saveToFirebase();
+                                    this.saveToFirebase();
+                                });
+                            }
+                        }
+                        if (remote.isEventOrganizer) isEventOrganizer = true;
+
+                        if (listener != null) listener.onSuccess(this);
+                    } else if (listener != null) {
+                        listener.onError(new Exception("Admin document not found"));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (listener != null) listener.onError(e);
+                });
+    }
+
+    public void removeEvent(String eventId) {
+        db.collection("events").document(eventId).delete().addOnSuccessListener(aVoid -> {
+            Log.d(TAG, "Event successfully deleted from Firebase");
+                })
+                .addOnFailureListener(e -> Log.e(TAG, "Error deleting event from Firebase", e));
 
     }
 
+    public void removeAttendeeProfile(String attendeeId) {
 
+    }
 
+    public void removeEventOrganizerProfile(String eventOrganizerId) {
 
+    }
+
+    public void removeImage(String imageUrl) {
+
+    }
+
+    public void removeEventComments(String eventId) {
+
+    }
 }

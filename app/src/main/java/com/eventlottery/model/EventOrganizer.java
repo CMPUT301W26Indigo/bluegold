@@ -18,8 +18,8 @@ public class EventOrganizer extends AbstractUser {
     @Exclude
     private final FirebaseFirestore db;
 
-    public interface OnAdminLoadedListener {
-        void onSuccess(Admin admin);
+    public interface OnEventOrganizerLoadedListener {
+        void onSuccess(EventOrganizer eventOrganizer);
         void onError(Exception e);
     }
 
@@ -274,6 +274,35 @@ public class EventOrganizer extends AbstractUser {
         db.collection(COLLECTION_NAME).document(deviceID).set(this)
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "Attendee successfully updated on Firebase"))
                 .addOnFailureListener(e -> Log.e(TAG, "Error updating attendee on Firebase", e));
+    }
+
+    public void fetchFromFirebase(OnEventOrganizerLoadedListener listener) {
+        if (db == null) {
+            if (listener != null) listener.onError(new Exception("Firebase not initialized"));
+            return;
+        }
+        if (deviceID == null || deviceID.isEmpty()) {
+            if (listener != null) listener.onError(new Exception("DeviceID not set"));
+            return;
+        }
+        db.collection(COLLECTION_NAME).document(deviceID).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    EventOrganizer remote = documentSnapshot.toObject(EventOrganizer.class);
+                    if (remote != null) {
+                        this.name = remote.name;
+                        this.email = remote.email;
+                        this.phoneNumber = remote.phoneNumber;
+                        this.address = remote.address;
+                        this.notification = remote.notification;
+                        this.events = remote.events != null ? remote.events : new ArrayList<>();
+                        if (listener != null) listener.onSuccess(this);
+                    } else if (listener != null) {
+                        listener.onError(new Exception("EventOrganizer document not found"));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (listener != null) listener.onError(e);
+                });
     }
 
 
