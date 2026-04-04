@@ -46,7 +46,14 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Entrant Activities -->
+        </activity>
+        <activity
+            android:name=".LotteryInfoActivity"
+            android:exported="false"
+            android:label="@string/lottery_process_title"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <!-- Entrant Activities -->
         <activity
             android:name=".ui.entrant.BrowseEventsActivity"
             android:exported="false"
