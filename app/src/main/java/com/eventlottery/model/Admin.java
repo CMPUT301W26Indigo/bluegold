@@ -20,7 +20,9 @@ public class Admin extends AbstractUser {
         void onError(Exception e);
     }
 
-
+    /**
+     * Constructs a new Admin with default values and connects to Firestore.
+     */
     public Admin() {
         super();
         this.attendee = null;
@@ -39,6 +41,13 @@ public class Admin extends AbstractUser {
     }
 
     // Getters and Setters
+
+    /**
+     * Sets the attendee's name.
+     * Updates the attendee and event organizer's names as well.
+     * Saves to Firestore
+     * @param name The name to set.
+     */
     @Override
     public void setName(String name) {
         this.name = name;
@@ -47,6 +56,12 @@ public class Admin extends AbstractUser {
         saveToFirebase();
     }
 
+    /**
+     * Sets the attendee's email address.
+     * Updates the attendee and event organizer's emails as well.
+     * Saves to Firestore
+     * @param email The email address to set.
+     */
     @Override
     public void setEmail(String email) {
         if (!ValidateEmail.isValidEmail(email)) {
@@ -57,6 +72,13 @@ public class Admin extends AbstractUser {
         if (eventOrganizer != null) eventOrganizer.setEmail(email);
         saveToFirebase();
     }
+
+    /**
+     * Sets the attendee's phone number.
+     * Updates the attendee and event organizer's phone numbers as well.
+     * Saves to Firestore
+     * @param phoneNumber The phone number to set.
+     */
     @Override
     public void setPhoneNumber(String phoneNumber) {
         if (!ValidatePhone.isValidPhoneNumber(phoneNumber)) {
@@ -68,6 +90,13 @@ public class Admin extends AbstractUser {
         saveToFirebase();
     }
 
+    /**
+     * Sets the attendee's physical address.
+     * Updates the attendee and event organizer's addresses as well.
+     * Saves to Firestore
+     * @param address The address to set.
+     * Todo Throw IllegalArgumentException for invalid format and ensure it can be converted to coordinates.
+     */
     @Override
     public void setAddress(String address) {
         this.address = address;
@@ -76,6 +105,12 @@ public class Admin extends AbstractUser {
         saveToFirebase();
     }
 
+    /**
+     * Sets the attendee's unique ID.
+     * Updates the attendee and event organizer's IDs as well.
+     * Saves to Firestore
+     * @param deviceID The ID to set (e.g., the Firebase Installation ID).
+     */
     @Override
     public void setID(String deviceID) {
         this.deviceID = deviceID;
@@ -84,23 +119,32 @@ public class Admin extends AbstractUser {
         //saveToFirebase(); - needed??
     }
 
-    @Override
-    public String getProfileImageUrl() {
-        return profileImageUrl;
-    }
-
+    /**
+     * Sets the attendee's profile image URL.
+     * Updates the attendee and event organizer's profile image URLs as well.
+     * Saves to Firestore
+     * @param profileImageUrl
+     */
     @Override
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+        if (attendee != null) attendee.setProfileImageUrl(profileImageUrl);
+        if (eventOrganizer != null) eventOrganizer.setProfileImageUrl(profileImageUrl);
+        saveToFirebase();
     }
 
-    public boolean isNotification() {
-        return notification;
-    }
-
+    /**
+     * Sets the attendee's notification preference.
+     * Updates the attendee and event organizer's notification preferences as well.
+     * Saves to Firestore
+     * @param notification True to enable notifications, false to disable.
+     */
     @Override
     public void setNotification(boolean notification) {
         this.notification = notification;
+        if (attendee != null) attendee.setNotification(notification);
+        if (eventOrganizer != null) eventOrganizer.setNotification(notification);
+        saveToFirebase();
     }
 
     /**
@@ -143,6 +187,10 @@ public class Admin extends AbstractUser {
         this.eventOrganizer = eventOrganizer;
     }
 
+    /**
+     * Creates and returns an attendee object for admin to use if one doesn't already exist
+     * @return attendee
+     */
     public Attendee createAttendee() {
         if (attendee == null) {
             attendee = new Attendee();
@@ -156,6 +204,10 @@ public class Admin extends AbstractUser {
         return attendee;
     }
 
+    /**
+     * Creates and returns an event organizer object for admin to use if one doesn't already exist
+     * @return eventOrganizer
+     */
     public EventOrganizer createEventOrganizer() {
         if (eventOrganizer == null) {
             eventOrganizer = new EventOrganizer();
@@ -169,6 +221,9 @@ public class Admin extends AbstractUser {
         return eventOrganizer;
     }
 
+    /**
+     * Saves the admin to Firebase.
+     */
     @Override
     public void saveToFirebase() {
         if (db == null) return;
@@ -179,6 +234,14 @@ public class Admin extends AbstractUser {
         db.collection(COLLECTION_NAME).document(deviceID).set(this)
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "Attendee successfully updated on Firebase"))
                 .addOnFailureListener(e -> Log.e(TAG, "Error updating attendee on Firebase", e));
+    }
+
+    /**
+     * Fetches the admin from Firebase.
+     * @param listener Callback for completion.
+     */
+    public void fetchFromFirebase(OnAdminLoadedListener listener) {
+
     }
 
 
