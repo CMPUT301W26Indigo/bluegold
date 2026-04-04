@@ -2,7 +2,9 @@ package com.eventlottery.model;
 
 import android.util.Log;
 
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -354,15 +356,42 @@ public class Admin extends AbstractUser {
                 });
     }
 
+    /**
+     * Removes an event from the database
+     * Removes event from associated attendee event history and waitlist
+     * @param eventId
+     */
     public void removeEvent(String eventId) {
-        db.collection("events").document(eventId).delete().addOnSuccessListener(aVoid -> {
-            Log.d(TAG, "Event successfully deleted from Firebase");
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Error deleting event from Firebase", e));
-
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        eventRef.get().addOnCompleteListener(doc -> {
+            GuestList guestList = doc.getResult().toObject(GuestList.class);
+            if (guestList != null) {
+                ArrayList<String> attendeeIds = guestList.getAttendeeIds();
+                for (String id: attendeeIds) {
+                    db.collection("attendees").document(id).update("eventHistory", FieldValue.arrayRemove(eventId));
+                }
+            }
+            Waitlist waitlist = doc.getResult().toObject(Waitlist.class);
+            if (waitlist != null) {
+                ArrayList<String> waitlistAttendeeIds = waitlist.getAttendeeIds();
+                if (waitlistAttendeeIds != null) {
+                    for (String id: waitlistAttendeeIds) {
+                        db.collection("attendees").document(id).update(
+                                "eventHistory", FieldValue.arrayRemove(eventId),
+                                "waitListed", FieldValue.arrayRemove(eventId)
+                        );
+                    }
+                }
+            }
+            eventRef.delete();
+        });
     }
 
     public void removeAttendeeProfile(String attendeeId) {
+        DocumentReference attendeeRef = db.collection("attendees").document(attendeeId);
+        attendeeRef.get().addOnCompleteListener(doc -> {
+            Attendee attendee = doc.getResult().toObject(Attendee.class);
+        });
 
     }
 
