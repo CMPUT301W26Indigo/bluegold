@@ -8,7 +8,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.eventlottery.model.Attendee;
 import com.eventlottery.model.User;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.Before;
@@ -100,7 +99,7 @@ public class DeleteUserTest {
     public void testDeleteUserMultipleWaitlists() throws InterruptedException {
         String eventId2 = "event_multi_2";
         Attendee attendee = new Attendee();
-        attendee.setAttendeeID(testUserId);
+        attendee.setID(testUserId);
         attendee.setName("Multi-Waitlist User");
         attendee.setEmail(VALID_EMAIL);
         attendee.setPhoneNumber(VALID_PHONE);
@@ -130,7 +129,7 @@ public class DeleteUserTest {
     public void testDeleteUserMultipleGuestLists() throws InterruptedException {
         String eventId2 = "event_history_2";
         Attendee attendee = new Attendee();
-        attendee.setAttendeeID(testUserId);
+        attendee.setID(testUserId);
         attendee.setName("History User");
         attendee.setEmail(VALID_EMAIL);
         attendee.setPhoneNumber(VALID_PHONE);
@@ -223,7 +222,7 @@ public class DeleteUserTest {
 
     private void setupMockAttendee(String userId) throws InterruptedException {
         Attendee attendee = new Attendee();
-        attendee.setAttendeeID(userId);
+        attendee.setID(userId);
         attendee.setName("Test Attendee");
         attendee.setEmail(VALID_EMAIL);
         attendee.setPhoneNumber(VALID_PHONE);

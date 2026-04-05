@@ -49,6 +49,12 @@ public class MainActivity extends AppCompatActivity {
         // Admin role selection
         binding.adminCard.setOnClickListener(v -> navigateToAdminFlow());
         binding.btnEnterAsAdmin.setOnClickListener(v -> navigateToAdminFlow());
+
+        // How it works
+        binding.btnHowLotteryWorks.setOnClickListener(v -> {
+            Intent intent = new Intent(this, LotteryInfoActivity.class);
+            startActivity(intent);
+        });
     }
 
     /**

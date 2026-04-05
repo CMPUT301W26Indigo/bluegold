@@ -10,6 +10,7 @@ import java.util.Date;
  */
 public class Notification {
     private String id;
+    private String title;
     private String message;
     private String attendeeId;
     private String recipientName;
@@ -26,8 +27,9 @@ public class Notification {
     public Notification() {
     }
 
-    public Notification(String id, String message, String attendeeId, String eventId, String type, Date timestamp) {
+    public Notification(String id, String title, String message, String attendeeId, String eventId, String type, Date timestamp) {
         this.id = id;
+        this.title = title;
         this.message = message;
         this.attendeeId = attendeeId;
         this.eventId = eventId;
@@ -37,9 +39,15 @@ public class Notification {
         this.timestamp = timestamp;
     }
 
+    public Notification(String id, String message, String attendeeId, String eventId, String type, Date timestamp) {
+        this(id, null, message, attendeeId, eventId, type, timestamp);
+    }
+
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }
     public String getAttendeeId() { return attendeeId; }

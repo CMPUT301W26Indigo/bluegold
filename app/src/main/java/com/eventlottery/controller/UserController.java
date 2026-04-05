@@ -58,8 +58,8 @@ public class UserController {
 
     /**
      * Deletes a user profile from Firestore.
-     * Before deletion, it removes the user from all waitlists and
-     * updates their status in guest lists.
+     * Before deletion, it removes the user from all waitlists and guest lists.
+     * This fulfills the requirement of wiping the profile from existence.
      *
      * @param userId   The ID of the user to delete.
      * @param listener The listener for success or error callbacks.
@@ -71,7 +71,7 @@ public class UserController {
                     if (documentSnapshot.exists()) {
                         Attendee attendee = documentSnapshot.toObject(Attendee.class);
                         if (attendee != null) {
-                            // Remove from waitlists
+                            // Remove from all waitlists the user joined
                             if (attendee.getWaitListed() != null) {
                                 for (String eventId : attendee.getWaitListed()) {
                                     Waitlist waitlist = new Waitlist(eventId);
@@ -88,7 +88,7 @@ public class UserController {
                                 }
                             }
 
-                            // Update status in guest lists (from history)
+                            // Remove from all guest lists (from history)
                             if (attendee.getEventHistory() != null) {
                                 for (AttendeeEventHistory history : attendee.getEventHistory()) {
                                     String eventId = history.getEventID();
@@ -96,7 +96,9 @@ public class UserController {
                                     guestList.fetchFromFirebase(new GuestList.OnGuestListLoadedListener() {
                                         @Override
                                         public void onSuccess() {
-                                            guestList.changeAttendeeStatus(userId, "declined");
+                                            try {
+                                                guestList.removeAttendee(userId);
+                                            } catch (Exception ignored) {}
                                         }
                                         @Override
                                         public void onError(Exception e) {}
@@ -106,7 +108,7 @@ public class UserController {
                         }
                     }
                     
-                    // 2. Perform final deletion of Firestore documents
+                    // 2. Perform final deletion of primary Firestore documents
                     db.collection(ATTENDEE_COLLECTION).document(userId).delete();
                     db.collection(COLLECTION_NAME).document(userId).delete()
                             .addOnSuccessListener(aVoid -> {
@@ -117,7 +119,7 @@ public class UserController {
                             });
                 })
                 .addOnFailureListener(e -> {
-                    // Even if attendee fetch fails, attempt to delete the documents
+                    // Even if attendee fetch fails, attempt to delete the primary documents
                     db.collection(ATTENDEE_COLLECTION).document(userId).delete();
                     db.collection(COLLECTION_NAME).document(userId).delete()
                             .addOnSuccessListener(aVoid -> {
