@@ -37,11 +37,13 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
+        // Initialize the controller to avoid NullPointerException
+        userController = new UserController();
         currentAttendee = new Attendee();
         
         // Retrieve the unique ID and load the profile
         Attendee.getFirebaseId().addOnSuccessListener(id -> {
-            currentAttendee.setAttendeeID(id);
+            currentAttendee.setID(id);
             loadAttendeeProfile();
         }).addOnFailureListener(e -> {
             Log.e(TAG, "Failed to get Firebase ID", e);
@@ -99,7 +101,7 @@ public class ProfileFragment extends Fragment {
                         .setTitle("Delete Profile")
                         .setMessage("Are you sure you want to delete your profile? This action cannot be undone.")
                         .setPositiveButton("Delete", (dialog, which) -> {
-                            userController.deleteUser(currentAttendee.getAttendeeID(), new UserController.OnUserOperationListener() {
+                            userController.deleteUser(currentAttendee.getID(), new UserController.OnUserOperationListener() {
                                 @Override
                                 public void onSuccess() {
                                     Toast.makeText(getContext(), "Profile deleted", Toast.LENGTH_SHORT).show();

@@ -1,6 +1,8 @@
 package com.eventlottery.ui.entrant;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.bumptech.glide.Glide;
 import com.eventlottery.R;
@@ -17,9 +20,12 @@ import com.eventlottery.databinding.ActivityEventDetailsBinding;
 import com.eventlottery.model.Attendee;
 import com.eventlottery.model.Event;
 import com.eventlottery.services.Base64EncodeDecode;
+import com.eventlottery.services.LocationService;
 import com.eventlottery.ui.qr.QRDisplayActivity;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.text.DecimalFormat;
 
 /**
  * EventDetailsActivity
@@ -42,6 +48,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private EventController eventController;
     private String currentAttendeeId;
+    private LocationService locationService = new LocationService(this);
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +92,21 @@ public class EventDetailsActivity extends AppCompatActivity {
                         finish();
                     }
                 });
+
+
+        //just here for testing purposes
+        locationService.requestLocation(new LocationService.LocationCallback() {
+            @Override
+            public void onLocationReady(double lat, double lon) {
+                Log.d("Location", "Latitude: " + lat + ", Longitude: " + lon);
+            }
+
+            @Override
+            public void onPermissionDenied() {
+                Log.d("Location", "Permission denied");
+            }
+        });
+        //just here for testing purposes
     }
 
     /**
@@ -138,6 +160,13 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
         binding.eventNameText.setText(event.getName());
         binding.statusChip.setText(event.getStatus());
+
+        DecimalFormat df = new DecimalFormat("0.00");
+        if (event.getPrice() == 0 || event.getPrice() == 0.0) {
+            binding.priceChip.setText("Price: Free");
+        } else {
+            binding.priceChip.setText("Price: $" + df.format(event.getPrice()));
+        }
         binding.tagChipGroup.removeAllViews();
         for (String tag : event.getTags()) {
             Chip chip = new Chip(this);
@@ -206,7 +235,7 @@ public class EventDetailsActivity extends AppCompatActivity {
      */
     private void updateAttendeeWaitlist(boolean isJoining) {
         Attendee attendee = new Attendee();
-        attendee.setAttendeeID(currentAttendeeId);
+        attendee.setID(currentAttendeeId);
         
         attendee.fetchFromFirebase(new Attendee.OnAttendeeLoadedListener() {
             @Override

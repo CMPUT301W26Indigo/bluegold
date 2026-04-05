@@ -3,6 +3,7 @@ package com.eventlottery.model;
 import android.graphics.Bitmap;
 import android.util.Log;
 
+import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -10,15 +11,52 @@ import java.util.List;
 
 public class EventOrganizer extends AbstractUser {
     private static final String TAG = "EventOrganizer";
+    private static final String COLLECTION_NAME = "Event Organizers";
+
     private ArrayList<Event> events;
+
+    @Exclude
+    private final FirebaseFirestore db;
+
+    public interface OnEventOrganizerLoadedListener {
+        void onSuccess(EventOrganizer eventOrganizer);
+        void onError(Exception e);
+    }
 
     public EventOrganizer() {
         super();
         this.events = new ArrayList<Event>();
+
+        FirebaseFirestore tempDb = null;
+        try {
+            tempDb = FirebaseFirestore.getInstance();
+        } catch (IllegalStateException e) {
+            tempDb = null;
+            Log.w(TAG, "Firebase not initialized, Firestore operations will be unavailable");
+        }
+        this.db = tempDb;
     }
 
-    // Methods to create an event with or without parameters based on UI implementation
+    // Getters and Setters
 
+    /**
+     * Gets the list of events associated with this organizer.
+     * @return events
+     */
+    public ArrayList<Event> getEvents() {
+        return events;
+    }
+
+    /**
+     * Sets the list of events associated with this organizer.
+     * @param events
+     */
+    public void setEvents(ArrayList<Event> events) {
+        this.events = events;
+    }
+
+
+    // Methods to create an event with or without parameters based on UI implementation
     /**
      * Creates an event with no parameters.
      * @return created event
@@ -109,6 +147,7 @@ public class EventOrganizer extends AbstractUser {
      */
     public void addEvent(Event event) {
         events.add(event);
+        saveToFirebase();
     }
 
     /**
@@ -124,6 +163,16 @@ public class EventOrganizer extends AbstractUser {
             }
         }
         throw new IllegalArgumentException("No event found with ID: " + eventId);
+    }
+
+    public void removeEvent(String eventId) {
+        try {
+            Event event = findEvent(eventId);
+            events.remove(event);
+            saveToFirebase();
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "No event found with ID: " + eventId, e);
+        }
     }
 
     /**
@@ -187,7 +236,7 @@ public class EventOrganizer extends AbstractUser {
                 .addOnSuccessListener(documentSnapshot -> {
                     Attendee attendee = documentSnapshot.toObject(Attendee.class);
                     if (attendee != null) {
-                        attendee.setAttendeeID(attendeeId);
+                        attendee.setID(attendeeId);
                         if (listener != null) listener.onSuccess(attendee);
                     } else if (listener != null) {
                         listener.onError(new Exception("Attendee document not found"));
@@ -243,6 +292,46 @@ public class EventOrganizer extends AbstractUser {
         event.getGuestList().cancelEntrants();
     }
 
+    @Override
+    public void saveToFirebase() {
+        if (db == null) return;
+        if (deviceID == null || deviceID.isEmpty()) {
+            Log.w(TAG, "Cannot save attendee: deviceID is null or empty");
+            return;
+        }
+        db.collection(COLLECTION_NAME).document(deviceID).set(this)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "Attendee successfully updated on Firebase"))
+                .addOnFailureListener(e -> Log.e(TAG, "Error updating attendee on Firebase", e));
+    }
+
+    public void fetchFromFirebase(OnEventOrganizerLoadedListener listener) {
+        if (db == null) {
+            if (listener != null) listener.onError(new Exception("Firebase not initialized"));
+            return;
+        }
+        if (deviceID == null || deviceID.isEmpty()) {
+            if (listener != null) listener.onError(new Exception("DeviceID not set"));
+            return;
+        }
+        db.collection(COLLECTION_NAME).document(deviceID).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    EventOrganizer remote = documentSnapshot.toObject(EventOrganizer.class);
+                    if (remote != null) {
+                        this.name = remote.name;
+                        this.email = remote.email;
+                        this.phoneNumber = remote.phoneNumber;
+                        this.address = remote.address;
+                        this.notification = remote.notification;
+                        this.events = remote.events != null ? remote.events : new ArrayList<>();
+                        if (listener != null) listener.onSuccess(this);
+                    } else if (listener != null) {
+                        listener.onError(new Exception("EventOrganizer document not found"));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (listener != null) listener.onError(e);
+                });
+    }
 
 
     public interface OnAttendeesLoadedListener {

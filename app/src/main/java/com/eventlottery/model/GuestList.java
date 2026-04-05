@@ -233,6 +233,18 @@ public class GuestList {
         }
     }
 
+    /**
+     * Removes an attendee from the guest list and updates Firebase.
+     *
+     * @param attendeeId The unique identifier of the attendee to remove.
+     */
+    public void removeAttendee(String attendeeId) {
+        if (attendees.remove(attendeeId) != null) {
+            listCount = attendees.size();
+            saveToFirebase();
+        }
+    }
+
         /**
          * Change all entrants who did not sign up for the event to the cancelled status
          * Cancelled attendees are those who have the declined and maybe statuses.

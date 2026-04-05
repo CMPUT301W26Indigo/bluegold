@@ -18,14 +18,18 @@ import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityManageEvent1Binding;
 import com.eventlottery.databinding.ActivityManageEventBinding;
 import com.eventlottery.model.Event;
+import com.eventlottery.model.Notification;
 import com.eventlottery.services.Base64EncodeDecode;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.UUID;
 
 
 /**
@@ -121,6 +125,11 @@ public class ManageEventActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Notify unselected entrants button
+        binding.btnNotifyUnselected.setOnClickListener(v -> {
+            notifyUnselectedEntrants();
+        });
+
         // View Invited Entrants button
         binding.btnViewInvited.setOnClickListener(v -> {
             Intent intent = new Intent(this, InvitedEntrantsActivity.class);
@@ -142,6 +151,13 @@ public class ManageEventActivity extends AppCompatActivity {
         // Export CSV button
         binding.btnExportCSV.setOnClickListener(v -> {
             exportCSV();
+        });
+
+        // Send Notifications button
+        binding.btnSendNotifications.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SendNotificationsActivity.class);
+            intent.putExtra("EVENT_ID", eventId);
+            startActivity(intent);
         });
     }
 
@@ -181,6 +197,53 @@ public class ManageEventActivity extends AppCompatActivity {
                     binding.tvConfirmedCount.setText(query.size() + " / " + event.getCapacity());
                 });
 
+    }
+
+    /**
+     * Notifies all users currently on the waitlist that they were not selected.
+     */
+    private void notifyUnselectedEntrants() {
+        db.collection("events").document(eventId)
+                .collection("waitlist")
+                .get()
+                .addOnSuccessListener(waitlistQuery -> {
+                    if (waitlistQuery.isEmpty()) {
+                        Toast.makeText(this, "Waitlist is empty", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    WriteBatch batch = db.batch();
+                    String title = getString(R.string.notification_not_selected_title);
+                    String message = getString(R.string.notification_not_selected_msg, event.getName());
+
+                    for (QueryDocumentSnapshot doc : waitlistQuery) {
+                        String userId = doc.getId();
+                        String notifId = UUID.randomUUID().toString();
+
+                        Notification notification = new Notification(
+                                notifId,
+                                title,
+                                message,
+                                userId,
+                                eventId,
+                                "INFO",
+                                new Date()
+                        );
+                        notification.setSenderName(event.getName());
+                        notification.setSenderId(event.getOrganizerId());
+
+                        batch.set(db.collection("notifications").document(notifId), notification);
+                    }
+
+                    batch.commit().addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Notifications sent to unselected entrants", Toast.LENGTH_SHORT).show();
+                    }).addOnFailureListener(e -> {
+                        Toast.makeText(this, "Error sending notifications: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error fetching waitlist: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     /**
