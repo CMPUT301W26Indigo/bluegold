@@ -235,6 +235,8 @@ public class Attendee extends AbstractUser {
         return waitListed;
     }
 
+    public void setWaitListed(ArrayList<String> waitListed) { this.waitListed = waitListed;}
+
     /**
      * Sets the notification preference and updates Firebase.
      * @param notification True to enable notifications, false to disable.
