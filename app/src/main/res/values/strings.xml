@@ -68,7 +68,7 @@
     <string name="notification_selected_title">You\'ve Been Selected!</string>
     <string name="notification_selected_msg">Congratulations! You\'ve been selected for %1$s. Please confirm your attendance by %2$s.</string>
     <string name="notification_not_selected_title">Lottery Results</string>
-    <string name="notification_not_selected_msg">Unfortunately, you were not selected for %1$s. You\'ve been added to the replacement pool.</string>
+    <string name="notification_not_selected_msg">Unfortunately, you were not selected for %1$s. You\'ve been added to the replacement pool for redraw if another entrant declines.</string>
     <string name="notification_event_update">Event Update</string>
     <string name="view_event">View Event</string>
     <string name="empty_notifications">You have no notifications</string>
@@ -116,6 +116,7 @@
     <string name="message_title">Message Title</string>
     <string name="notification_message_hint">Notification Message</string>
     <string name="send_notification_now">Send Notification Now</string>
+    <string name="notify_unselected">Notify Unselected Entrants</string>
 
     <!-- Create Event -->
     <string name="create_event_title">Create New Event</string>
@@ -262,4 +263,8 @@
     <string name="send_notifications_text">Send Notifications</string>
     <string name="private_event">Private Event</string>
     <string name="privacy_desc">Only users you invite can join this event. You can find users to invite in the Manage Events page for this event after it is created.</string>
+
+    <string name="btn_how_it_works">How the Event Lotteries work</string>
+    <string name="lottery_process_title">How the Event Lotteries work</string>
+    <string name="lottery_process_description">1. Organizers create an event and set a capacity.\n2. Interested entrants join the waiting list.\n3. When registration closes, the system randomly selects winners based on the available capacity.\n4. Selected winners are notified and must confirm their attendance.\n5. If a winner declines or fails to respond, a new winner is drawn from the remaining people on the waiting list.</string>
 </resources>

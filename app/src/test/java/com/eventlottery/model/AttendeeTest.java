@@ -81,8 +81,8 @@ public class AttendeeTest {
     }
 
     @Test
-    public void testSetAttendeeID() {
-        attendee.setAttendeeID("harry123");
-        assertEquals("harry123", attendee.getAttendeeID());
+    public void testSetID() {
+        attendee.setID("harry123");
+        assertEquals("harry123", attendee.getID());
     }
 }
