@@ -380,14 +380,6 @@ public class Event {
         isFlagged = flagged;
     }
 
-    public int getFlagCount() {
-        return flagCount;
-    }
-
-    public void setFlagCount(int flagCount) {
-        this.flagCount = flagCount;
-    }
-
     public Waitlist getWaitlist() {
         return waitlist;
     }

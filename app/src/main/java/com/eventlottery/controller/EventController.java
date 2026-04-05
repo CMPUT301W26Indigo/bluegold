@@ -212,4 +212,22 @@ public class EventController {
                 })
                 .addOnFailureListener(listener::onError);
     }
+
+    public void checkIfAttendeeOnGuestlist(String eventId, String attendeeId, OnWaitlistStatusListener listener) {
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("guestlist").document(attendeeId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    listener.onStatusChecked(documentSnapshot.exists());
+                })
+                .addOnFailureListener(listener::onError);
+    }
+
+    public void removeFromGuestlist(String eventId, String attendeeId, OnEventOperationListener listener) {
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("guestlist").document(attendeeId)
+                .delete()
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnFailureListener(listener::onError);
+    }
 }

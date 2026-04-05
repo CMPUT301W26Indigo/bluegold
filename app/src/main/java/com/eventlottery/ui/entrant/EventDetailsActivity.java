@@ -16,12 +16,14 @@ import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.ActivityEventDetailsBinding;
 import com.eventlottery.model.Attendee;
 import com.eventlottery.model.Event;
+import com.eventlottery.model.GuestList;
 import com.eventlottery.services.Base64EncodeDecode;
 import com.eventlottery.ui.qr.QRDisplayActivity;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DecimalFormat;
+import java.util.List;
 
 /**
  * EventDetailsActivity
@@ -44,7 +46,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private EventController eventController;
     private String currentAttendeeId;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,30 +96,57 @@ public class EventDetailsActivity extends AppCompatActivity {
      */
     private void checkWaitlistStatus() {
         if (eventId == null || currentAttendeeId == null) return;
-        eventController.checkIfAttendeeOnWaitlist(eventId, currentAttendeeId, new EventController.OnWaitlistStatusListener() {
-            @Override
-            public void onStatusChecked(boolean isOnWaitlist) {
-                updateWaitlistButtonUI(isOnWaitlist);
-            }
 
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, "Error checking waitlist status", e);
-            }
-        });
+        eventController.checkIfAttendeeOnWaitlist(eventId, currentAttendeeId,
+                new EventController.OnWaitlistStatusListener() {
+                    @Override
+                    public void onStatusChecked(boolean isOnWaitlist) {
+
+                        eventController.checkIfAttendeeOnGuestlist(eventId, currentAttendeeId,
+                                new EventController.OnWaitlistStatusListener() {
+                                    @Override
+                                    public void onStatusChecked(boolean isOnGuestlist) {
+                                        updateWaitlistButtonUI(isOnWaitlist, isOnGuestlist);
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e) {
+                                        Log.e(TAG, "Error checking guestlist", e);
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error checking waitlist", e);
+                    }
+                });
     }
 
     /**
-     * Updates the UI to reflect the current waitlist status.
+     * Updates the UI to reflect the current waitlist and event status.
      * @param isOnWaitlist
+     * @param isOnGuestList
      */
-    private void updateWaitlistButtonUI(boolean isOnWaitlist) {
-        if (isOnWaitlist) {
-            binding.joinWaitlistBtn.setBackgroundColor(getColor(com.eventlottery.R.color.status_open_green));
-            binding.joinWaitlistBtn.setText("Leave Waiting List");
+    private void updateWaitlistButtonUI(boolean isOnWaitlist, boolean isOnGuestList) {
+        binding.joinWaitlistBtn.setEnabled(true);
+
+        if (event.getStatus().equals("closed") || event.getStatus().equals("completed")) {
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+            binding.joinWaitlistBtn.setText("Event Closed");
+            binding.joinWaitlistBtn.setEnabled(false);
+
+        } else if (isOnGuestList) {
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.secondary_orange));
+            binding.joinWaitlistBtn.setText("Decline Acceptance");
+
+        } else if (isOnWaitlist) {
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_open_green));
+            binding.joinWaitlistBtn.setText("Leave Waitlist");
+
         } else {
             binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.primary_blue));
-            binding.joinWaitlistBtn.setText("Join Waiting List");
+            binding.joinWaitlistBtn.setText("Join Waitlist");
         }
     }
 
@@ -139,7 +168,8 @@ public class EventDetailsActivity extends AppCompatActivity {
                     .into(binding.eventPosterImage);
         }
         binding.eventNameText.setText(event.getName());
-        binding.statusChip.setText(event.getStatus());
+        binding.statusChip.setText(getStatusText(event.getStatus()));
+        binding.statusChip.setChipBackgroundColorResource(getStatusColor(event.getStatus()));
 
         DecimalFormat df = new DecimalFormat("0.00");
         if (event.getPrice() == 0 || event.getPrice() == 0.0) {
@@ -187,7 +217,9 @@ public class EventDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        boolean isJoining = binding.joinWaitlistBtn.getText().toString().equals("Join Waiting List");
+        boolean isJoining = binding.joinWaitlistBtn.getText().toString().equals("Join Waitlist");
+        boolean isDeclining = binding.joinWaitlistBtn.getText().toString().equals("Decline Acceptance");
+
 
         EventController.OnEventOperationListener listener = new EventController.OnEventOperationListener() {
             @Override
@@ -202,9 +234,14 @@ public class EventDetailsActivity extends AppCompatActivity {
             }
         };
 
-        if (isJoining) {
+        if (isDeclining) {
+            eventController.leaveWaitlist(eventId, currentAttendeeId, listener);
+            eventController.removeFromGuestlist(eventId, currentAttendeeId, listener);
+        }
+        else if (isJoining) {
             eventController.joinWaitlist(eventId, currentAttendeeId, listener);
-        } else {
+        }
+        else {
             eventController.leaveWaitlist(eventId, currentAttendeeId, listener);
         }
     }
@@ -225,8 +262,6 @@ public class EventDetailsActivity extends AppCompatActivity {
                 } else {
                     loadedAttendee.leaveWaitList(eventId);
                 }
-                // joinWaitList/leaveWaitList automatically calls saveToFirebase()
-                
                 finishToggle(isJoining);
             }
 
@@ -245,7 +280,7 @@ public class EventDetailsActivity extends AppCompatActivity {
      * @param isJoining
      */
     private void finishToggle(boolean isJoining) {
-        updateWaitlistButtonUI(isJoining);
+        checkWaitlistStatus();
         loadEventStats();
         Toast.makeText(EventDetailsActivity.this, 
             isJoining ? "Joined waitlist" : "Left waitlist", Toast.LENGTH_SHORT).show();
@@ -264,5 +299,37 @@ public class EventDetailsActivity extends AppCompatActivity {
                     binding.capacityText.setText(query.size() + " / " + event.getCapacity());
                     binding.spotsAvailableText.setText((event.getCapacity() - query.size()) + " spots available");
                 });
+    }
+
+    private String getStatusText(String status) {
+        if (status == null) return "Unknown";
+        switch (status) {
+            case "open":
+                return "Open";
+            case "closed":
+                return "Closed";
+            case "lottery_drawn":
+                return "Lottery Drawn";
+            case "completed":
+                return "Completed";
+            default:
+                return status;
+        }
+    }
+
+    private int getStatusColor(String status) {
+        if (status == null) return R.color.status_closed_gray;
+        switch (status) {
+            case "open":
+                return R.color.status_open_green;
+            case "closed":
+                return R.color.status_closed_gray;
+            case "lottery_drawn":
+                return R.color.status_waiting_yellow;
+            case "completed":
+                return R.color.status_closed_gray;
+            default:
+                return R.color.status_closed_gray;
+        }
     }
 }
