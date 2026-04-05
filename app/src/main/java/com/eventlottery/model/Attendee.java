@@ -1,13 +1,23 @@
 package com.eventlottery.model;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.provider.Settings;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
 /**
  * Represents an Attendee in the Event Lottery System.
@@ -22,6 +32,8 @@ public class Attendee extends AbstractUser {
     private String email;
     private String phoneNumber;
     private String address;
+    private double latitude;
+    private double longitude;
     private String deviceID;
     private ArrayList<AttendeeEventHistory> eventHistory;
     private ArrayList<String> waitListed;

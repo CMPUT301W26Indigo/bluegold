@@ -1,6 +1,8 @@
 package com.eventlottery.ui.entrant;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.bumptech.glide.Glide;
 import com.eventlottery.R;
@@ -18,6 +21,7 @@ import com.eventlottery.model.Attendee;
 import com.eventlottery.model.Event;
 import com.eventlottery.model.GuestList;
 import com.eventlottery.services.Base64EncodeDecode;
+import com.eventlottery.services.LocationService;
 import com.eventlottery.ui.qr.QRDisplayActivity;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -46,6 +50,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private EventController eventController;
     private String currentAttendeeId;
+    private LocationService locationService = new LocationService(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +94,21 @@ public class EventDetailsActivity extends AppCompatActivity {
                         finish();
                     }
                 });
+
+
+        //just here for testing purposes
+        locationService.requestLocation(new LocationService.LocationCallback() {
+            @Override
+            public void onLocationReady(double lat, double lon) {
+                Log.d("Location", "Latitude: " + lat + ", Longitude: " + lon);
+            }
+
+            @Override
+            public void onPermissionDenied() {
+                Log.d("Location", "Permission denied");
+            }
+        });
+        //just here for testing purposes
     }
 
     /**

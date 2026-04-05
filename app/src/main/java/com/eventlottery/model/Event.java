@@ -42,6 +42,8 @@ public class Event {
     private List<String> tags; //Does it work with either arraylist or list?
     private boolean geolocationEnabled;
     private Integer geolocationRadius; // Nullable - in kilometers (1-500)
+    private double longitude;
+    private double latitude;
     private String status; // "open", "closed", "lottery_drawn", "completed"
     private String qrCodeUrl;
     private Bitmap qrCode;
@@ -76,6 +78,8 @@ public class Event {
         this.tags = new ArrayList<>();
         this.geolocationEnabled = false;
         this.geolocationRadius = null;
+        this.latitude = 0;
+        this.longitude = 0;
         this.status = "open";
         this.qrCodeUrl = null;
         this.qrCode = null;
@@ -346,6 +350,22 @@ public class Event {
 
     public void setGeolocationRadius(Integer geolocationRadius) {
         this.geolocationRadius = geolocationRadius;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public String getStatus() {
