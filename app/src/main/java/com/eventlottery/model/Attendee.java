@@ -1,9 +1,15 @@
 package com.eventlottery.model;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.provider.Settings;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.installations.FirebaseInstallations;
@@ -11,6 +17,8 @@ import com.google.android.gms.tasks.Task;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
 /**
  * Represents an Attendee in the Event Lottery System.
@@ -25,6 +33,8 @@ public class Attendee extends AbstractUser {
     private String email;
     private String phoneNumber;
     private String address;
+    private double latitude;
+    private double longitude;
     private String deviceID;
     private ArrayList<AttendeeEventHistory> eventHistory;
     private ArrayList<String> waitListed;
@@ -113,6 +123,31 @@ public class Attendee extends AbstractUser {
                     if (listener != null) listener.onError(e);
                 });
     }
+
+    public interface OnLocationCapturedListener {
+        void onLocationCaptured(double lat, double lon);
+    }
+
+    public void getAttendeeLocation(Context context, OnLocationCapturedListener listener) {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        fusedLocationClient.getLastLocation().addOnSuccessListener(
+                location -> {
+                    if (location != null) {
+                        this.latitude = location.getLatitude();
+                        this.longitude = location.getLongitude();
+                    }
+
+                    if (listener != null) {
+                        listener.onLocationCaptured(this.latitude, this.longitude);
+                    }
+                });
+    }
+
     /**
      * Adds an event to the attendee's personal waitlist.
      * Gets the attendee's email address.

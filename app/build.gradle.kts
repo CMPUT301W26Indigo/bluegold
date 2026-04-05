@@ -99,6 +99,7 @@ dependencies {
     implementation("androidx.preference:preference:1.2.1")
     implementation("org.osmdroid:osmdroid-android:6.1.18")
     implementation("com.github.MKergall:osmbonuspack:6.9.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
 
     // Essential UI & Logic Utilities
