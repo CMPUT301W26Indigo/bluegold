@@ -11,7 +11,10 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- Camera feature (optional for devices without camera) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -32,10 +35,10 @@
             android:exported="false" />
         <activity
             android:name=".ui.qr.QRDisplayActivity"
-            android:exported="false" /> <!-- Handle Android 16 Resizability Override for Large Screens -->
+            android:exported="false" />
         <property
             android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
-            android:value="true" /> <!-- Main Activity -->
+            android:value="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -43,10 +46,9 @@
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Entrant Activities -->
+        </activity>
         <activity
             android:name=".ui.entrant.BrowseEventsActivity"
             android:exported="false"
@@ -62,10 +64,8 @@
             tools:ignore="LockedOrientationActivity">
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
                 <data
                     android:host="event"
                     android:scheme="eventlottery" />
@@ -88,7 +88,7 @@
             android:exported="false"
             android:label="@string/profile_title"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" /> <!-- Organizer Activities -->
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.organizer.OrganizerDashboardActivity"
             android:exported="false"
@@ -130,7 +130,7 @@
             android:exported="false"
             android:label="@string/send_notifications"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" /> <!-- Admin Activities -->
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.admin.AdminDashboardActivity"
             android:exported="false"
@@ -154,7 +154,7 @@
             android:exported="false"
             android:label="@string/manage_users_title"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" /> <!-- QR Code Scanner Activity -->
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.qr.QRScannerActivity"
             android:exported="false"
@@ -165,14 +165,21 @@
             android:name=".ui.qr.CaptureAct"
             android:exported="false"
             android:screenOrientation="portrait"
-            android:theme="@style/zxing_CaptureTheme" /> <!-- Firebase Cloud Messaging Service (if using Firebase) -->
+            android:theme="@style/zxing_CaptureTheme" />
+
         <service
             android:name=".services.FCMService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
-        </service> <!-- Location Service -->
+        </service>
+
+        <service
+            android:name=".services.NotificationService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
         <service
             android:name=".services.LocationService"
             android:exported="false"

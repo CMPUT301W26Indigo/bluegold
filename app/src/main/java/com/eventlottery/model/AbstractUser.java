@@ -13,6 +13,7 @@ public abstract class AbstractUser {
     protected String address;
     protected String deviceID;
     private String profileImageUrl;
+    protected String fcmToken;
 
     public AbstractUser() {
         this.name = null;
@@ -20,6 +21,7 @@ public abstract class AbstractUser {
         this.phoneNumber = null;
         this.address = null;
         this.deviceID = null;
+        this.fcmToken = null;
     }
 
 
@@ -121,6 +123,14 @@ public abstract class AbstractUser {
 
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     /**
