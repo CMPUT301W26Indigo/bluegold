@@ -143,6 +143,13 @@ public class ManageEventActivity extends AppCompatActivity {
         binding.btnExportCSV.setOnClickListener(v -> {
             exportCSV();
         });
+
+        // Send Notifications button
+        binding.btnSendNotifications.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SendNotificationsActivity.class);
+            intent.putExtra("EVENT_ID", eventId);
+            startActivity(intent);
+        });
     }
 
     @Override

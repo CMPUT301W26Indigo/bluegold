@@ -111,6 +111,8 @@
     <string name="waiting_list">Waiting List</string>
     <string name="selected">Selected</string>
     <string name="cancelled">Cancelled</string>
+    <string name="declined_entrants">Declined Entrants</string>
+    <string name="everyone_on_guestlist">Everyone on Guest List</string>
     <string name="message_title">Message Title</string>
     <string name="notification_message_hint">Notification Message</string>
     <string name="send_notification_now">Send Notification Now</string>

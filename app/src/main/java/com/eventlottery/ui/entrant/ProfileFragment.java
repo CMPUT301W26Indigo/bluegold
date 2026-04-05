@@ -37,6 +37,8 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
+        // Initialize the controller to avoid NullPointerException
+        userController = new UserController();
         currentAttendee = new Attendee();
         
         // Retrieve the unique ID and load the profile

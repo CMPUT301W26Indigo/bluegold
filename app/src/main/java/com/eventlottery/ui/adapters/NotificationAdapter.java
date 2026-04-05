@@ -40,6 +40,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     public void setAdminMode(boolean adminMode) {
         this.isAdminMode = adminMode;
+        notifyDataSetChanged();
     }
 
     /**
@@ -80,10 +81,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             this.binding = binding;
         }
 
-        // The following method was modified by Gemini on March 26, 2026 when
-        //  prompted to move the Notifications UI from an activity based
-        //  system to a fragment based system.
         void bind(Notification notification, OnNotificationActionListener actionListener, boolean isAdminMode) {
+            if (notification.getTitle() != null && !notification.getTitle().isEmpty()) {
+                binding.tvNotificationTitle.setVisibility(View.VISIBLE);
+                binding.tvNotificationTitle.setText(notification.getTitle());
+            } else {
+                binding.tvNotificationTitle.setVisibility(View.GONE);
+            }
+
             binding.tvNotificationMessage.setText(notification.getMessage());
             binding.tvNotificationType.setText(notification.getType());
 

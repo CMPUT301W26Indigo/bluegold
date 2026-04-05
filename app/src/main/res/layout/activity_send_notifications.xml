@@ -38,7 +38,7 @@
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_marginBottom="8dp" />
 
-            <!-- Recipient Selection (US 02.07.01, 02.07.02, 02.07.03) -->
+            <!-- Recipient Selection (US 02.07.01, 02.07.03, US updated) -->
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroupRecipients"
                 android:layout_width="match_parent"
@@ -55,18 +55,18 @@
                     android:checked="true" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chipSelected"
+                    android:id="@+id/chipDeclined"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/selected" />
+                    android:text="@string/declined_entrants" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chipCancelled"
+                    android:id="@+id/chipAllGuestlist"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/cancelled" />
+                    android:text="@string/everyone_on_guestlist" />
             </com.google.android.material.chip.ChipGroup>
 
             <com.google.android.material.textfield.TextInputLayout
