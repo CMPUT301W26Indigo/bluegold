@@ -88,7 +88,7 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
                         attendee.setEmail("Unknown");
                     }
                     attendee.setPhoneNumber(user.getPhone());
-                    attendee.setAttendeeID(user.getId());
+                    attendee.setID(user.getId());
                     allAttendees.add(attendee);
                 }
                 if (isAdded()) {
