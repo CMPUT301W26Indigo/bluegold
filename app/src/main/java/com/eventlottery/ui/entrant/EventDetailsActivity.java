@@ -121,18 +121,20 @@ public class EventDetailsActivity extends AppCompatActivity {
                 new EventController.OnWaitlistStatusListener() {
                     @Override
                     public void onStatusChecked(boolean isOnWaitlist) {
-
-                        eventController.checkIfAttendeeOnGuestlist(eventId, currentAttendeeId,
-                                new EventController.OnWaitlistStatusListener() {
-                                    @Override
-                                    public void onStatusChecked(boolean isOnGuestlist) {
-                                        updateWaitlistButtonUI(isOnWaitlist, isOnGuestlist);
+                        // Fetch the guestlist status directly to check for winners
+                        db.collection("events").document(eventId)
+                                .collection("guestlist").document(currentAttendeeId)
+                                .get()
+                                .addOnSuccessListener(documentSnapshot -> {
+                                    String guestStatus = null;
+                                    if (documentSnapshot.exists()) {
+                                        guestStatus = documentSnapshot.getString("status");
                                     }
-
-                                    @Override
-                                    public void onError(Exception e) {
-                                        Log.e(TAG, "Error checking guestlist", e);
-                                    }
+                                    updateWaitlistButtonUI(isOnWaitlist, guestStatus);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error checking guestlist status", e);
+                                    updateWaitlistButtonUI(isOnWaitlist, null);
                                 });
                     }
 
@@ -145,29 +147,60 @@ public class EventDetailsActivity extends AppCompatActivity {
 
     /**
      * Updates the UI to reflect the current waitlist and event status.
-     * @param isOnWaitlist
-     * @param isOnGuestList
+     * @param isOnWaitlist True if user is on the waitlist
+     * @param guestStatus The status of the user on the guestlist (invited, confirmed, etc.)
      */
-    private void updateWaitlistButtonUI(boolean isOnWaitlist, boolean isOnGuestList) {
+    private void updateWaitlistButtonUI(boolean isOnWaitlist, String guestStatus) {
         binding.joinWaitlistBtn.setEnabled(true);
 
-        if (event.getStatus().equals("closed") || event.getStatus().equals("completed")) {
+        // 1. Event closed/completed
+        if ("closed".equals(event.getStatus()) || "completed".equals(event.getStatus())) {
             binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
             binding.joinWaitlistBtn.setText("Event Closed");
             binding.joinWaitlistBtn.setEnabled(false);
+            return;
+        }
 
-        } else if (isOnGuestList) {
+        // 2. Confirmed users cannot rejoin waitlist
+        if ("confirmed".equals(guestStatus) || "accepted".equals(guestStatus)) {
             binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.secondary_orange));
             binding.joinWaitlistBtn.setText("Decline Acceptance");
+            binding.joinWaitlistBtn.setEnabled(true);
+            return;
+        }
 
-        } else if (isOnWaitlist) {
+        // 3. Invited users can decline
+        if ("invited".equals(guestStatus)) {
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.secondary_orange));
+            binding.joinWaitlistBtn.setText("Decline Invitation");
+            binding.joinWaitlistBtn.setEnabled(true);
+            return;
+        }
+
+        // 4. Users already on waitlist can leave
+        if (isOnWaitlist) {
             binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_open_green));
             binding.joinWaitlistBtn.setText("Leave Waitlist");
-
-        } else {
-            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.primary_blue));
-            binding.joinWaitlistBtn.setText("Join Waitlist");
+            binding.joinWaitlistBtn.setEnabled(true);
+            return;
         }
+
+        // 5. If user was previously invited/confirmed but is no longer (e.g. they declined or lottery reset)
+        // AND the event is in lottery_drawn state, they should NOT be able to join.
+        // Wait, the rule is: anyone who HAS been confirmed or invited after a lottery is drawn should NOT be able to join.
+        // If guestStatus is not null, they were part of the guestlist logic.
+        // If status is "declined" or "cancelled", they shouldn't rejoin if lottery was drawn.
+        if ("lottery_drawn".equals(event.getStatus()) && guestStatus != null) {
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+            binding.joinWaitlistBtn.setText("Lottery In Progress");
+            binding.joinWaitlistBtn.setEnabled(false);
+            return;
+        }
+
+        // 6. Everyone else can join (including those who haven't been invited yet, regardless of lottery state)
+        binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.primary_blue));
+        binding.joinWaitlistBtn.setText("Join Waitlist");
+        binding.joinWaitlistBtn.setEnabled(true);
     }
 
     /**
@@ -237,8 +270,9 @@ public class EventDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        boolean isJoining = binding.joinWaitlistBtn.getText().toString().equals("Join Waitlist");
-        boolean isDeclining = binding.joinWaitlistBtn.getText().toString().equals("Decline Acceptance");
+        String buttonText = binding.joinWaitlistBtn.getText().toString();
+        boolean isJoining = buttonText.equals("Join Waitlist");
+        boolean isDeclining = buttonText.equals("Decline Acceptance") || buttonText.equals("Decline Invitation");
 
 
         EventController.OnEventOperationListener listener = new EventController.OnEventOperationListener() {
@@ -255,8 +289,18 @@ public class EventDetailsActivity extends AppCompatActivity {
         };
 
         if (isDeclining) {
-            eventController.leaveWaitlist(eventId, currentAttendeeId, listener);
-            eventController.removeFromGuestlist(eventId, currentAttendeeId, listener);
+            // Remove from BOTH waitlist and guestlist to prevent re-joining bug
+            eventController.leaveWaitlist(eventId, currentAttendeeId, new EventController.OnEventOperationListener() {
+                @Override
+                public void onSuccess() {
+                    eventController.removeFromGuestlist(eventId, currentAttendeeId, listener);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    eventController.removeFromGuestlist(eventId, currentAttendeeId, listener);
+                }
+            });
         }
         else if (isJoining) {
             eventController.joinWaitlist(eventId, currentAttendeeId, listener);
@@ -287,8 +331,6 @@ public class EventDetailsActivity extends AppCompatActivity {
 
             @Override
             public void onError(Exception e) {
-                // If attendee doesn't exist, we can't update, but we should still update UI
-                // In a real app, you'd ensure the attendee profile exists first
                 Log.e(TAG, "Error updating attendee waitlist", e);
                 finishToggle(isJoining);
             }
@@ -303,7 +345,7 @@ public class EventDetailsActivity extends AppCompatActivity {
         checkWaitlistStatus();
         loadEventStats();
         Toast.makeText(EventDetailsActivity.this, 
-            isJoining ? "Joined waitlist" : "Left waitlist", Toast.LENGTH_SHORT).show();
+            isJoining ? "Joined waitlist" : "Removed from event", Toast.LENGTH_SHORT).show();
     }
 
     /**
