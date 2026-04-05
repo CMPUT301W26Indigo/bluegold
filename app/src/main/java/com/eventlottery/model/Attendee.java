@@ -124,30 +124,6 @@ public class Attendee extends AbstractUser {
                 });
     }
 
-    public interface OnLocationCapturedListener {
-        void onLocationCaptured(double lat, double lon);
-    }
-
-    public void getAttendeeLocation(Context context, OnLocationCapturedListener listener) {
-        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
-
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-
-        fusedLocationClient.getLastLocation().addOnSuccessListener(
-                location -> {
-                    if (location != null) {
-                        this.latitude = location.getLatitude();
-                        this.longitude = location.getLongitude();
-                    }
-
-                    if (listener != null) {
-                        listener.onLocationCaptured(this.latitude, this.longitude);
-                    }
-                });
-    }
-
     /**
      * Adds an event to the attendee's personal waitlist.
      * Gets the attendee's email address.
