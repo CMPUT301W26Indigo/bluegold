@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
 import com.eventlottery.model.Event;
+import com.eventlottery.services.ImagePicker;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.timepicker.MaterialTimePicker;
@@ -87,7 +88,7 @@ public class CreateEventActivity extends AppCompatActivity {
     private String organizerId;
     private String[] pickedResults;
     private FirebaseStorage storage = FirebaseStorage.getInstance();
-    private StorageReference storageRef = storage.getReference();
+    private ImagePicker imagePicker;
 
 
 
@@ -98,34 +99,6 @@ public class CreateEventActivity extends AppCompatActivity {
      * Written by Google Gemini, Prompt: "How would you be able to
      * get the user to browse and input an image?"
      */
-    private final ActivityResultLauncher<String> imagePickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-                if (uri != null) {
-                    selectedImageUri = uri;
-
-                    getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    // Show the image in the ImageView
-                    binding.posterImageView.setImageURI(uri);
-                    
-                    // Remove the grey tint so the actual image shows
-                    binding.posterImageView.setImageTintList(null);
-
-                    binding.posterImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-
-                    // Adjust the ImageView to be larger but leave room for the button
-                    ViewGroup.LayoutParams params = binding.posterImageView.getLayoutParams();
-                    params.width = ViewGroup.LayoutParams.MATCH_PARENT;
-                    params.height = (int) (130 * getResources().getDisplayMetrics().density);
-                    binding.posterImageView.setLayoutParams(params);
-                    
-                    // Hide placeholder text but KEEP the button visible
-                    binding.uploadTitleText.setVisibility(View.GONE);
-                    binding.uploadSubtitleText.setVisibility(View.GONE);
-
-                    // Update the button text so the user knows they can change it
-                    binding.browseFilesButton.setText("Change Poster");
-                }
-            });
 
     private void uploadImage(Event event, Uri imageUri) {
         if (imageUri != null) {
@@ -181,6 +154,31 @@ public class CreateEventActivity extends AppCompatActivity {
 
         org.osmdroid.config.Configuration.getInstance().load(this,
                 androidx.preference.PreferenceManager.getDefaultSharedPreferences(this));
+
+        imagePicker = new ImagePicker(this, uri -> {
+            selectedImageUri = uri;
+            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            // Show the image in the ImageView
+            binding.posterImageView.setImageURI(uri);
+
+            // Remove the grey tint so the actual image shows
+            binding.posterImageView.setImageTintList(null);
+
+            binding.posterImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+            // Adjust the ImageView to be larger but leave room for the button
+            ViewGroup.LayoutParams params = binding.posterImageView.getLayoutParams();
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.height = (int) (130 * getResources().getDisplayMetrics().density);
+            binding.posterImageView.setLayoutParams(params);
+
+            // Hide placeholder text but KEEP the button visible
+            binding.uploadTitleText.setVisibility(View.GONE);
+            binding.uploadSubtitleText.setVisibility(View.GONE);
+
+            // Update the button text so the user knows they can change it
+            binding.browseFilesButton.setText("Change Poster");
+        });
 
         /* OrganizerId commented out for now as login not fully implemented
         organizerId = getIntent().getStringExtra("ORGANIZER_ID");
@@ -276,7 +274,7 @@ public class CreateEventActivity extends AppCompatActivity {
 
         //specifies to only browse images
         binding.browseFilesButton.setOnClickListener(v -> {
-            imagePickerLauncher.launch("image/*");
+            imagePicker.pickImage();
         });
 
         binding.locationSearchButton.setOnClickListener(v -> {
@@ -325,6 +323,9 @@ public class CreateEventActivity extends AppCompatActivity {
                             map.invalidate(); // tells the map to redraw
                             map.setVisibility(View.VISIBLE);
                         });
+                    } else {
+                        Toast.makeText(this, "No results found", Toast.LENGTH_SHORT).show();
+
                     }
                 });
             }).start();
@@ -393,7 +394,7 @@ public class CreateEventActivity extends AppCompatActivity {
             }
             event.setTags(selectedTags);
 
-            // Upload an image
+            // Upload the image
             uploadImage(event, selectedImageUri);
 
             // Set the price
