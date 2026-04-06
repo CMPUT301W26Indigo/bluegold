@@ -131,4 +131,16 @@ public class OrganizerController {
         // Logic to select winners from the waitlist
         listener.onSuccess();
     }
+
+    /**
+     * Deletes an event from Firestore.
+     *
+     * @param eventId  The ID of the event to delete
+     * @param listener Callback for completion
+     */
+    public void deleteEvent(String eventId, OnOperationListener listener) {
+        db.collection("events").document(eventId).delete()
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnFailureListener(listener::onError);
+    }
 }

@@ -496,6 +496,16 @@
                     android:text="@string/invite_entrants_to_private_event"
                     android:textSize="@dimen/text_lg"
                     app:backgroundTint="@color/primary_blue" />
+                <Button
+                    android:id="@+id/btnDeleteEvent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button"
+                    android:padding="10dp"
+                    android:text="Delete Event"
+                    android:textSize="@dimen/text_lg"
+                    android:textColor="@color/background_white"
+                    app:backgroundTint="@color/status_flagged_red" />
             </LinearLayout>
 
         </LinearLayout>
