@@ -34,6 +34,8 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
     private OrganizerController organizerController;
     private List<Attendee> allAttendees = new ArrayList<>();
     private String eventId;
+    private String eventName;
+    private String organizerName;
     private boolean isCoOrganizerMode = false;
 
     @Nullable
@@ -52,6 +54,8 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
 
         if (getActivity() != null && getActivity().getIntent() != null) {
             eventId = getActivity().getIntent().getStringExtra("EVENT_ID");
+            eventName = getActivity().getIntent().getStringExtra("EVENT_NAME");
+            organizerName = getActivity().getIntent().getStringExtra("ORGANIZER_NAME");
             isCoOrganizerMode = getActivity().getIntent().getBooleanExtra("CO_ORGANIZER_MODE", false);
         }
 
@@ -69,7 +73,7 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
             @Override
             public void onInviteClick(Attendee attendee) {
                 if (isCoOrganizerMode && eventId != null) {
-                    addCoOrganizer(attendee);
+                    sendCoOrganizerInvite(attendee);
                 } else {
                     // TODO: Actually send the notification for private event invitation
                     Toast.makeText(getContext(), "Invite sent to: " + attendee.getName(), Toast.LENGTH_SHORT).show();
@@ -84,23 +88,35 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
         });
         
         if (isCoOrganizerMode) {
-            userAdapter.setInviteButtonText("Add Co-Org");
+            userAdapter.setInviteButtonText("Invite Co-Org");
         }
         
         binding.usersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.usersRecyclerView.setAdapter(userAdapter);
     }
 
-    private void addCoOrganizer(Attendee attendee) {
-        organizerController.addCoOrganizer(eventId, attendee.getID(), new OrganizerController.OnOperationListener() {
+    private void sendCoOrganizerInvite(Attendee attendee) {
+        // Fallback values if intent extras are missing
+        String displayEventName = (eventName != null) ? eventName : "Unspecified Event";
+        String displayOrganizerName = (organizerName != null) ? organizerName : "An Organizer";
+        
+        // Use a placeholder for senderId if not available from intent
+        String senderId = (getActivity() != null && getActivity().getIntent().hasExtra("SENDER_ID")) 
+                ? getActivity().getIntent().getStringExtra("SENDER_ID") : "unknown";
+
+        organizerController.sendCoOrganizerInvite(eventId, attendee.getID(), senderId, displayOrganizerName, displayEventName, new OrganizerController.OnOperationListener() {
             @Override
             public void onSuccess() {
-                Toast.makeText(getContext(), attendee.getName() + " added as co-organizer", Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Toast.makeText(getContext(), "Invitation sent to " + attendee.getName(), Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onError(Exception e) {
-                Toast.makeText(getContext(), "Error adding co-organizer: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Toast.makeText(getContext(), "Error sending invitation: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

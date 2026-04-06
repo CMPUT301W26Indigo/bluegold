@@ -159,6 +159,9 @@ public class ManageEventActivity extends AppCompatActivity {
         binding.btnAddCoOrganizer.setOnClickListener(v -> {
             Intent intent = new Intent(this, SearchUsersActivity.class);
             intent.putExtra("EVENT_ID", eventId);
+            intent.putExtra("EVENT_NAME", event.getName());
+            intent.putExtra("ORGANIZER_NAME", "Event Organizer"); // You might want to get the actual organizer's name if available
+            intent.putExtra("SENDER_ID", event.getOrganizerId());
             intent.putExtra("CO_ORGANIZER_MODE", true);
             startActivity(intent);
         });
@@ -189,6 +192,9 @@ public class ManageEventActivity extends AppCompatActivity {
             binding.btnInvitePrivateEntrants.setOnClickListener(v -> {
                 Intent intent = new Intent(this, SearchUsersActivity.class);
                 intent.putExtra("EVENT_ID", eventId);
+                intent.putExtra("EVENT_NAME", event.getName());
+                intent.putExtra("ORGANIZER_NAME", "Event Organizer");
+                intent.putExtra("SENDER_ID", event.getOrganizerId());
                 startActivity(intent);
             });
         }
