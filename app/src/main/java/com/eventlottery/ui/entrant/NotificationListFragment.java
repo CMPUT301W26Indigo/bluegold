@@ -264,6 +264,15 @@ public class NotificationListFragment extends Fragment implements NotificationAd
                 .collection("Selected").document(n.getEventId()), 
                 "status", businessStatus);
 
+        // 4. Add to EventHistory if confirmed
+        if ("confirmed".equals(businessStatus)) {
+            Map<String, Object> historyEntry = new HashMap<>();
+            historyEntry.put("eventID", n.getEventId());
+            historyEntry.put("attended", false);
+            batch.set(db.collection("attendees").document(n.getAttendeeId())
+                    .collection("EventHistory").document(n.getEventId()), historyEntry);
+        }
+
         batch.commit().addOnSuccessListener(aVoid -> {
             Toast.makeText(getContext(), "Response sent: " + notificationStatus, Toast.LENGTH_SHORT).show();
         }).addOnFailureListener(e -> {
