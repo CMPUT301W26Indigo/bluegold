@@ -185,6 +185,16 @@
             android:label="@string/manage_users_title"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
+
+        <activity
+            android:name=".ui.admin.AdminEventCommentsActivity"
+            android:exported="false"
+            android:label="Event Comments"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+
+
+        <!-- QR Code Scanner Activity -->
         <activity
             android:name=".ui.admin.NotificationLogsActivity"
             android:exported="false"
