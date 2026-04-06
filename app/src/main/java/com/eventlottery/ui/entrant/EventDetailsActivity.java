@@ -83,8 +83,27 @@ public class EventDetailsActivity extends AppCompatActivity {
                             // Get the current attendee ID asynchronously
                             Attendee.getFirebaseId().addOnSuccessListener(id -> {
                                 currentAttendeeId = id;
-                                Log.e(TAG, "Current attendee ID: " + currentAttendeeId);
-                                checkWaitlistStatus();
+
+                                Attendee attendee = new Attendee();
+                                attendee.setID(currentAttendeeId);
+
+                                attendee.fetchFromFirebase(new Attendee.OnAttendeeLoadedListener() {
+                                    @Override
+                                    public void onSuccess(Attendee loadedAttendee) {
+
+                                        if (!loadedAttendee.isProfileComplete()) {
+                                            showIncompleteProfileState();
+                                            return;
+                                        }
+
+                                        checkWaitlistStatus();
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e) {
+                                        showIncompleteProfileState();
+                                    }
+                                });
                             }).addOnFailureListener(e -> {
                                 Log.e(TAG, "Failed to get Firebase ID", e);
                                 Toast.makeText(this, "Error identifying user", Toast.LENGTH_SHORT).show();
@@ -149,6 +168,16 @@ public class EventDetailsActivity extends AppCompatActivity {
                 Log.e(TAG, "Failed to fetch guestlist status", e);
                 applyWaitlistUI(null, isOnWaitlist);
             }
+        });
+    }
+
+    private void showIncompleteProfileState() {
+        binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.secondary_red));
+        binding.joinWaitlistBtn.setTextColor(getColor(R.color.background_white));
+        binding.joinWaitlistBtn.setText("Complete Profile to Join Event");
+
+        binding.joinWaitlistBtn.setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
         });
     }
 
