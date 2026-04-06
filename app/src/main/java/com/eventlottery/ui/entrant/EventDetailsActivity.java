@@ -50,6 +50,11 @@ public class EventDetailsActivity extends AppCompatActivity {
     private double userLat = 0;
     private double userLon = 0;
 
+    private boolean isWaitlistFull = false;
+    private boolean isGuestlistFull = false;
+    private boolean isOnWaitlist = false;
+    private String guestStatus = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -131,7 +136,8 @@ public class EventDetailsActivity extends AppCompatActivity {
                                 new EventController.OnWaitlistStatusListener() {
                                     @Override
                                     public void onStatusChecked(boolean isOnGuestlist) {
-                                        updateWaitlistButtonUI(isOnWaitlist);
+                                        EventDetailsActivity.this.isOnWaitlist = isOnWaitlist;
+                                        updateWaitlistButtonUI();
                                     }
 
                                     @Override
@@ -150,25 +156,24 @@ public class EventDetailsActivity extends AppCompatActivity {
 
     /**
      * Updates the UI to reflect the current waitlist and event status.
-     *
-     * @param isOnWaitlist
      */
-    private void updateWaitlistButtonUI(boolean isOnWaitlist) {
+    private void updateWaitlistButtonUI() {
         binding.joinWaitlistBtn.setEnabled(true);
 
-        eventController.getAttendeeGuestlistStatus(eventId, currentAttendeeId, new EventController.OnGuestlistStatusListener() {
-            @Override
-            public void onStatusLoaded(String status) {
-                Log.e(TAG, "Guestlist status for user " + currentAttendeeId + ": " + status);
-                applyWaitlistUI(status, isOnWaitlist);
-            }
+        eventController.getAttendeeGuestlistStatus(eventId, currentAttendeeId,
+                new EventController.OnGuestlistStatusListener() {
 
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, "Failed to fetch guestlist status", e);
-                applyWaitlistUI(null, isOnWaitlist);
-            }
-        });
+                    @Override
+                    public void onStatusLoaded(String status) {
+                        guestStatus = status;
+                        applyWaitlistUI(guestStatus, isOnWaitlist, isWaitlistFull, isGuestlistFull);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        applyWaitlistUI(null, isOnWaitlist, isWaitlistFull, isGuestlistFull);
+                    }
+                });
     }
 
     private void showIncompleteProfileState() {
@@ -181,18 +186,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         });
     }
 
-    private void applyWaitlistUI(String status, boolean isOnWaitlist) {
+    private void applyWaitlistUI(String status, boolean isOnWaitlist, boolean fullWaitlist, boolean fullGuestlist) {
         // 1. Event closed/completed
         if ("completed".equals(event.getStatus())) {
             binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
             binding.joinWaitlistBtn.setText("Event Closed");
-            binding.joinWaitlistBtn.setEnabled(false);
-            return;
-        }
-
-        if(event.isGuestlistFull() || event.isWaitlistFull()) {
-            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
-            binding.joinWaitlistBtn.setText("Event Full");
             binding.joinWaitlistBtn.setEnabled(false);
             return;
         }
@@ -223,6 +221,12 @@ public class EventDetailsActivity extends AppCompatActivity {
             return;
         }
 
+        if (!("invited".equals(status)) && !("confirmed".equals(status)) && !isOnWaitlist && (fullWaitlist || fullGuestlist)) {
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+            binding.joinWaitlistBtn.setText("Event Full");
+            binding.joinWaitlistBtn.setEnabled(false);
+            return;
+        }
         // 5. Everyone else can join
         binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.primary_blue));
         binding.joinWaitlistBtn.setText("Join Waitlist");
@@ -408,6 +412,11 @@ public class EventDetailsActivity extends AppCompatActivity {
                     }
 
                     binding.capacityText.setText(waitlistText);
+
+                    isWaitlistFull = (event.getWaitlistLimit() != null && event.getWaitlistLimit() == count);
+                    if (isWaitlistFull) {
+                        updateWaitlistButtonUI();
+                    }
                 });
 
         if (event.getStatus().equals("lottery_drawn")) {
@@ -426,6 +435,11 @@ public class EventDetailsActivity extends AppCompatActivity {
 
 
                         binding.spotsAvailableText.setText(guestlistText);
+
+                        isGuestlistFull = (event.getCapacity() == count);
+                        if (isGuestlistFull) {
+                            updateWaitlistButtonUI();
+                        }
                     });
         } else {
             binding.spotsAvailableText.setVisibility(View.GONE);
