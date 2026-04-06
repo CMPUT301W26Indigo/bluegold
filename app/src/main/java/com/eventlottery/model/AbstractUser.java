@@ -29,7 +29,6 @@ public abstract class AbstractUser {
         this.notification = true;
     }
 
-
     // Getters and Setters
     /**
      * Gets the attendee's email address.

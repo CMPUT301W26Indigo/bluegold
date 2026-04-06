@@ -128,10 +128,10 @@ public class ProfileFragment extends Fragment {
             String token = task.getResult();
             Log.d(TAG, "FCM Token retrieved: " + token);
 
-            if (currentAttendee != null && currentAttendee.getAttendeeID() != null) {
+            if (currentAttendee != null && currentAttendee.getID() != null) {
                 // Safely update ONLY the fcmToken field in Firestore
                 FirebaseFirestore.getInstance().collection("attendees")
-                        .document(currentAttendee.getAttendeeID())
+                        .document(currentAttendee.getID())
                         .update("fcmToken", token)
                         .addOnSuccessListener(aVoid -> Log.d(TAG, "FCM Token saved successfully"))
                         .addOnFailureListener(e -> {
@@ -170,9 +170,6 @@ public class ProfileFragment extends Fragment {
                     currentAttendee.setEmail(binding.etEmail.getText().toString());
                     currentAttendee.setPhoneNumber(binding.etPhone.getText().toString());
                     currentAttendee.setNotification(binding.switchNotifications.isChecked());
-
-                    // Manual save triggered by user action
-                    currentAttendee.saveToFirebase();
 
                     Toast.makeText(getContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
                     
