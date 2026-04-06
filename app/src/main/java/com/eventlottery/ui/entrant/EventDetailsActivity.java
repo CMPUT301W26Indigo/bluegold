@@ -27,11 +27,13 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DecimalFormat;
 
+import com.eventlottery.ui.entrant.CommentsActivity;
+
 /**
  * EventDetailsActivity
- * 
+ *
  * Screen E2 from storyboard - Detailed event information
- * 
+ *
  * Features:
  * - Display full event information
  * - Show event poster image
@@ -49,7 +51,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private EventController eventController;
     private String currentAttendeeId;
     private LocationService locationService = new LocationService(this);
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,7 +152,7 @@ public class EventDetailsActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
-        
+
         if (event.getPosterImageUrl() != null) {
             Bitmap bitmap = Base64EncodeDecode.decodeBase64(event.getPosterImageUrl());
             Glide.with(this)
@@ -195,6 +197,14 @@ public class EventDetailsActivity extends AppCompatActivity {
                 intent.putExtra("EVENT_ID", eventId);
                 startActivity(intent);
             });
+
+            // Launch CommentsActivity for this event
+            binding.viewCommentsBtn.setOnClickListener(v -> {
+                Intent intent = new Intent(this, CommentsActivity.class);
+                intent.putExtra("EVENT_ID", eventId);
+                intent.putExtra("ORGANIZER_ID", event.getOrganizerId());
+                startActivity(intent);
+            });
         }
     }
 
@@ -236,7 +246,7 @@ public class EventDetailsActivity extends AppCompatActivity {
     private void updateAttendeeWaitlist(boolean isJoining) {
         Attendee attendee = new Attendee();
         attendee.setID(currentAttendeeId);
-        
+
         attendee.fetchFromFirebase(new Attendee.OnAttendeeLoadedListener() {
             @Override
             public void onSuccess(Attendee loadedAttendee) {
@@ -246,7 +256,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                     loadedAttendee.leaveWaitList(eventId);
                 }
                 // joinWaitList/leaveWaitList automatically calls saveToFirebase()
-                
+
                 finishToggle(isJoining);
             }
 
@@ -267,8 +277,8 @@ public class EventDetailsActivity extends AppCompatActivity {
     private void finishToggle(boolean isJoining) {
         updateWaitlistButtonUI(isJoining);
         loadEventStats();
-        Toast.makeText(EventDetailsActivity.this, 
-            isJoining ? "Joined waitlist" : "Left waitlist", Toast.LENGTH_SHORT).show();
+        Toast.makeText(EventDetailsActivity.this,
+                isJoining ? "Joined waitlist" : "Left waitlist", Toast.LENGTH_SHORT).show();
     }
 
     /**
