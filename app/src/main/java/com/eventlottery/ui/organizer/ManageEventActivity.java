@@ -159,6 +159,14 @@ public class ManageEventActivity extends AppCompatActivity {
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
         });
+
+        binding.btnSeeWaitlistMap.setOnClickListener(v -> {
+            Intent intent = new Intent(this, WaitlistMapActivity.class);
+            intent.putExtra("EVENT_ID", eventId);
+            intent.putExtra("EVENT_LAT", event.getLatitude());
+            intent.putExtra("EVENT_LON", event.getLongitude());
+            startActivity(intent);
+        });
     }
 
     @Override

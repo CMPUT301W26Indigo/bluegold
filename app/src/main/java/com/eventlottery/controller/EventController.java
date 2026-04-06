@@ -169,9 +169,12 @@ public class EventController {
      * @param attendeeId The ID of the attendee.
      * @param listener Callback for completion.
      */
-    public void joinWaitlist(String eventId, String attendeeId, OnEventOperationListener listener) {
+    public void joinWaitlist(String eventId, String attendeeId, double lat, double lon, OnEventOperationListener listener) {
         Map<String, Object> data = new HashMap<>();
         data.put("status", "waiting"); // Default status
+        data.put("latitude", lat);
+        data.put("longitude", lon);
+
 
         db.collection(COLLECTION_NAME).document(eventId)
                 .collection("waitlist").document(attendeeId)

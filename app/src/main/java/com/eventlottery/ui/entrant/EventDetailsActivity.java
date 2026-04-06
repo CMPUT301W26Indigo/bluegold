@@ -238,7 +238,7 @@ public class EventDetailsActivity extends AppCompatActivity {
         };
 
         if (isJoining) {
-            eventController.joinWaitlist(eventId, currentAttendeeId, listener);
+            eventController.joinWaitlist(eventId, currentAttendeeId, userLat, userLon, listener);
         } else {
             eventController.leaveWaitlist(eventId, currentAttendeeId, listener);
         }

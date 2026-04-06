@@ -36,6 +36,12 @@
             android:name=".ui.organizer.SearchUsersActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.organizer.WaitlistMapActivity"
+            android:exported="false"
+            android:label="Waitlist Map"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
             android:name=".ui.qr.QRDisplayActivity"
             android:exported="false" /> <!-- Handle Android 16 Resizability Override for Large Screens -->
         <property

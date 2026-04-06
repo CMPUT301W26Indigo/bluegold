@@ -105,6 +105,7 @@
     <string name="export_csv">Export CSV</string>
     <string name="draw_lottery">Draw Lottery</string>
     <string name="view_invited">View Invited</string>
+    <string name="waitlist_map">See Waitlist Map</string>
     <string name="confirmed_entrants">Confirmed</string>
     <string name="send_notifications">Send Notifications</string>
     <string name="recipient_groups">Recipient Groups</string>
