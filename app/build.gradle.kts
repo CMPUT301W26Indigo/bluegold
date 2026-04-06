@@ -48,6 +48,7 @@ android {
 
     testOptions {
         unitTests.isReturnDefaultValues = true
+        unitTests.isIncludeAndroidResources = true
     }
 }
 
@@ -87,6 +88,16 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.mockito.core)
+    
+    // Explicitly add Android libraries to testImplementation for unit tests
+    testImplementation(libs.activity)
+    testImplementation(libs.activity.ktx)
+    testImplementation(libs.appcompat)
+    testImplementation(libs.play.services.location)
+    testImplementation("androidx.test:core:1.6.1")
+
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.espresso.intents)
