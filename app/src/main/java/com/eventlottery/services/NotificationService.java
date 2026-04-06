@@ -27,7 +27,8 @@ import com.google.firebase.firestore.Query;
  */
 public class NotificationService extends Service {
     private static final String TAG = "NotificationService";
-    private static final String CHANNEL_ID = "foreground_notifications";
+    private static final String CHANNEL_ID_SILENT = "service_status_channel";
+    private static final String CHANNEL_ID_ALERTS = "foreground_notifications";
     private static final int SERVICE_ID = 1001;
     
     private FirebaseFirestore db;
@@ -40,12 +41,13 @@ public class NotificationService extends Service {
     public void onCreate() {
         super.onCreate();
         db = FirebaseFirestore.getInstance();
-        createNotificationChannel();
+        createNotificationChannels();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        startForeground(SERVICE_ID, createForegroundNotification("Monitoring notifications..."));
+        // Start as foreground using the SILENT channel to avoid annoying popups on navigation
+        startForeground(SERVICE_ID, createForegroundStatusNotification("Monitoring notifications..."));
 
         Attendee.getFirebaseId().addOnSuccessListener(id -> {
             this.attendeeId = id;
@@ -70,11 +72,9 @@ public class NotificationService extends Service {
                         boolean notificationsEnabled = (enabled == null || enabled);
                         
                         if (notificationsEnabled) {
-                            Log.d(TAG, "Notifications enabled by user.");
                             isOptedOut = false;
                             startFirestoreListener();
                         } else {
-                            Log.d(TAG, "Notifications disabled by user. Stopping listener.");
                             isOptedOut = true;
                             if (notificationListener != null) {
                                 notificationListener.remove();
@@ -88,9 +88,13 @@ public class NotificationService extends Service {
     private void startFirestoreListener() {
         if (notificationListener != null || isOptedOut) return;
 
+        // Standardized on "read" field to match initial creation
         Query query = db.collection("notifications")
                 .whereEqualTo("attendeeId", attendeeId)
                 .whereEqualTo("read", false);
+
+        // Flag to ignore existing notifications when the listener first connects
+        final boolean[] isInitialSnapshot = {true};
 
         notificationListener = query.addSnapshotListener((value, error) -> {
             if (error != null) {
@@ -99,6 +103,12 @@ public class NotificationService extends Service {
             }
 
             if (value != null) {
+                // Ignore the initial dump of old unread notifications
+                if (isInitialSnapshot[0]) {
+                    isInitialSnapshot[0] = false;
+                    return;
+                }
+
                 for (DocumentChange dc : value.getDocumentChanges()) {
                     if (dc.getType() == DocumentChange.Type.ADDED) {
                         Notification notification = dc.getDocument().toObject(Notification.class);
@@ -116,9 +126,10 @@ public class NotificationService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+        // Use the ALERTS channel for high-priority popups
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID_ALERTS)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle(n.getType() != null ? n.getType() : "Event Update")
+                .setContentTitle(n.getTitle() != null ? n.getTitle() : "Event Update")
                 .setContentText(n.getMessage())
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
@@ -127,24 +138,36 @@ public class NotificationService extends Service {
         manager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
-    private android.app.Notification createForegroundNotification(String text) {
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
+    private android.app.Notification createForegroundStatusNotification(String text) {
+        return new NotificationCompat.Builder(this, CHANNEL_ID_SILENT)
                 .setContentTitle("Event Lottery")
                 .setContentText(text)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setOngoing(true)
                 .build();
     }
 
-    private void createNotificationChannel() {
+    private void createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel serviceChannel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Notification Monitor",
+            NotificationManager manager = getSystemService(NotificationManager.class);
+
+            // 1. Silent channel for service status (no popup)
+            NotificationChannel silentChannel = new NotificationChannel(
+                    CHANNEL_ID_SILENT,
+                    "Service Status",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            silentChannel.setShowBadge(false);
+            manager.createNotificationChannel(silentChannel);
+
+            // 2. High importance channel for actual alerts (popup enabled)
+            NotificationChannel alertChannel = new NotificationChannel(
+                    CHANNEL_ID_ALERTS,
+                    "Event Alerts",
                     NotificationManager.IMPORTANCE_HIGH
             );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(serviceChannel);
+            manager.createNotificationChannel(alertChannel);
         }
     }
 
