@@ -6,9 +6,12 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -103,6 +106,22 @@ public class OrganizerController {
                 .set(invite)
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Sends a private event invitation to an attendee.
+     */
+    public void sendPrivateEventInvite(String eventId, String attendeeId, String eventName, OnOperationListener listener) {
+        WriteBatch batch = db.batch();
+        String nid = UUID.randomUUID().toString();
+        Notification invite = new Notification(nid, "Private Event Invitation", "You have been invited to join the private event: " + eventName, attendeeId, eventId, "INVITATION", new Date());
+        batch.set(db.collection("notifications").document(nid), invite);
+        Map<String, Object> data = new HashMap<>();
+        data.put("status", "invited");
+        data.put("invitedAt", System.currentTimeMillis());
+        batch.set(db.collection("events").document(eventId).collection("guestList").document(attendeeId), data);
+        batch.set(db.collection("attendees").document(attendeeId).collection("Selected").document(eventId), data);
+        batch.commit().addOnSuccessListener(aVoid -> listener.onSuccess()).addOnFailureListener(listener::onError);
     }
 
     /**
