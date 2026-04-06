@@ -33,9 +33,20 @@ public class Admin extends AbstractUser {
     @Exclude
     private final FirebaseFirestore db;
 
-
+    /**
+     * Interface for handling asynchronous admin loading.
+     */
     public interface OnAdminLoadedListener {
+        /**
+         * Called when admin is successfully loaded.
+         * @param admin The loaded admin instance.
+         */
         void onSuccess(Admin admin);
+        
+        /**
+         * Called when an error occurs during loading.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 
@@ -185,7 +196,7 @@ public class Admin extends AbstractUser {
 
     /**
      * Returns if the user is an admin boolean.
-     * @return isAdmin.
+     * @return true if the user is an admin, false otherwise.
      */
     public boolean isAdmin() {
         return isAdmin;
@@ -193,7 +204,7 @@ public class Admin extends AbstractUser {
 
     /**
      * Returns if the user is an attendee boolean.
-     * @return isAttendee
+     * @return true if the user is an attendee, false otherwise.
      */
     public boolean isAttendee() {
         return isAttendee;
@@ -201,7 +212,7 @@ public class Admin extends AbstractUser {
 
     /**
      * Returns if the user is an event organizer boolean.
-     * @return isEventOrganizer
+     * @return true if the user is an event organizer, false otherwise.
      */
     public boolean isEventOrganizer() {
         return isEventOrganizer;
@@ -209,7 +220,7 @@ public class Admin extends AbstractUser {
 
     /**
      * Gets the attendee associated with this admin.
-     * @return attendee
+     * @return The associated Attendee object.
      */
     public Attendee getAttendee() {
         return attendee;
@@ -217,7 +228,7 @@ public class Admin extends AbstractUser {
 
     /**
      * Sets the attendee associated with this admin.
-     * @param attendee
+     * @param attendee The Attendee object to set.
      */
     public void setAttendee(Attendee attendee) {
         this.attendee = attendee;
@@ -225,7 +236,7 @@ public class Admin extends AbstractUser {
 
     /**
      * Gets the event organizer associated with this admin.
-     * @return
+     * @return The associated EventOrganizer object.
      */
     public EventOrganizer getEventOrganizer() {
         return eventOrganizer;
@@ -233,15 +244,15 @@ public class Admin extends AbstractUser {
 
     /**
      * Sets the event organizer associated with this admin.
-     * @param eventOrganizer
+     * @param eventOrganizer The EventOrganizer object to set.
      */
     public void setEventOrganizer(EventOrganizer eventOrganizer) {
         this.eventOrganizer = eventOrganizer;
     }
 
     /**
-     * Creates and returns an attendee object for admin to use if one doesn't already exist
-     * @return attendee
+     * Creates and returns an attendee object for admin to use if one doesn't already exist.
+     * @return The created or existing Attendee object.
      */
     public Attendee createAttendee() {
         if (attendee == null) {
@@ -260,8 +271,8 @@ public class Admin extends AbstractUser {
     }
 
     /**
-     * Creates and returns an event organizer object for admin to use if one doesn't already exist
-     * @return eventOrganizer
+     * Creates and returns an event organizer object for admin to use if one doesn't already exist.
+     * @return The created or existing EventOrganizer object.
      */
     public EventOrganizer createEventOrganizer() {
         if (eventOrganizer == null) {
@@ -279,6 +290,9 @@ public class Admin extends AbstractUser {
         return eventOrganizer;
     }
 
+    /**
+     * Synchronizes admin state to Firebase.
+     */
     @Override
     public void saveToFirebase() {
         if (db == null) return;
@@ -345,9 +359,9 @@ public class Admin extends AbstractUser {
     }
 
     /**
-     * Removes an event from the database
-     * Removes event from associated attendee event history and waitlist
-     * @param eventId
+     * Removes an event from the database.
+     * Removes event from associated attendee event history and waitlist.
+     * @param eventId The ID of the event to remove.
      */
     public void removeEvent(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
@@ -396,6 +410,10 @@ public class Admin extends AbstractUser {
         });
     }
 
+    /**
+     * Removes an attendee profile and scrubs them from associated events.
+     * @param attendeeId The ID of the attendee profile to remove.
+     */
     public void removeAttendeeProfile(String attendeeId) {
         DocumentReference attendeeRef = db.collection("attendees").document(attendeeId);
         attendeeRef.get().addOnCompleteListener(doc -> {
@@ -431,8 +449,8 @@ public class Admin extends AbstractUser {
     }
 
     /**
-     * Removes an event organizer's profile from the database
-     * @param eventOrganizerId
+     * Removes an event organizer's profile from the database.
+     * @param eventOrganizerId The ID of the organizer profile to remove.
      */
     public void removeEventOrganizerProfile(String eventOrganizerId) {
         DocumentReference eventOrganizerRef = db.collection("eventOrganizers").document(eventOrganizerId);
@@ -452,8 +470,8 @@ public class Admin extends AbstractUser {
     }
 
     /**
-     * Deletes all documents in a collection
-     * @param collection
+     * Deletes all documents in a collection.
+     * @param collection The collection reference to delete.
      */
     private void deleteCollectionDocs(CollectionReference collection) {
         collection.get().addOnSuccessListener(querySnapshot -> {
@@ -466,15 +484,27 @@ public class Admin extends AbstractUser {
         });
     }
 
+    /**
+     * Removes the poster image associated with an event.
+     * @param eventId The ID of the event whose image is to be removed.
+     * @return A Task representing the deletion operation.
+     */
     public Task<Void> removeImage(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
         return eventRef.update("posterImageUrl", null);
     }
 
+    /**
+     * Removes all comments associated with an event.
+     * @param eventId The ID of the event whose comments are to be removed.
+     */
     public void removeEventComments(String eventId) {
 
     }
 
+    /**
+     * Migrates existing images to a new collection structure.
+     */
     public void migrateExistingImages() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
