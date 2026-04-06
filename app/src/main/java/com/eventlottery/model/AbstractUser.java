@@ -102,7 +102,6 @@ public abstract class AbstractUser {
     /**
      * Sets the attendee's physical address.
      * @param address The address to set.
-     * todo Throw IllegalArgumentException for invalid format and ensure it can be converted to coordinates.
      */
     public void setAddress(String address) {
         this.address = address;
