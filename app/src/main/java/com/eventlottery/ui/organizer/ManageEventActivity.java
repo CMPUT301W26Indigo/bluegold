@@ -175,6 +175,13 @@ public class ManageEventActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // View Invited Entrants button
+        binding.btnViewWaitlist.setOnClickListener(v -> {
+            Intent intent = new Intent(this, InvitedEntrantsActivity.class);
+            intent.putExtra("EVENT_ID", eventId);
+            startActivity(intent);
+        });
+
         // Search and invite users button
         if (event.isPrivate()) {
             binding.btnInvitePrivateEntrants.setVisibility(View.VISIBLE);
