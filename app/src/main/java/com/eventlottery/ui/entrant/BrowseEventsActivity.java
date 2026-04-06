@@ -11,6 +11,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityBrowseEventsBinding;
+import com.eventlottery.services.LocationService;
 import com.eventlottery.ui.qr.QRScannerActivity;
 
 /**
@@ -18,9 +19,16 @@ import com.eventlottery.ui.qr.QRScannerActivity;
  * Part of the 'View' in MVC, acts as a container for Fragments.
  */
 public class BrowseEventsActivity extends AppCompatActivity {
-
+    private LocationService locationService = new LocationService(this);
     private ActivityBrowseEventsBinding binding;
+    private double userLat = 0;
+    private double userLon = 0;
 
+
+    /**
+     * Called when the activity is first created.
+     * @param savedInstanceState If the activity is being re-initialized after
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,11 +37,31 @@ public class BrowseEventsActivity extends AppCompatActivity {
 
         setSupportActionBar(binding.toolbar);
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new BrowseEventsFragment())
-                    .commit();
-        }
+        locationService.requestLocation(new LocationService.LocationCallback() {
+            @Override
+            public void onLocationReady(double lat, double lon) {
+                userLat = lat;
+                userLon = lon;
+                Log.d("Location", "Latitude: " + lat + ", Longitude: " + lon);
+
+                if (savedInstanceState == null) {
+                    BrowseEventsFragment fragment = new BrowseEventsFragment();
+
+                    Bundle args = new Bundle();
+                    args.putDouble("userLat", userLat);
+                    args.putDouble("userLon", userLon);
+                    fragment.setArguments(args);
+
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, fragment)
+                            .commit();
+                }
+            }
+            @Override
+            public void onPermissionDenied() {
+                Log.d("Location", "Permission denied");
+            }
+        });
 
         setupBottomNavigation();
     }

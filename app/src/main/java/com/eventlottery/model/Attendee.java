@@ -1,23 +1,13 @@
 package com.eventlottery.model;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.provider.Settings;
 import android.util.Log;
 
-import androidx.core.app.ActivityCompat;
-
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 
 /**
  * Represents an Attendee in the Event Lottery System.
@@ -28,16 +18,18 @@ public class Attendee extends AbstractUser {
     private static final String TAG = "Attendee";
     private static final String COLLECTION_NAME = "attendees";
 
-    private String name;
-    private String email;
-    private String phoneNumber;
-    private String address;
+    // Fields like name, email, and phoneNumber are inherited from AbstractUser.
+    // Declaring them here again causes shadowing and serialization issues.
+
+    // These fields are preserved for location services
     private double latitude;
     private double longitude;
-    private String deviceID;
+    
+    // Inherited fields (name, email, phoneNumber, deviceID, notification) 
+    // are NOT re-declared here to avoid shadowing issues during serialization.
+
     private ArrayList<AttendeeEventHistory> eventHistory;
     private ArrayList<String> waitListed;
-    private boolean notification;
 
     @Exclude
     private final FirebaseFirestore db;
@@ -56,7 +48,6 @@ public class Attendee extends AbstractUser {
      */
     public Attendee() {
         super();
-        this.notification = true;
         this.eventHistory = new ArrayList<AttendeeEventHistory>();
         this.waitListed = new ArrayList<String>();
         
@@ -103,17 +94,27 @@ public class Attendee extends AbstractUser {
                 .addOnSuccessListener(documentSnapshot -> {
                     Attendee remote = documentSnapshot.toObject(Attendee.class);
                     if (remote != null) {
-                        this.name = remote.name;
-                        this.email = remote.email;
-                        this.phoneNumber = remote.phoneNumber;
-                        this.address = remote.address;
+                        // Populate inherited fields from the deserialized object
+                        this.name = remote.getName();
+                        this.email = remote.getEmail();
+                        this.phoneNumber = remote.getPhoneNumber();
+                        this.address = remote.getAddress();
+                        this.notification = remote.getNotification();
+                        this.fcmToken = remote.getFcmToken();
+                        this.isAdmin = remote.isAdmin;
+
+                        //this.profileImageUrl = remote.getProfileImageUrl();
+                        
+                        this.latitude = remote.latitude;
+                        this.longitude = remote.longitude;
+
                         this.eventHistory = remote.eventHistory != null ? remote.eventHistory : new ArrayList<>();
                         // Re-attach listeners to loaded history objects
                         for (AttendeeEventHistory history : this.eventHistory) {
                             history.setOnChangeListener(this::saveToFirebase);
                         }
                         this.waitListed = remote.waitListed != null ? remote.waitListed : new ArrayList<>();
-                        this.notification = remote.notification;
+
                         if (listener != null) listener.onSuccess(this);
                     } else if (listener != null) {
                         listener.onError(new Exception("Attendee document not found"));
@@ -124,28 +125,24 @@ public class Attendee extends AbstractUser {
                 });
     }
 
-
-    /**
-     * Gets the attendee's unique ID.
-     * @return The attendee ID.
-     */
-    public String getID() {
-        return deviceID;
-    }
-
-
     /**
      * Adds an event to the attendee's personal waitlist and updates Firebase.
+     * Also adds the event to the attendee's EventHistory subcollection.
      * @param eventID The unique identifier of the event.
      */
     public void joinWaitList(String eventID) {
-        // should update event history as well??
         Map<String, Object> data = new HashMap<>();
         data.put("status", "waiting");
 
-        db.collection("attendees").document(getID())
+        // Update waitlist subcollection
+        db.collection(COLLECTION_NAME).document(getID())
                 .collection("waitListed").document(eventID)
                 .set(data);
+
+        // Add to EventHistory subcollection
+        db.collection(COLLECTION_NAME).document(getID())
+                .collection("EventHistory").document(eventID)
+                .set(new HashMap<>());
     }
 
     /**
@@ -196,11 +193,30 @@ public class Attendee extends AbstractUser {
         this.eventHistory = eventHistory;
     }
 
-    /**
-     * Sets the attendee's ID. Required for tests or loading.
-     * @param attendeeID
-     */
-    public void setID(String attendeeID) {
-        this.deviceID = attendeeID;
+    public double getLatitude() {
+        return latitude;
     }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    /**
+     * Checks if attendee profile is complete enough to join events
+     */
+    @Exclude
+    public boolean isProfileComplete() {
+        return name != null && !name.trim().isEmpty()
+                && email != null && !email.trim().isEmpty()
+                && phoneNumber != null && !phoneNumber.trim().isEmpty();
+    }
+
 }

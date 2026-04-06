@@ -16,9 +16,9 @@ import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.FragmentBrowseEventsBinding;
 import com.eventlottery.model.Event;
 import com.eventlottery.ui.adapters.EventAdapter;
-import com.google.android.material.chip.Chip;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.timepicker.MaterialTimePicker;
+import com.google.android.material.timepicker.TimeFormat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +34,9 @@ public class BrowseEventsFragment extends Fragment {
     private EventController eventController;
     private List<Event> allEvents = new ArrayList<>();
     private CarouselFragment carouselFragment;
+    private String searchQuery = "";
+    double userLat = 0;
+    double userLon = 0;
 
 
     @Nullable
@@ -46,15 +49,23 @@ public class BrowseEventsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         eventController = new EventController();
         setupCarousel();
         setupRecyclerView();
-        setupSearch();
+
+        if (getArguments() != null) {
+            userLat = getArguments().getDouble("userLat");
+            userLon = getArguments().getDouble("userLon");
+            eventAdapter.setCoordinates(userLat, userLon);
+        }
         setupFilters();
         loadEvents();
     }
 
+    /**
+     * Sets up event carousel WOW factor
+     */
     private void setupCarousel() {
         carouselFragment = new CarouselFragment();
         carouselFragment.setOnEventClickListener(this::navigateToEventDetails);
@@ -70,38 +81,158 @@ public class BrowseEventsFragment extends Fragment {
         binding.eventsRecyclerView.setNestedScrollingEnabled(false);
     }
 
+
     /**
-     * Sets up the search functionality.
+     * Sets up the filter functionality.
+     * Users can filter by search query, date, time, and capacity.
      */
-    private void setupSearch() {
+    private void setupFilters() {
+
+        // Clear filters button
+        binding.clearFiltersButton.setOnClickListener(v -> {
+            binding.eventDateEditText.setText("");
+            binding.eventTimeEditText.setText("");
+            binding.eventCapacityEditText.setText("");
+            binding.searchEditText.setText("");
+            applyFilters();
+        });
+
+        // Search bar
         binding.searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                filterEvents(s.toString());
+                searchQuery = s.toString().toLowerCase();
+                applyFilters();
             }
 
             @Override
             public void afterTextChanged(Editable s) {}
         });
+
+        // Date picker
+        binding.eventDateEditText.setOnClickListener(v -> {
+            MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                    .setTitleText("Select Event Date")
+                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                    .build();
+
+            datePicker.addOnPositiveButtonClickListener(selection -> {
+                binding.eventDateEditText.setText(datePicker.getHeaderText());
+                applyFilters();
+            });
+
+            datePicker.show(getParentFragmentManager(), "DATE_PICKER");
+        });
+
+        // Time picker
+        binding.eventTimeEditText.setOnClickListener(v -> {
+            MaterialTimePicker timePicker = new MaterialTimePicker.Builder()
+                    .setTimeFormat(TimeFormat.CLOCK_12H)
+                    .setHour(12)
+                    .setMinute(0)
+                    .setTitleText("Select Event Time")
+                    .build();
+
+            timePicker.addOnPositiveButtonClickListener(view -> {
+                binding.eventTimeEditText.setText(
+                        String.format("%02d:%02d",
+                                timePicker.getHour(),
+                                timePicker.getMinute())
+                );
+                applyFilters();
+            });
+
+            timePicker.show(getParentFragmentManager(), "TIME_PICKER");
+        });
+
+        // Minimum capacity picker
+        binding.eventCapacityEditText.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                applyFilters();
+            }
+        });
     }
 
     /**
-     * Sets up the filter functionality.
+     * Applies the current filters (date, time, capacity) to the event list.
      */
-    private void setupFilters() {
-        binding.tagChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            List<String> selectedTags = new ArrayList<>();
-            for (int id : checkedIds) {
-                Chip chip = group.findViewById(id);
-                if (chip != null) {
-                    selectedTags.add(chip.getText().toString());
-                }
+    private void applyFilters() {
+        List<Event> filtered = new ArrayList<>();
+
+        String searchQuery = binding.searchEditText.getText().toString().toLowerCase();
+        String selectedDate = binding.eventDateEditText.getText().toString();
+        String selectedTime = binding.eventTimeEditText.getText().toString();
+        String capacityText = binding.eventCapacityEditText.getText().toString();
+
+        // Convert capacity to integer and ignore the filter if nonintegers are inputted
+        Integer maxCapacity = null;
+        if (!capacityText.isEmpty()) {
+            try {
+                maxCapacity = Integer.parseInt(capacityText);
+            } catch (NumberFormatException ignored) {}
+        }
+
+        for (Event event : allEvents) {
+
+            boolean matchesQuery = true;
+            boolean matchesDate = true;
+            boolean matchesTime = true;
+            boolean matchesCapacity = true;
+
+            // Query Filter
+            if (!searchQuery.isEmpty()) {
+                matchesQuery = event.getName().toLowerCase().contains(searchQuery) ||
+                                event.getDescription().toLowerCase().contains(searchQuery) ||
+                                matchesTags(event, searchQuery);
             }
-            filterByTags(selectedTags);
-        });
+
+            // Date filter
+            if (!selectedDate.isEmpty()) {
+                matchesDate = event.getDate() != null &&
+                        event.getDate().equals(selectedDate);
+            }
+
+            // Time filter
+            if (!selectedTime.isEmpty()) {
+                matchesTime = event.getTime() != null &&
+                        event.getTime().equals(selectedTime);
+            }
+
+            // Capacity filter
+            if (maxCapacity != null) {
+                matchesCapacity = event.getCapacity() <= maxCapacity;
+            }
+
+            // Combine all filters to select matching events
+            if (matchesQuery && matchesDate && matchesTime && matchesCapacity) {
+                filtered.add(event);
+            }
+        }
+
+        eventAdapter.submitList(filtered);
+    }
+
+    /**
+     * Lets us know if an event matches a tag for searching purposes
+     * @param event
+     * @param query
+     * @return boolean
+     */
+    private boolean matchesTags(Event event, String query) {
+        for (String tag : event.getTags()) {
+            if (tag.toLowerCase().contains(query)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -129,48 +260,14 @@ public class BrowseEventsFragment extends Fragment {
     }
 
     /**
-     * Filters the event list based on a query string.
-     * @param query The search query.
-     */
-    private void filterEvents(String query) {
-        List<Event> filtered = new ArrayList<>();
-        String lowerQuery = query.toLowerCase();
-        for (Event event : allEvents) {
-            if (event.getName().toLowerCase().contains(lowerQuery) ||
-                event.getDescription().toLowerCase().contains(lowerQuery)) {
-                filtered.add(event);
-            }
-        }
-        eventAdapter.submitList(filtered);
-    }
-
-    /**
-     * Filters the event list based on selected tags.
-     */
-    private void filterByTags(List<String> tags) {
-        if (tags.isEmpty()) {
-            eventAdapter.submitList(new ArrayList<>(allEvents));
-            return;
-        }
-        List<Event> filtered = new ArrayList<>();
-        for (Event event : allEvents) {
-            for (String tag : event.getTags()) {
-                if (tags.contains(tag)) {
-                    filtered.add(event);
-                    break;
-                }
-            }
-        }
-        eventAdapter.submitList(filtered);
-    }
-
-    /*
-     * Navigates to the EventDetailsActivity when an event is clicked.
-     * @param event The selected event.
+     * Navigates to the event details page
+     * @param event
      */
     private void navigateToEventDetails(Event event) {
         Intent intent = new Intent(getActivity(), EventDetailsActivity.class);
         intent.putExtra("EVENT_ID", event.getId());
+        intent.putExtra("USER_LAT", userLat);
+        intent.putExtra("USER_LON", userLon);
         startActivity(intent);
     }
 
@@ -179,25 +276,5 @@ public class BrowseEventsFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
-
-    // TODO: What is this for? It had no usages: should we delete?
-//    private void loadJoinableEvents() {
-//        long now = System.currentTimeMillis();
-//
-//        db.collection("events")
-//                .whereEqualTo("status", "open")
-//                .get()
-//                .addOnSuccessListener(queryDocumentSnapshots -> {
-//                    List<Event> joinable = new ArrayList<>();
-//                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-//                        Event event = doc.toObject(Event.class);
-//                        if (now >= event.getRegistrationOpens() && now <= event.getRegistrationCloses()) {
-//                            joinable.add(event);
-//                        }
-//                    }
-//                    eventAdapter.submitList(joinable);
-//                });
-//    }
-
 
 }

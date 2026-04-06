@@ -1,6 +1,8 @@
 package com.eventlottery.ui.adapters;
 
 import android.graphics.Bitmap;
+import android.location.Location;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,8 @@ import com.eventlottery.model.Event;
 import com.eventlottery.databinding.ItemEventCardBinding;
 import com.eventlottery.services.Base64EncodeDecode;
 import com.google.android.material.chip.Chip;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,21 +34,40 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     
     private List<Event> events;
     private OnEventClickListener listener;
-    
+    private static double userLat = 0;
+    private static double userLon = 0;
+
+    /**
+     * Interface for handling event clicks
+     */
     public interface OnEventClickListener {
         void onEventClick(Event event);
     }
-    
+
+    /**
+     * Constructor for EventAdapter
+     * @param listener The listener to handle event clicks
+     */
     public EventAdapter(OnEventClickListener listener) {
         this.events = new ArrayList<>();
         this.listener = listener;
     }
-    
+
+    /**
+     * Submits a list of events to the adapter
+     * @param newEvents The list of events to submit
+     */
     public void submitList(List<Event> newEvents) {
         this.events = newEvents;
         notifyDataSetChanged();
     }
-    
+
+    /**
+     * Creates a new EventViewHolder
+     * @param parent The parent view group
+     * @param viewType The view type
+     * @return A new EventViewHolder
+     */
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -53,18 +76,39 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         );
         return new EventViewHolder(binding);
     }
-    
+
+    /**
+     * Binds an event to a view holder
+     * @param holder The view holder to bind to
+     * @param position The position of the event in the list
+     */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = events.get(position);
         holder.bind(event, listener);
     }
-    
+
+    /**
+     * Returns the number of events in the list
+     */
     @Override
     public int getItemCount() {
         return events.size();
     }
-    
+
+    /**
+     * Sets the user's coordinates
+     * @param lat
+     * @param lon
+     */
+    public void setCoordinates(double lat, double lon) {
+        userLat = lat;
+        userLon = lon;
+    }
+
+    /**
+     * ViewHolder for an event card
+     */
     static class EventViewHolder extends RecyclerView.ViewHolder {
         private final ItemEventCardBinding binding;
         
@@ -72,8 +116,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             super(binding.getRoot());
             this.binding = binding;
         }
-        
+
+        /**
+         * Binds an event to the view holder
+         * @param event The event to bind
+         * @param listener The listener to handle event clicks
+         */
         void bind(Event event, OnEventClickListener listener) {
+            Log.e("EventAdapter", "Waitlist count: " + event.getWaitlistCount());
             // Set event name
             binding.eventNameText.setText(event.getName());
             
@@ -83,12 +133,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 getStatusColor(event.getStatus())
             );
 
+            // Set private badge
+            if (event.isPrivate()) {
+                binding.privateBadge.setVisibility(View.VISIBLE);
+            } else {
+                binding.privateBadge.setVisibility(View.GONE);
+            }
+
             //set image
             if (event.getPosterImageUrl() != null) {
                 Bitmap bitmap = Base64EncodeDecode.decodeBase64(event.getPosterImageUrl());
                 Glide.with(binding.getRoot().getContext())
                     .load(bitmap)
                     .into(binding.eventPosterImage);
+            } else {
+                binding.eventPosterImage.setImageResource(R.drawable.ic_launcher_foreground);
             }
             
             // Set date and time
@@ -99,16 +158,50 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             binding.locationText.setText(event.getLocation());
             
             // Set waitlist count
-            String waitlistText;
-            if (event.getWaitlistLimit() != null) {
-                waitlistText = String.format("%d / %d on waiting list", 
-                    event.getWaitlistCount(), event.getWaitlistLimit());
+            FirebaseFirestore.getInstance()
+                    .collection("events")
+                    .document(event.getId())
+                    .collection("waitlist")
+                    .get()
+                    .addOnSuccessListener(query -> {
+
+                        int count = query.size();
+
+                        String waitlistText;
+
+                        if (event.getWaitlistLimit() != null && event.getWaitlistLimit() > 0) {
+                            waitlistText = String.format("%d / %d on Waitlist",
+                                    count,
+                                    event.getWaitlistLimit());
+                        } else {
+                            waitlistText = String.format("%d on Waitlist", count);
+                        }
+
+                        binding.waitlistCountText.setText(waitlistText);
+                    });
+
+            if (event.getStatus().equals("lottery_drawn")) {
+                FirebaseFirestore.getInstance()
+                        .collection("events")
+                        .document(event.getId())
+                        .collection("guestList")
+                        .get()
+                        .addOnSuccessListener(query -> {
+
+                            int count = query.size();
+
+                            String guestlistText;
+                            guestlistText = String.format("%d / %d Confirmed Attendees",
+                                    count,
+                                    event.getCapacity());
+
+
+                            binding.guestlistCountText.setText(guestlistText);
+                        });
             } else {
-                waitlistText = String.format("%d on waiting list", 
-                    event.getWaitlistCount());
+                binding.guestlistLayout.setVisibility(View.GONE);
             }
-            binding.waitlistCountText.setText(waitlistText);
-            
+
             // Set tags
             binding.tagChips.removeAllViews();
             for (String tag : event.getTags()) {
@@ -126,6 +219,27 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 binding.geolocationBadge.setText(
                     String.format("Within %dkm", event.getGeolocationRadius())
                 );
+                binding.joinableBadge.setVisibility(View.VISIBLE);
+                if (userLat == 0 || userLon == 0) {
+                    binding.joinableBadge.setText("Unknown");
+                    binding.joinableBadge.setBackgroundColor(binding.getRoot().getContext().getColor(R.color.status_closed_gray));
+                } else {
+                    float[] distance = new float[1];
+                    Location.distanceBetween(userLat, userLon, event.getLatitude(), event.getLongitude(), distance);
+                    float distanceKm = distance[0] / 1000;
+                    if (distanceKm <= event.getGeolocationRadius()) {
+                        binding.joinableBadge.setText(
+                                String.format("Joinable", event.getGeolocationRadius())
+                        );
+                    } else {
+                        binding.joinableBadge.setText(
+                                String.format("Not Joinable", event.getGeolocationRadius())
+                        );
+                        binding.joinableBadge.setTextColor(binding.getRoot().getContext().getColor(R.color.text_red_900));
+                        binding.joinableBadge.setChipStrokeColorResource(R.color.text_red_900);
+                        binding.joinableBadge.setChipBackgroundColorResource(R.color.status_flagged_red);
+                    }
+                }
             } else {
                 binding.geolocationBadge.setVisibility(View.GONE);
             }
@@ -137,7 +251,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 }
             });
         }
-        
+
+        /**
+         * Gets the status text for the event
+         * @param status The status of the event
+         * @return The status text
+         */
         private String getStatusText(String status) {
             if (status == null) return "Unknown";
             switch (status) {
@@ -153,7 +272,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                     return status;
             }
         }
-        
+
+        /**
+         * Gets the color for the status badge
+         * @param status
+         * @return The color
+         */
         private int getStatusColor(String status) {
             if (status == null) return R.color.status_closed_gray;
             switch (status) {

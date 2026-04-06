@@ -3,6 +3,7 @@ package com.eventlottery.ui.adapters;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.eventlottery.R;
@@ -22,6 +23,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
     private List<Attendee> attendees;
     private OnAttendeeClickListener listener;
+    private String inviteButtonText = "Invite";
 
     public interface OnAttendeeClickListener {
         void onAttendeeClick(Attendee attendee);
@@ -39,6 +41,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         notifyDataSetChanged();
     }
 
+    public void setInviteButtonText(String text) {
+        this.inviteButtonText = text;
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -51,7 +58,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         Attendee attendee = attendees.get(position);
-        holder.bind(attendee, listener);
+        holder.bind(attendee, listener, inviteButtonText);
     }
 
     /**
@@ -74,7 +81,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             this.binding = binding;
         }
 
-        void bind(Attendee attendee, OnAttendeeClickListener listener) {
+        void bind(Attendee attendee, OnAttendeeClickListener listener, String defaultButtonText) {
             // Set attendee name
             binding.attendeeNameText.setText(attendee.getName());
 
@@ -84,32 +91,34 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             // Set phone
             binding.phoneText.setText(attendee.getPhoneNumber());
 
-            // Reset button state (default: "Invite", grey, enabled)
-            binding.statusBadge.setText("Invite");
+            // Reset button state
+            binding.statusBadge.setText(defaultButtonText);
             binding.statusBadge.setBackgroundTintList(
-                    binding.getRoot().getContext().getColorStateList(R.color.status_closed_gray)
+                    ContextCompat.getColorStateList(binding.getRoot().getContext(), R.color.status_closed_gray)
             );
             binding.statusBadge.setEnabled(true);
 
             // Set invite button click listener with toggle functionality
             binding.statusBadge.setOnClickListener(v -> {
-                boolean isCurrentlyInvited = binding.statusBadge.getText().toString().equalsIgnoreCase("Invited");
+                boolean isCurrentlyInvited = binding.statusBadge.getText().toString().equalsIgnoreCase("Invited") 
+                        || binding.statusBadge.getText().toString().equalsIgnoreCase("Added");
 
                 if (isCurrentlyInvited) {
                     // Uninvite
-                    binding.statusBadge.setText("Invite");
+                    binding.statusBadge.setText(defaultButtonText);
                     binding.statusBadge.setBackgroundTintList(
-                            binding.getRoot().getContext().getColorStateList(R.color.status_closed_gray)
+                            ContextCompat.getColorStateList(binding.getRoot().getContext(), R.color.status_closed_gray)
                     );
                     
                     if (listener != null) {
                         listener.onUninviteClick(attendee);
                     }
                 } else {
-                    // Invite logic
-                    binding.statusBadge.setText("Invited");
+                    // Invite/Add logic
+                    String activeText = defaultButtonText.equalsIgnoreCase("Invite") ? "Invited" : "Added";
+                    binding.statusBadge.setText(activeText);
                     binding.statusBadge.setBackgroundTintList(
-                            binding.getRoot().getContext().getColorStateList(R.color.status_open_green)
+                            ContextCompat.getColorStateList(binding.getRoot().getContext(), R.color.status_open_green)
                     );
 
                     if (listener != null) {

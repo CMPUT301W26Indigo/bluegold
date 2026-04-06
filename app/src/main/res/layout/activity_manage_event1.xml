@@ -32,6 +32,19 @@
                 app:layout_collapseMode="parallax"
                 tools:src="@android:drawable/sym_def_app_icon" />
 
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnEditPoster"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="16dp"
+                android:contentDescription="Edit Button"
+                app:srcCompat="@android:drawable/ic_menu_edit"
+                app:fabSize="mini"
+                app:layout_collapseMode="parallax"
+                app:backgroundTint="@color/background_blue_50"
+                app:tint="@color/primary_blue"/>
+
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -46,7 +59,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="70dp"
+
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -393,6 +406,17 @@
                 android:layout_marginBottom="16dp">
 
                 <Button
+                    android:id="@+id/btnAddCoOrganizer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button"
+                    android:padding="10dp"
+                    android:text="Add Co-Organizer"
+                    android:textSize="@dimen/text_lg"
+                    android:layout_marginBottom="8dp"
+                    app:backgroundTint="@color/secondary_purple" />
+
+                <Button
                     android:id="@+id/btnSendNotifications"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -433,12 +457,32 @@
                     app:backgroundTint="@color/primary_blue" />
 
                 <Button
+                    android:id="@+id/btnViewWaitlist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button"
+                    android:padding="10dp"
+                    android:text="View Waitlist"
+                    android:textSize="@dimen/text_lg"
+                    app:backgroundTint="@color/primary_blue" />
+
+                <Button
                     android:id="@+id/btnViewInvited"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     style="@style/Widget.App.Button"
                     android:padding="10dp"
                     android:text="@string/view_invited"
+                    android:textSize="@dimen/text_lg"
+                    app:backgroundTint="@color/primary_blue" />
+
+                <Button
+                    android:id="@+id/btnSeeWaitlistMap"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button"
+                    android:padding="10dp"
+                    android:text="@string/waitlist_map"
                     android:textSize="@dimen/text_lg"
                     app:backgroundTint="@color/primary_blue" />
 

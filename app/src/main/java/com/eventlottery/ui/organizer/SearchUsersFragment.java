@@ -1,6 +1,7 @@
 package com.eventlottery.ui.organizer;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,24 +13,30 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.eventlottery.controller.AdminController;
+import com.eventlottery.controller.OrganizerController;
 import com.eventlottery.databinding.FragmentSearchUsersBinding;
 import com.eventlottery.model.Attendee;
-import com.eventlottery.model.User;
 import com.eventlottery.ui.adapters.UserAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fragment for displaying search results and inviting users.
+ * Fragment for displaying search results and inviting users or adding co-organizers.
  * Part of the 'View' in MVC.
  */
 public class SearchUsersFragment extends Fragment implements UserAdapter.OnAttendeeClickListener {
 
+    private static final String TAG = "SearchUsersFragment";
     private FragmentSearchUsersBinding binding;
     private UserAdapter userAdapter;
     private AdminController adminController;
+    private OrganizerController organizerController;
     private List<Attendee> allAttendees = new ArrayList<>();
+    private String eventId;
+    private String eventName;
+    private String organizerName;
+    private boolean isCoOrganizerMode = false;
 
     @Nullable
     @Override
@@ -43,6 +50,15 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
         super.onViewCreated(view, savedInstanceState);
 
         adminController = new AdminController();
+        organizerController = new OrganizerController();
+
+        if (getActivity() != null && getActivity().getIntent() != null) {
+            eventId = getActivity().getIntent().getStringExtra("EVENT_ID");
+            eventName = getActivity().getIntent().getStringExtra("EVENT_NAME");
+            organizerName = getActivity().getIntent().getStringExtra("ORGANIZER_NAME");
+            isCoOrganizerMode = getActivity().getIntent().getBooleanExtra("CO_ORGANIZER_MODE", false);
+        }
+
         setupRecyclerView();
         loadUsers();
     }
@@ -56,41 +72,65 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
 
             @Override
             public void onInviteClick(Attendee attendee) {
-                // TODO: Actually send the notification
-                // Handle invite click
-                Toast.makeText(getContext(), "Invite sent to: " + attendee.getName(), Toast.LENGTH_SHORT).show();
+                if (isCoOrganizerMode && eventId != null) {
+                    sendCoOrganizerInvite(attendee);
+                } else {
+                    // TODO: Actually send the notification for private event invitation
+                    Toast.makeText(getContext(), "Invite sent to: " + attendee.getName(), Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onUninviteClick(Attendee attendee) {
-                // TODO: Actually send the notification
                 // Handle uninvite click
                 Toast.makeText(getContext(), "Invite cancelled for: " + attendee.getName(), Toast.LENGTH_SHORT).show();
             }
         });
+        
+        if (isCoOrganizerMode) {
+            userAdapter.setInviteButtonText("Invite Co-Org");
+        }
+        
         binding.usersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.usersRecyclerView.setAdapter(userAdapter);
     }
 
-    private void loadUsers() {
-        adminController.getAllUsers(new AdminController.OnDataLoadedListener<User>() {
+    private void sendCoOrganizerInvite(Attendee attendee) {
+        // Fallback values if intent extras are missing
+        String displayEventName = (eventName != null) ? eventName : "Unspecified Event";
+        String displayOrganizerName = (organizerName != null) ? organizerName : "An Organizer";
+        
+        // Use a placeholder for senderId if not available from intent
+        String senderId = (getActivity() != null && getActivity().getIntent().hasExtra("SENDER_ID")) 
+                ? getActivity().getIntent().getStringExtra("SENDER_ID") : "unknown";
+
+        organizerController.sendCoOrganizerInvite(eventId, attendee.getID(), senderId, displayOrganizerName, displayEventName, new OrganizerController.OnOperationListener() {
             @Override
-            public void onDataLoaded(List<User> users) {
-                allAttendees.clear();
-                for (User user : users) {
-                    Attendee attendee = new Attendee();
-                    attendee.setName(user.getName());
-                    try {
-                        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
-                            attendee.setEmail(user.getEmail());
-                        }
-                    } catch (IllegalArgumentException e) {
-                        attendee.setEmail("Unknown");
-                    }
-                    attendee.setPhoneNumber(user.getPhone());
-                    attendee.setID(user.getId());
-                    allAttendees.add(attendee);
+            public void onSuccess() {
+                if (isAdded()) {
+                    Toast.makeText(getContext(), "Invitation sent to " + attendee.getName(), Toast.LENGTH_SHORT).show();
                 }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                if (isAdded()) {
+                    Toast.makeText(getContext(), "Error sending invitation: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void loadUsers() {
+        // Updated to only fetch from the 'attendees' collection
+        adminController.getAllAttendees(new AdminController.OnDataLoadedListener<Attendee>() {
+            @Override
+            public void onDataLoaded(List<Attendee> attendees) {
+                allAttendees.clear();
+                allAttendees.addAll(attendees);
+                
+                Log.d(TAG, "Loaded " + allAttendees.size() + " attendees from Firebase");
+                
                 if (isAdded()) {
                     userAdapter.submitList(new ArrayList<>(allAttendees));
                 }
@@ -98,6 +138,7 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
 
             @Override
             public void onError(Exception e) {
+                Log.e(TAG, "Error loading attendees", e);
                 if (isAdded()) {
                     Toast.makeText(getContext(), "Error loading users: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }

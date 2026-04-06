@@ -23,6 +23,7 @@ public class Event {
     private String name;
     private String description;
     private String organizerId;
+    private List<String> coOrganizerIds;
     private String date;
     private String time;
     private String endTime;
@@ -33,6 +34,7 @@ public class Event {
     private int waitlistCount;
     private int confirmedCount;
     private String posterImageUrl;
+    private Image posterImage;
     private double price;
     private long registrationOpens;
     private long registrationCloses;
@@ -59,6 +61,7 @@ public class Event {
         this.name = "";
         this.description = "";
         this.organizerId = "";
+        this.coOrganizerIds = new ArrayList<>();
         this.date = "";
         this.time = "";
         this.endTime = "";
@@ -69,6 +72,7 @@ public class Event {
         this.waitlistCount = 0;
         this.confirmedCount = 0;
         this.posterImageUrl = null;
+        this.posterImage = new Image(null, this.id);
         this.price = 0.0;
         this.registrationOpens = 0L;
         this.registrationCloses = 0L;
@@ -100,6 +104,7 @@ public class Event {
             String name,
             String description,
             String organizerId,
+            List<String> coOrganizerIds,
             String date,
             String time,
             String endTime,
@@ -133,6 +138,7 @@ public class Event {
         this.name = name;
         this.description = description;
         this.organizerId = organizerId;
+        this.coOrganizerIds = (coOrganizerIds != null) ? new ArrayList<>(coOrganizerIds) : new ArrayList<>();
         this.date = date;
         this.time = time;
         this.endTime = endTime;
@@ -142,6 +148,8 @@ public class Event {
         this.waitlistLimit = waitlistLimit;
         this.waitlistCount = waitlistCount;
         this.confirmedCount = confirmedCount;
+        this.posterImage = new Image(posterImageUrl, this.id);
+        this.posterImage.saveToFirebase();
         this.posterImageUrl = posterImageUrl;
         this.price = price;
         this.registrationOpens = registrationOpens;
@@ -174,6 +182,12 @@ public class Event {
 
     public void setId(String id) {
         this.id = id;
+        if (this.waitlist != null) {
+            this.waitlist.setEventId(id);
+        }
+        if (this.guestList != null) {
+            this.guestList.setEventId(id);
+        }
     }
 
     public String getName() {
@@ -198,6 +212,14 @@ public class Event {
 
     public void setOrganizerId(String organizerId) {
         this.organizerId = organizerId;
+    }
+
+    public List<String> getCoOrganizerIds() {
+        return coOrganizerIds;
+    }
+
+    public void setCoOrganizerIds(List<String> coOrganizerIds) {
+        this.coOrganizerIds = coOrganizerIds;
     }
 
     public String getDate() {
@@ -278,6 +300,9 @@ public class Event {
 
     public void setPosterImageUrl(String posterImageUrl) {
         this.posterImageUrl = posterImageUrl;
+        this.posterImage.setUrl(posterImageUrl);
+        this.posterImage.setEventId(id);
+
     }
 
     public double getPrice() {
@@ -400,19 +425,17 @@ public class Event {
         isFlagged = flagged;
     }
 
-    public int getFlagCount() {
-        return flagCount;
-    }
-
-    public void setFlagCount(int flagCount) {
-        this.flagCount = flagCount;
-    }
-
     public Waitlist getWaitlist() {
+        if (waitlist != null && (waitlist.getEventId() == null || waitlist.getEventId().isEmpty())) {
+            waitlist.setEventId(id);
+        }
         return waitlist;
     }
 
     public GuestList getGuestList() {
+        if (guestList != null && (guestList.getEventId() == null || guestList.getEventId().isEmpty())) {
+            guestList.setEventId(id);
+        }
         return guestList;
     }
 
@@ -509,9 +532,13 @@ public class Event {
      * Gets the number of spots available for an event
      * @return int
      */
-    public int getAvailableSpots() {
-        if (guestList.getListLimit() == null) return Integer.MAX_VALUE;
-        return Math.max(0, guestList.getListLimit() - guestList.getListCount());
+    public int getAvailableWaitlistSpots() {
+        if (waitlist.getWaitlistLimit() == null) return -1;
+        return Math.max(0, waitlist.getWaitlistLimit() - guestList.getListCount());
+    }
+
+    public int getAvailableGuestlistSpots() {
+        return getCapacity() - getConfirmedCount();
     }
 
     /**
@@ -572,6 +599,8 @@ public class Event {
     public boolean isWaitlistFull() {
         return waitlist.isWaitlistFull();
     }
+
+    public boolean isGuestlistFull() {return guestList.isGuestlistFull(capacity);}
 
     /**
      * Checks if the registration is open

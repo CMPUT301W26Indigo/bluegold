@@ -4,6 +4,7 @@ import com.eventlottery.model.Comment;
 import com.eventlottery.model.Event;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -33,6 +34,14 @@ public class EventController {
      */
     public interface OnEventOperationListener {
         void onSuccess();
+        void onError(Exception e);
+    }
+
+    /**
+     * Interface for checking guestlist status.
+     */
+    public interface OnGuestlistStatusListener {
+        void onStatusLoaded(String status);
         void onError(Exception e);
     }
 
@@ -169,21 +178,27 @@ public class EventController {
      * @param attendeeId The ID of the attendee.
      * @param listener Callback for completion.
      */
-    public void joinWaitlist(String eventId, String attendeeId, OnEventOperationListener listener) {
+    public void joinWaitlist(String eventId, String attendeeId, double lat, double lon, OnEventOperationListener listener) {
         Map<String, Object> data = new HashMap<>();
         data.put("status", "waiting"); // Default status
+        data.put("latitude", lat);
+        data.put("longitude", lon);
+
 
         db.collection(COLLECTION_NAME).document(eventId)
                 .collection("waitlist").document(attendeeId)
                 .set(data)
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnSuccessListener(aVoid -> {
+                    // Update the event's waitlist count
+                    db.collection(COLLECTION_NAME).document(eventId)
+                            .update("waitlistCount", FieldValue.increment(1));
+                    listener.onSuccess();
+                })
                 .addOnFailureListener(listener::onError);
 
         db.collection("attendees").document(attendeeId)
                 .collection("waitListed").document(eventId)
-                .set(data)
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
-                .addOnFailureListener(listener::onError);
+                .set(data);
     }
 
     /**
@@ -196,14 +211,17 @@ public class EventController {
         db.collection(COLLECTION_NAME).document(eventId)
                 .collection("waitlist").document(attendeeId)
                 .delete()
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnSuccessListener(aVoid -> {
+                    // Update the event's waitlist count
+                    db.collection(COLLECTION_NAME).document(eventId)
+                            .update("waitlistCount", FieldValue.increment(-1));
+                    listener.onSuccess();
+                })
                 .addOnFailureListener(listener::onError);
 
         db.collection("attendees").document(attendeeId)
                 .collection("waitListed").document(eventId)
-                .delete()
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
-                .addOnFailureListener(listener::onError);
+                .delete();
     }
 
     /**
@@ -260,6 +278,56 @@ public class EventController {
     public void deleteComment(String eventId, String commentId, OnEventOperationListener listener) {
         db.collection(COLLECTION_NAME).document(eventId)
                 .collection("comments").document(commentId)
+                .delete()
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Checks if an attendee is currently on the guestlist for a specific event.
+     * @param eventId The ID of the event.
+     * @param attendeeId The ID of the attendee.
+     * @param listener Callback for the result.
+     */
+    public void checkIfAttendeeOnGuestlist(String eventId, String attendeeId, OnWaitlistStatusListener listener) {
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("guestList").document(attendeeId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    listener.onStatusChecked(documentSnapshot.exists());
+                })
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Adds an attendee to an event's guestlist.
+     * @param eventId The ID of the event.
+     * @param attendeeId The ID of the attendee.
+     * @param listener Callback for completion.
+     */
+    public void getAttendeeGuestlistStatus(String eventId, String attendeeId, OnGuestlistStatusListener listener) {
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("guestList").document(attendeeId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        listener.onStatusLoaded(documentSnapshot.getString("status"));
+                    } else {
+                        listener.onStatusLoaded(null);
+                    }
+                })
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Removes an attendee from an event's guestlist.
+     * @param eventId The ID of the event.
+     * @param attendeeId The ID of the attendee.
+     * @param listener Callback for completion.
+     */
+    public void removeFromGuestlist(String eventId, String attendeeId, OnEventOperationListener listener) {
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("guestList").document(attendeeId)
                 .delete()
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);

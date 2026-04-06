@@ -13,6 +13,14 @@ import com.eventlottery.databinding.ActivityManageEventsBinding;
 import com.eventlottery.model.Event;
 import com.eventlottery.ui.adapters.AdminManageEventsAdapter;
 
+import android.view.View;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import com.eventlottery.databinding.ActivityManageEventsBinding;
+import com.eventlottery.model.Event;
+import com.eventlottery.ui.adapters.EventAdapter;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +63,39 @@ public class ManageEventsActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             binding.toolbar.setNavigationOnClickListener(v -> finish());
         }
+
+        adapter = new EventAdapter(this);
+        binding.rvManageEvents.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvManageEvents.setAdapter(adapter);
+    }
+
+    /**
+     * Loads all events from Firestore without filtering by privacy status.
+     */
+    private void loadAllEvents() {
+        db.collection("events")
+            .addSnapshotListener((value, error) -> {
+                if (error != null) {
+                    Log.e(TAG, "Error loading events", error);
+                    return;
+                }
+
+                if (value != null) {
+                    List<Event> events = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : value) {
+                        Event event = doc.toObject(Event.class);
+                        event.setId(doc.getId());
+                        events.add(event);
+                    }
+                    adapter.submitList(events);
+                }
+            });
+    }
+
+    @Override
+    public void onEventClick(Event event) {
+        // Handle event click, e.g., open event details for management
+        Log.d(TAG, "Event clicked: " + event.getName());
     }
 
     /**

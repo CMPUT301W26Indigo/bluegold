@@ -6,27 +6,34 @@ import android.provider.Settings;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.installations.FirebaseInstallations;
 
+/**
+ * Abstract class representing a user in the application.
+ */
 public abstract class AbstractUser {
     protected String name;
     protected String email;
     protected String phoneNumber;
     protected String address;
     protected String deviceID;
-    protected String profileImageUrl;
+    //protected String profileImageUrl;
+    protected String fcmToken;
     protected boolean isAdmin;
     protected boolean notification;
 
 
+    /**
+     * Constructor for AbstractUser.
+     */
     public AbstractUser() {
         this.name = null;
         this.email = null;
         this.phoneNumber = null;
         this.address = null;
         this.deviceID = null;
+        this.fcmToken = null;
         this.isAdmin = false;
         this.notification = true;
     }
-
 
     // Getters and Setters
     /**
@@ -101,7 +108,6 @@ public abstract class AbstractUser {
     /**
      * Sets the attendee's physical address.
      * @param address The address to set.
-     * todo Throw IllegalArgumentException for invalid format and ensure it can be converted to coordinates.
      */
     public void setAddress(String address) {
         this.address = address;
@@ -124,14 +130,7 @@ public abstract class AbstractUser {
         this.deviceID = id;
     }
 
-    public String getProfileImageUrl() {
-        return profileImageUrl;
-    }
 
-    public void setProfileImageUrl(String profileImageUrl) {
-        this.profileImageUrl = profileImageUrl;
-        saveToFirebase();
-    }
 
     /**
      * Sets the notification preference and updates Firebase.
@@ -148,6 +147,14 @@ public abstract class AbstractUser {
      */
     public boolean getNotification() {
         return notification;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     /**
