@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 
 import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.ActivityCreateEventBinding;
+import com.eventlottery.model.AbstractUser;
 import com.eventlottery.model.Event;
 import com.eventlottery.services.ImagePicker;
 import com.google.android.material.chip.Chip;
@@ -155,6 +156,9 @@ public class CreateEventActivity extends AppCompatActivity {
         org.osmdroid.config.Configuration.getInstance().load(this,
                 androidx.preference.PreferenceManager.getDefaultSharedPreferences(this));
 
+        AbstractUser.getFirebaseId().addOnSuccessListener(id -> {
+            organizerId = id;
+        });
         imagePicker = new ImagePicker(this, uri -> {
             selectedImageUri = uri;
             getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -344,77 +348,81 @@ public class CreateEventActivity extends AppCompatActivity {
             event.setDescription(binding.descriptionEditText.getText().toString());
             event.setDate(binding.eventDateEditText.getText().toString());
             event.setTime(binding.eventTimeEditText.getText().toString());
-            
-            // Set the captured organizer ID
-            //event.setOrganizerId(organizerId);
 
             // Setting the actual timestamps captured from the pickers
             event.setRegistrationOpens(registrationOpensTime);
             event.setRegistrationCloses(registrationClosesTime);
             
-            try {
-                event.setCapacity(Integer.parseInt(binding.capacityEditText.getText().toString()));
-            } catch (NumberFormatException e) {
-                event.setCapacity(0);
-            }
+            AbstractUser.getFirebaseId().addOnSuccessListener(id -> {
+                Log.e("EventController", "Organizer ID: " + id);
+                organizerId = id;
+                // Set the captured organizer ID
+                event.setOrganizerId(organizerId);
 
-            // Set waitlist limits if they exist
-            limitWaitlist = binding.waitlistLimitSwitch.isChecked();
-            event.setWaitlistLimit(limitWaitlist ? 1 : 0);
-            if (limitWaitlist) {
                 try {
-                    event.setWaitlistLimit(Integer.parseInt(binding.waitlistLimitEditText.getText().toString()));
+                    event.setCapacity(Integer.parseInt(binding.capacityEditText.getText().toString()));
                 } catch (NumberFormatException e) {
-                    event.setWaitlistLimit(null);
+                    event.setCapacity(0);
                 }
-            }
 
-            // Set event privacy if it exists
-            eventPrivacy = binding.privacySwitch.isChecked();
-            event.setPrivate(eventPrivacy);
-
-            // Set the location and geolocation
-            event.setLocation(binding.locationEditText.getText().toString());
-            event.setLatitude(Double.parseDouble(pickedResults[1]));
-            event.setLongitude(Double.parseDouble(pickedResults[2]));
-            event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());
-            if (binding.geolocationSwitch.isChecked()) {
-                try {
-                    event.setGeolocationRadius(Integer.valueOf(binding.radiusEditText.getText().toString()));
-                } catch (NumberFormatException e) {
-                    event.setGeolocationRadius(null);
+                // Set waitlist limits if they exist
+                limitWaitlist = binding.waitlistLimitSwitch.isChecked();
+                event.setWaitlistLimit(limitWaitlist ? 1 : 0);
+                if (limitWaitlist) {
+                    try {
+                        event.setWaitlistLimit(Integer.parseInt(binding.waitlistLimitEditText.getText().toString()));
+                    } catch (NumberFormatException e) {
+                        event.setWaitlistLimit(null);
+                    }
                 }
-            }
 
-            // Set the tags for an event
-            List<String> selectedTags = new ArrayList<>();
-            for (Integer id : binding.tagChipGroup.getCheckedChipIds()) {
-                Chip chip = binding.tagChipGroup.findViewById(id);
-                selectedTags.add(chip.getText().toString());
-            }
-            event.setTags(selectedTags);
+                // Set event privacy if it exists
+                eventPrivacy = binding.privacySwitch.isChecked();
+                event.setPrivate(eventPrivacy);
+
+                // Set the location and geolocation
+                event.setLocation(binding.locationEditText.getText().toString());
+                event.setLatitude(Double.parseDouble(pickedResults[1]));
+                event.setLongitude(Double.parseDouble(pickedResults[2]));
+                event.setGeolocationEnabled(binding.geolocationSwitch.isChecked());
+                if (binding.geolocationSwitch.isChecked()) {
+                    try {
+                        event.setGeolocationRadius(Integer.valueOf(binding.radiusEditText.getText().toString()));
+                    } catch (NumberFormatException e) {
+                        event.setGeolocationRadius(null);
+                    }
+                }
+
+                // Set the tags for an event
+                List<String> selectedTags = new ArrayList<>();
+                for (Integer chipId : binding.tagChipGroup.getCheckedChipIds()) {
+                    Chip chip = binding.tagChipGroup.findViewById(chipId);
+                    selectedTags.add(chip.getText().toString());
+                }
+                event.setTags(selectedTags);
 
             // Upload the image
             uploadImage(event, selectedImageUri);
 
-            // Set the price
-            try {
-                event.setPrice(Double.parseDouble(binding.priceEditText.getText().toString()));
-            } catch (NumberFormatException e) {
-                event.setPrice(0.0);
-            }
+                // Set the price
+                try {
+                    event.setPrice(Double.parseDouble(binding.priceEditText.getText().toString()));
+                } catch (NumberFormatException e) {
+                    event.setPrice(0.0);
+                }
 
-            //adding the event to the database
-            eventController.addEvent(event, new EventController.OnEventOperationListener() {
-                @Override
-                public void onSuccess() {
-                    Toast.makeText(CreateEventActivity.this, "Event created successfully", Toast.LENGTH_SHORT).show();
-                    finish();
-                }
-                @Override
-                public void onError(Exception e) {
-                    Toast.makeText(CreateEventActivity.this, "Error creating event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
+                //adding the event to the database
+                eventController.addEvent(event, new EventController.OnEventOperationListener() {
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(CreateEventActivity.this, "Event created successfully", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                    @Override
+                    public void onError(Exception e) {
+                        Toast.makeText(CreateEventActivity.this, "Error creating event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             });
         });
     }
@@ -473,6 +481,13 @@ public class CreateEventActivity extends AppCompatActivity {
             isValid = false;
         } else {
             binding.capacityLayout.setError(null);
+        }
+
+        if (pickedResults == null) {
+            binding.locationLayout.setError("Location selection is required");
+            isValid = false;
+        } else {
+            binding.locationLayout.setError(null);
         }
 
         if (binding.tagChipGroup.getCheckedChipIds().isEmpty()) {

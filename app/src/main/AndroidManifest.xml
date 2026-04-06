@@ -178,6 +178,12 @@
             android:exported="false"
             android:label="@string/manage_users_title"
             android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ui.admin.NotificationLogsActivity"
+            android:exported="false"
+            android:label="Notification Logs"
+            android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" /> <!-- QR Code Scanner Activity -->
         <activity
             android:name=".ui.qr.QRScannerActivity"

@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.FragmentMyEventsBinding;
 import com.eventlottery.model.Attendee;
-import com.eventlottery.model.AttendeeEventHistory;
 import com.eventlottery.model.Event;
 import com.eventlottery.ui.adapters.EventAdapter;
 import com.google.android.material.tabs.TabLayout;
@@ -97,7 +96,7 @@ public class MyEventsFragment extends Fragment {
                     fetchConfirmedEvents(id);
                     break;
                 case 3: // History
-                    fetchHistoryEvents(id);
+                    fetchFromSubcollection(id, "EventHistory");
                     break;
                 default:
                     updateUI(new ArrayList<>());
@@ -154,28 +153,6 @@ public class MyEventsFragment extends Fragment {
                     loadEventsFromIds(eventIds);
                 })
                 .addOnFailureListener(e -> updateUI(new ArrayList<>()));
-    }
-
-    private void fetchHistoryEvents(String attendeeId) {
-        Attendee attendee = new Attendee();
-        attendee.setID(attendeeId);
-        attendee.fetchFromFirebase(new Attendee.OnAttendeeLoadedListener() {
-            @Override
-            public void onSuccess(Attendee loadedAttendee) {
-                Set<String> eventIds = new HashSet<>();
-                if (loadedAttendee.getEventHistory() != null) {
-                    for (AttendeeEventHistory history : loadedAttendee.getEventHistory()) {
-                        eventIds.add(history.getEventID());
-                    }
-                }
-                loadEventsFromIds(eventIds);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                updateUI(new ArrayList<>());
-            }
-        });
     }
 
     private void loadEventsFromIds(Set<String> eventIds) {

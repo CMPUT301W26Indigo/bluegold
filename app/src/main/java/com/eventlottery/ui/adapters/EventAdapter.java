@@ -2,6 +2,7 @@ package com.eventlottery.ui.adapters;
 
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,8 @@ import com.eventlottery.model.Event;
 import com.eventlottery.databinding.ItemEventCardBinding;
 import com.eventlottery.services.Base64EncodeDecode;
 import com.google.android.material.chip.Chip;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,6 +123,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
          * @param listener The listener to handle event clicks
          */
         void bind(Event event, OnEventClickListener listener) {
+            Log.e("EventAdapter", "Waitlist count: " + event.getWaitlistCount());
             // Set event name
             binding.eventNameText.setText(event.getName());
             
@@ -128,6 +132,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             binding.statusBadge.setChipBackgroundColorResource(
                 getStatusColor(event.getStatus())
             );
+
+            // Set private badge
+            if (event.isPrivate()) {
+                binding.privateBadge.setVisibility(View.VISIBLE);
+            } else {
+                binding.privateBadge.setVisibility(View.GONE);
+            }
 
             //set image
             if (event.getPosterImageUrl() != null) {
@@ -147,16 +158,50 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             binding.locationText.setText(event.getLocation());
             
             // Set waitlist count
-            String waitlistText;
-            if (event.getWaitlistLimit() != null) {
-                waitlistText = String.format("%d / %d on waiting list", 
-                    event.getWaitlistCount(), event.getWaitlistLimit());
+            FirebaseFirestore.getInstance()
+                    .collection("events")
+                    .document(event.getId())
+                    .collection("waitlist")
+                    .get()
+                    .addOnSuccessListener(query -> {
+
+                        int count = query.size();
+
+                        String waitlistText;
+
+                        if (event.getWaitlistLimit() != null && event.getWaitlistLimit() > 0) {
+                            waitlistText = String.format("%d / %d on Waitlist",
+                                    count,
+                                    event.getWaitlistLimit());
+                        } else {
+                            waitlistText = String.format("%d on Waitlist", count);
+                        }
+
+                        binding.waitlistCountText.setText(waitlistText);
+                    });
+
+            if (event.getStatus().equals("lottery_drawn")) {
+                FirebaseFirestore.getInstance()
+                        .collection("events")
+                        .document(event.getId())
+                        .collection("guestList")
+                        .get()
+                        .addOnSuccessListener(query -> {
+
+                            int count = query.size();
+
+                            String guestlistText;
+                            guestlistText = String.format("%d / %d Confirmed Attendees",
+                                    count,
+                                    event.getCapacity());
+
+
+                            binding.guestlistCountText.setText(guestlistText);
+                        });
             } else {
-                waitlistText = String.format("%d on waiting list", 
-                    event.getWaitlistCount());
+                binding.guestlistLayout.setVisibility(View.GONE);
             }
-            binding.waitlistCountText.setText(waitlistText);
-            
+
             // Set tags
             binding.tagChips.removeAllViews();
             for (String tag : event.getTags()) {
