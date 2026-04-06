@@ -7,6 +7,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * Model class representing an image stored in Firestore.
+ * This class handles the storage and retrieval of image metadata,
+ * specifically the image URL and the associated event ID.
  */
 public class Image {
     private static final String TAG = "Images";
@@ -19,6 +21,7 @@ public class Image {
 
     /**
      * Default constructor required for Firebase deserialization.
+     * Initializes the Firestore instance and sets default null values for fields.
      */
     public Image() {
         this.url = null;
@@ -33,33 +36,70 @@ public class Image {
         this.db = tempDb;
     }
 
+    /**
+     * Constructs an Image with a specified URL and event ID.
+     * @param url The URL or Base64 string of the image.
+     * @param eventId The unique identifier of the event this image belongs to.
+     */
     public Image(String url, String eventId) {
         this();
         this.url = url;
         this.eventId = eventId;
     }
 
+    /**
+     * Interface for handling asynchronous image loading from Firebase.
+     */
     public interface OnImageLoadedListener {
+        /**
+         * Called when the image has been successfully loaded.
+         * @param image The loaded Image object.
+         */
         void onSuccess(Image image);
+
+        /**
+         * Called when an error occurs during image loading.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 
+    /**
+     * Gets the URL or Base64 string of the image.
+     * @return The image URL.
+     */
     public String getUrl() {
         return url;
     }
 
+    /**
+     * Sets the URL or Base64 string of the image.
+     * @param url The image URL to set.
+     */
     public void setUrl(String url) {
         this.url = url;
     }
 
+    /**
+     * Gets the ID of the event associated with this image.
+     * @return The associated event ID.
+     */
     public String getEventId() {
         return eventId;
     }
 
+    /**
+     * Sets the ID of the event associated with this image.
+     * @param eventId The event ID to set.
+     */
     public void setEventId(String eventId) {
         this.eventId = eventId;
     }
 
+    /**
+     * Synchronizes the current state of the Image object to Firebase.
+     * Requires the eventId to be set as it is used as the document ID.
+     */
     public void saveToFirebase() {
         if (db == null) return;
         if (eventId == null || eventId.isEmpty()) {
@@ -72,8 +112,8 @@ public class Image {
     }
 
     /**
-     * Fetches the image from Firebase.
-     * @param listener Callback for completion.
+     * Fetches the image metadata from Firebase using the eventId.
+     * @param listener Callback for completion, providing the loaded image or an error.
      */
     public void fetchFromFirebase(OnImageLoadedListener listener) {
         if (db == null) {
