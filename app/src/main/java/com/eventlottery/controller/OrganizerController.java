@@ -1,7 +1,9 @@
 package com.eventlottery.controller;
 
 import com.eventlottery.model.Event;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,11 +39,14 @@ public class OrganizerController {
     }
 
     /**
-     * Fetches events created by a specific organizer.
+     * Fetches events where the user is the main organizer or a co-organizer.
      */
-    public void getOrganizerEvents(String organizerId, OnDataLoadedListener<Event> listener) {
+    public void getOrganizerEvents(String userId, OnDataLoadedListener<Event> listener) {
         db.collection("events")
-                .whereEqualTo("organizerId", organizerId)
+                .where(Filter.or(
+                        Filter.equalTo("organizerId", userId),
+                        Filter.arrayContains("coOrganizerIds", userId)
+                ))
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Event> events = new ArrayList<>();
@@ -52,6 +57,16 @@ public class OrganizerController {
                     }
                     listener.onDataLoaded(events);
                 })
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Adds a user as a co-organizer to an event.
+     */
+    public void addCoOrganizer(String eventId, String coOrganizerId, OnOperationListener listener) {
+        db.collection("events").document(eventId)
+                .update("coOrganizerIds", FieldValue.arrayUnion(coOrganizerId))
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
     }
 

@@ -19,7 +19,6 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityManageEvent1Binding;
-import com.eventlottery.databinding.ActivityManageEventBinding;
 import com.eventlottery.model.Event;
 import com.eventlottery.model.Notification;
 import com.eventlottery.services.Base64EncodeDecode;
@@ -155,6 +154,14 @@ public class ManageEventActivity extends AppCompatActivity {
         binding.eventTimeText.setText(event.getTime());
         binding.descriptionText.setText(event.getDescription());
         binding.locationNameText.setText(event.getLocation());
+
+        // Add co-organizer button
+        binding.btnAddCoOrganizer.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SearchUsersActivity.class);
+            intent.putExtra("EVENT_ID", eventId);
+            intent.putExtra("CO_ORGANIZER_MODE", true);
+            startActivity(intent);
+        });
 
         // Draw lottery button
         binding.btnDrawLottery.setOnClickListener(v -> {
