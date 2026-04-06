@@ -325,6 +325,8 @@ public class EventOrganizer extends AbstractUser {
                         this.address = remote.address;
                         this.notification = remote.notification;
                         this.events = remote.events != null ? remote.events : new ArrayList<>();
+                        this.isAdmin = remote.isAdmin;
+
                         if (listener != null) listener.onSuccess(this);
                     } else if (listener != null) {
                         listener.onError(new Exception("EventOrganizer document not found"));

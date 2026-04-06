@@ -101,7 +101,9 @@ public class Attendee extends AbstractUser {
                         this.address = remote.getAddress();
                         this.notification = remote.getNotification();
                         this.fcmToken = remote.getFcmToken();
-                        this.profileImageUrl = remote.getProfileImageUrl();
+                        this.isAdmin = remote.isAdmin;
+
+                        //this.profileImageUrl = remote.getProfileImageUrl();
                         
                         this.latitude = remote.latitude;
                         this.longitude = remote.longitude;
