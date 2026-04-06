@@ -1,5 +1,6 @@
 package com.eventlottery.controller;
 
+import com.eventlottery.model.Comment;
 import com.eventlottery.model.Event;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldPath;
@@ -40,6 +41,14 @@ public class EventController {
      */
     public interface OnWaitlistStatusListener {
         void onStatusChecked(boolean isOnWaitlist);
+        void onError(Exception e);
+    }
+
+    /**
+     * Interface for handling comments
+     */
+    public interface OnCommentsLoadedListener {
+        void onCommentsLoaded(List<Comment> comments);
         void onError(Exception e);
     }
 
@@ -210,6 +219,49 @@ public class EventController {
                 .addOnSuccessListener(documentSnapshot -> {
                     listener.onStatusChecked(documentSnapshot.exists());
                 })
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Adds a new comment to an event's comments subcollection.
+     */
+    public void addComment(String eventId, Comment comment, OnEventOperationListener listener) {
+        DocumentReference docRef = db.collection(COLLECTION_NAME).document(eventId)
+                .collection("comments").document();
+        comment.setCommentId(docRef.getId());
+        docRef.set(comment)
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Fetches all comments for a specific event (ascending order in time)
+     */
+    public void getComments(String eventId, OnCommentsLoadedListener listener) {
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("comments")
+                .orderBy("timestamp")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Comment> comments = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Comment comment = document.toObject(Comment.class);
+                        comment.setCommentId(document.getId());
+                        comments.add(comment);
+                    }
+                    listener.onCommentsLoaded(comments);
+                })
+                .addOnFailureListener(listener::onError);
+    }
+
+    /**
+     * Deletes a specific comment
+     */
+    public void deleteComment(String eventId, String commentId, OnEventOperationListener listener) {
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("comments").document(commentId)
+                .delete()
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);
     }
 }

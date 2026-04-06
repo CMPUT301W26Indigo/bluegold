@@ -81,6 +81,15 @@
                     android:scheme="eventlottery" />
             </intent-filter>
         </activity>
+
+        <!-- Comments -->
+        <activity
+            android:name=".ui.entrant.CommentsActivity"
+            android:exported="false"
+            android:label="Comments"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+
         <activity
             android:name=".ui.entrant.MyEventsActivity"
             android:exported="false"
