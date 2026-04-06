@@ -14,16 +14,26 @@ import java.util.List;
 public class AdminController {
     private final FirebaseFirestore db;
 
+    /**
+     * Interface for handling events loaded from Firestore.
+     * @param <T> The type of data to be loaded.
+     */
     public interface OnDataLoadedListener<T> {
         void onDataLoaded(List<T> data);
         void onError(Exception e);
     }
 
+    /**
+     * Interface for handling operations on events.
+     */
     public interface OnOperationListener {
         void onSuccess();
         void onError(Exception e);
     }
 
+    /**
+     * Constructor for AdminController.
+     */
     public AdminController() {
         this.db = FirebaseFirestore.getInstance();
     }

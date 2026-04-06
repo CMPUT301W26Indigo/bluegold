@@ -25,6 +25,10 @@ public class BrowseEventsActivity extends AppCompatActivity {
     private double userLon = 0;
 
 
+    /**
+     * Called when the activity is first created.
+     * @param savedInstanceState If the activity is being re-initialized after
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,7 +57,6 @@ public class BrowseEventsActivity extends AppCompatActivity {
                             .commit();
                 }
             }
-
             @Override
             public void onPermissionDenied() {
                 Log.d("Location", "Permission denied");

@@ -16,20 +16,34 @@ public class UserController {
     private final String COLLECTION_NAME = "users";
     private final String ATTENDEE_COLLECTION = "attendees";
 
+    /**
+     * Interface for handling user operations.
+     */
     public interface OnUserLoadedListener {
         void onUserLoaded(User user);
         void onError(Exception e);
     }
 
+    /**
+     * Interface for handling user operations.
+     */
     public interface OnUserOperationListener {
         void onSuccess();
         void onError(Exception e);
     }
 
+    /**
+     * Constructor for UserController.
+     */
     public UserController() {
         this.db = FirebaseFirestore.getInstance();
     }
 
+    /**
+     * Fetches a user profile from Firestore.
+     * @param userId The ID of the user to fetch.
+     * @param listener The listener for success or error callbacks.
+     */
     public void getUser(String userId, OnUserLoadedListener listener) {
         db.collection(COLLECTION_NAME).document(userId)
                 .get()
@@ -49,6 +63,11 @@ public class UserController {
                 .addOnFailureListener(listener::onError);
     }
 
+    /**
+     * Saves a user profile to Firestore.
+     * @param user The user profile to save.
+     * @param listener The listener for success or error callbacks.
+     */
     public void saveUser(User user, OnUserOperationListener listener) {
         db.collection(COLLECTION_NAME).document(user.getId())
                 .set(user)

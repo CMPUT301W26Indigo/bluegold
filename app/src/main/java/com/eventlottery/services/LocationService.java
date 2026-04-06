@@ -12,9 +12,19 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
+/**
+ * Class for getting the user's current location.
+ * Prompts the user with a launcher and waits for a result.
+ * Then tracks the users location.
+ *
+ * Coded by Google Gemini, Prompt: "I need the location to be in its own class
+ * for several activities to use"
+ */
 public class LocationService {
 
-    // 1. This is our "Callback". It tells the Activity when we are done.
+    /**
+     * Interface for handling the location callback.
+     */
     public interface LocationCallback {
         void onLocationReady(double lat, double lon);
         void onPermissionDenied();
@@ -24,7 +34,12 @@ public class LocationService {
     private LocationCallback currentCallback;
     private final Context context;
 
-    // 2. The Constructor: We set up the "Listener" here
+    /**
+     * Constructor for LocationService to start up.
+     * permissionLauncher handles the prompt
+     *
+     * @param activity The activity to register the launcher with.
+     */
     public LocationService(AppCompatActivity activity) {
         this.context = activity;
 
@@ -42,7 +57,10 @@ public class LocationService {
         );
     }
 
-    // 3. This is the method you call from your Button click
+    /**
+     * Requests the user's location through code.
+     * @param callback The callback to handle the location.
+     */
     public void requestLocation(LocationCallback callback) {
         this.currentCallback = callback;
 
@@ -56,9 +74,13 @@ public class LocationService {
         }
     }
 
+    /**
+     * Starts fetching the user's location and sends off
+     * the coordinates
+     * @param context The context to use
+     * @param listener The callback to handle the location
+     */
     private void startFetchingLocation(Context context, LocationCallback listener) {
-        // Here you call your existing logic (FusedLocationProvider)
-        // And when it succeeds, you call currentCallback.onLocationReady(lat, lon);
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
 
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

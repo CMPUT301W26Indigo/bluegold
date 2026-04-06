@@ -36,21 +36,38 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private OnEventClickListener listener;
     private static double userLat = 0;
     private static double userLon = 0;
-    
+
+    /**
+     * Interface for handling event clicks
+     */
     public interface OnEventClickListener {
         void onEventClick(Event event);
     }
-    
+
+    /**
+     * Constructor for EventAdapter
+     * @param listener The listener to handle event clicks
+     */
     public EventAdapter(OnEventClickListener listener) {
         this.events = new ArrayList<>();
         this.listener = listener;
     }
-    
+
+    /**
+     * Submits a list of events to the adapter
+     * @param newEvents The list of events to submit
+     */
     public void submitList(List<Event> newEvents) {
         this.events = newEvents;
         notifyDataSetChanged();
     }
-    
+
+    /**
+     * Creates a new EventViewHolder
+     * @param parent The parent view group
+     * @param viewType The view type
+     * @return A new EventViewHolder
+     */
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -59,23 +76,39 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         );
         return new EventViewHolder(binding);
     }
-    
+
+    /**
+     * Binds an event to a view holder
+     * @param holder The view holder to bind to
+     * @param position The position of the event in the list
+     */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = events.get(position);
         holder.bind(event, listener);
     }
-    
+
+    /**
+     * Returns the number of events in the list
+     */
     @Override
     public int getItemCount() {
         return events.size();
     }
 
+    /**
+     * Sets the user's coordinates
+     * @param lat
+     * @param lon
+     */
     public void setCoordinates(double lat, double lon) {
         userLat = lat;
         userLon = lon;
     }
-    
+
+    /**
+     * ViewHolder for an event card
+     */
     static class EventViewHolder extends RecyclerView.ViewHolder {
         private final ItemEventCardBinding binding;
         
@@ -83,7 +116,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             super(binding.getRoot());
             this.binding = binding;
         }
-        
+
+        /**
+         * Binds an event to the view holder
+         * @param event The event to bind
+         * @param listener The listener to handle event clicks
+         */
         void bind(Event event, OnEventClickListener listener) {
             Log.e("EventAdapter", "Waitlist count: " + event.getWaitlistCount());
             // Set event name
@@ -101,6 +139,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 Glide.with(binding.getRoot().getContext())
                     .load(bitmap)
                     .into(binding.eventPosterImage);
+            } else {
+                binding.eventPosterImage.setImageResource(R.drawable.ic_launcher_foreground);
             }
             
             // Set date and time
@@ -204,7 +244,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 }
             });
         }
-        
+
+        /**
+         * Gets the status text for the event
+         * @param status The status of the event
+         * @return The status text
+         */
         private String getStatusText(String status) {
             if (status == null) return "Unknown";
             switch (status) {
@@ -220,7 +265,12 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                     return status;
             }
         }
-        
+
+        /**
+         * Gets the color for the status badge
+         * @param status
+         * @return The color
+         */
         private int getStatusColor(String status) {
             if (status == null) return R.color.status_closed_gray;
             switch (status) {

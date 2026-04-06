@@ -186,9 +186,43 @@ public class EventDetailsActivity extends AppCompatActivity {
         });
     }
 
+    private void applyWaitlistUI(String status, boolean isOnWaitlist) {
+        long currentTime = System.currentTimeMillis();
+
+        //check waitList limit full
+        if (event.getWaitlistLimit() != null && event.getWaitlistCount() >= event.getWaitlistLimit()) {
+            binding.joinWaitlistBtn.setEnabled(false);
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+            binding.joinWaitlistBtn.setText("Waitlist Full");
+            return;
+        }
+
+        //check registration closed
+        if (event.getRegistrationCloses() > 0 && currentTime > event.getRegistrationCloses()) {
+            binding.joinWaitlistBtn.setEnabled(false);
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+            binding.joinWaitlistBtn.setText("Registration Closed");
+            return;
+        }
+
+        //outside geolocation radius
+        if (event.isGeolocationEnabled() && event.getGeolocationRadius() != null) {
+            float[] distance = new float[1];
+            Location.distanceBetween(userLat, userLon, event.getLatitude(), event.getLongitude(), distance);
+            float distanceKm = distance[0] / 1000;
+            if (distanceKm > event.getGeolocationRadius()) {
+                binding.joinWaitlistBtn.setEnabled(false);
+                binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+                binding.joinWaitlistBtn.setText("Event Outside Geolocation Radius");
+                return;
+            }
+        }
+    }
+
     private void applyWaitlistUI(String status, boolean isOnWaitlist, boolean fullWaitlist, boolean fullGuestlist) {
         // 1. Event closed/completed
-        if ("completed".equals(event.getStatus())) {
+        if ("closed".equals(event.getStatus()) || "completed".equals(event.getStatus())) {
+
             binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
             binding.joinWaitlistBtn.setText("Event Closed");
             binding.joinWaitlistBtn.setEnabled(false);
@@ -278,7 +312,17 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         // Buttons only appear if event is not private
         // Button is Greyed out if not within geolocation radius
-        if (event.isGeolocationEnabled() && event.getGeolocationRadius() != null) {
+        // Button is greyed out if registration date has passed
+        long currentTime = System.currentTimeMillis();
+        if (event.getWaitlistLimit() != null && event.getWaitlistCount() >= event.getWaitlistLimit()) {
+            binding.joinWaitlistBtn.setEnabled(false);
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+            binding.joinWaitlistBtn.setText("Waitlist Full");
+        } else if (event.getRegistrationCloses() > 0 && currentTime > event.getRegistrationCloses()) {
+            binding.joinWaitlistBtn.setEnabled(false);
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+            binding.joinWaitlistBtn.setText("Registration Closed");
+        } else if (event.isGeolocationEnabled() && event.getGeolocationRadius() != null) {
             float[] distance = new float[1];
             Location.distanceBetween(userLat, userLon, event.getLatitude(), event.getLongitude(), distance);
             float distanceKm = distance[0] / 1000;
@@ -288,6 +332,7 @@ public class EventDetailsActivity extends AppCompatActivity {
             } else {
                 binding.joinWaitlistBtn.setEnabled(false);
                 binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+                binding.joinWaitlistBtn.setText("Event Outside Geolocation Radius");
             }
         } else {
             binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());

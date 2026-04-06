@@ -13,16 +13,25 @@ import java.util.List;
 public class OrganizerController {
     private final FirebaseFirestore db;
 
+    /**
+     * Interface for handling events loaded from Firestore.
+     */
     public interface OnDataLoadedListener<T> {
         void onDataLoaded(List<T> data);
         void onError(Exception e);
     }
 
+    /**
+     * Interface for handling operations on events.
+     */
     public interface OnOperationListener {
         void onSuccess();
         void onError(Exception e);
     }
 
+    /**
+     * Constructor for OrganizerController.
+     */
     public OrganizerController() {
         this.db = FirebaseFirestore.getInstance();
     }
