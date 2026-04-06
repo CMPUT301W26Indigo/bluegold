@@ -11,8 +11,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.eventlottery.controller.EventController;
+import com.eventlottery.controller.OrganizerController;
 import com.eventlottery.databinding.FragmentOrganizerDashboardBinding;
+import com.eventlottery.model.AbstractUser;
 import com.eventlottery.model.Event;
 import com.eventlottery.ui.adapters.EventAdapter;
 
@@ -24,7 +25,7 @@ import java.util.List;
 public class OrganizerDashboardFragment extends Fragment {
     private FragmentOrganizerDashboardBinding binding;
     private EventAdapter eventAdapter;
-    private EventController eventController;
+    private OrganizerController organizerController;
 
     /**
      * Inflates Fragments xml layout
@@ -49,7 +50,7 @@ public class OrganizerDashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        eventController = new EventController();
+        organizerController = new OrganizerController();
         setupRecyclerView();
         setupListeners();
     }
@@ -87,18 +88,18 @@ public class OrganizerDashboardFragment extends Fragment {
      * Loads the organizer's events
      */
     private void loadOrganizerEvents() {
-        // todo filter by organizerId
-        eventController.getAllEvents(new EventController.OnEventsLoadedListener() {
-            @Override
-            public void onEventsLoaded(List<Event> events) {
-                // For now, showing all events
-                eventAdapter.submitList(events);
-            }
+        AbstractUser.getFirebaseId().addOnSuccessListener(organizerId -> {
+            organizerController.getOrganizerEvents(organizerId, new OrganizerController.OnDataLoadedListener<Event>() {
+                @Override
+                public void onDataLoaded(List<Event> data) {
+                    eventAdapter.submitList(data);
+                }
 
-            @Override
-            public void onError(Exception e) {
-                // todo Handle error
-            }
+                @Override
+                public void onError(Exception e) {
+                    // todo Handle error
+                }
+            });
         });
     }
 
