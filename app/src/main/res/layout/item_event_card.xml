@@ -240,6 +240,20 @@
 
             </com.google.android.material.chip.ChipGroup>
 
+            <!-- Admin Action Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/adminActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete"
+                android:textColor="@color/text_white"
+                android:visibility="gone"
+                app:backgroundTint="@color/secondary_red"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                style="@style/Widget.Material3.Button.TonalButton"
+                tools:visibility="visible" />
+
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

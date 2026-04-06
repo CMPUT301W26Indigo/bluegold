@@ -14,6 +14,9 @@ import com.eventlottery.model.Event;
 import com.eventlottery.ui.adapters.AdminManageEventsAdapter;
 
 import android.view.View;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.eventlottery.databinding.ActivityManageEventsBinding;
@@ -65,6 +68,7 @@ public class ManageEventsActivity extends AppCompatActivity {
         }
 
         adapter = new EventAdapter(this);
+        adapter.setAdminMode(true);
         binding.rvManageEvents.setLayoutManager(new LinearLayoutManager(this));
         binding.rvManageEvents.setAdapter(adapter);
     }
@@ -132,6 +136,44 @@ public class ManageEventsActivity extends AppCompatActivity {
                 Toast.makeText(ManageEventsActivity.this, "Failed to load events", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onDeleteClick(Event event) {
+        showDeleteConfirmation(event);
+    }
+
+    private void showDeleteConfirmation(Event event) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Event")
+                .setMessage("Are you sure you want to delete event: " + event.getName() + "?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    showFinalDeleteConfirmation(event);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showFinalDeleteConfirmation(Event event) {
+        new AlertDialog.Builder(this)
+                .setTitle("Final Confirmation")
+                .setMessage("This action is permanent and cannot be undone. Are you REALLY sure you want to delete " + event.getName() + "?")
+                .setPositiveButton("YES, DELETE", (dialog, which) -> {
+                    performDelete(event);
+                })
+                .setNegativeButton("No", null)
+                .show();
+    }
+
+    private void performDelete(Event event) {
+        db.collection("events").document(event.getId()).delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error deleting event", e);
+                    Toast.makeText(this, "Error deleting event", Toast.LENGTH_SHORT).show();
+                });
     }
 
     @Override
