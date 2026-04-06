@@ -2,6 +2,7 @@ package com.eventlottery.model;
 
 import android.util.Log;
 
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -11,9 +12,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Represents an Admin user who can also act as an Attendee and Event Organizer.
+ * Admins are currently stored in the "attendees" collection.
  */
 public class Admin extends AbstractUser {
     private static final String TAG = "Admin";
@@ -158,15 +161,7 @@ public class Admin extends AbstractUser {
         this.deviceID = deviceID;
         if (attendee != null) attendee.setID(deviceID);
         if (eventOrganizer != null) eventOrganizer.setID(deviceID);
-        //saveToFirebase(); - needed??
     }
-
-    /**
-     * Sets the attendee's profile image URL.
-     * Updates the attendee and event organizer's profile image URLs as well.
-     * Saves to Firestore
-     * @param profileImageUrl
-     */
 
     /**
      * Sets the attendee's notification preference.
@@ -256,7 +251,6 @@ public class Admin extends AbstractUser {
             attendee.setEmail(this.email);
             attendee.setPhoneNumber(this.phoneNumber);
             attendee.setAddress(this.address);
-            //attendee.setProfileImageUrl(this.profileImageUrl);
             attendee.setNotification(this.notification);
             attendee.saveToFirebase();
             isAttendee = true;
@@ -277,7 +271,6 @@ public class Admin extends AbstractUser {
             eventOrganizer.setEmail(this.email);
             eventOrganizer.setPhoneNumber(this.phoneNumber);
             eventOrganizer.setAddress(this.address);
-            //eventOrganizer.setProfileImageUrl(this.profileImageUrl);
             eventOrganizer.setNotification(this.notification);
             eventOrganizer.saveToFirebase();
             isEventOrganizer = true;
@@ -311,34 +304,39 @@ public class Admin extends AbstractUser {
             if (listener != null) listener.onError(new Exception("DeviceID not set"));
             return;
         }
-        db.collection(COLLECTION_NAME).document(deviceID).get()
+        db.collection("attendees").document(deviceID).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    Admin remote = documentSnapshot.toObject(Admin.class);
-                    if (remote != null) {
-                        this.name = remote.name;
-                        this.email = remote.email;
-                        this.phoneNumber = remote.phoneNumber;
-                        this.address = remote.address;
-                        this.attendee = remote.attendee;
-                        this.eventOrganizer = remote.eventOrganizer;
-                        this.isAttendee = remote.isAttendee;
-                        this.isEventOrganizer = remote.isEventOrganizer;
-                        this.notification = remote.notification;
+                    try {
+                        Admin remote = documentSnapshot.toObject(Admin.class);
+                        if (remote != null) {
+                            this.name = remote.name;
+                            this.email = remote.email;
+                            this.phoneNumber = remote.phoneNumber;
+                            this.address = remote.address;
+                            this.attendee = remote.attendee;
+                            this.eventOrganizer = remote.eventOrganizer;
+                            this.isAttendee = remote.isAttendee;
+                            this.isEventOrganizer = remote.isEventOrganizer;
+                            this.notification = remote.notification;
+                            this.isAdmin = remote.isAdmin;
 
-                        // Re-attach listeners to nested attendee's history
-                        if (this.attendee != null && this.attendee.getEventHistory() != null) {
-                            for (AttendeeEventHistory history : this.attendee.getEventHistory()) {
-                                history.setOnChangeListener(() -> {
-                                    this.attendee.saveToFirebase();
-                                    this.saveToFirebase();
-                                });
+                            // Re-attach listeners to nested attendee's history
+                            if (this.attendee != null && this.attendee.getEventHistory() != null) {
+                                for (AttendeeEventHistory history : this.attendee.getEventHistory()) {
+                                    history.setOnChangeListener(() -> {
+                                        this.attendee.saveToFirebase();
+                                        this.saveToFirebase();
+                                    });
+                                }
                             }
-                        }
-                        if (remote.isEventOrganizer) isEventOrganizer = true;
 
-                        if (listener != null) listener.onSuccess(this);
-                    } else if (listener != null) {
-                        listener.onError(new Exception("Admin document not found"));
+                            if (listener != null) listener.onSuccess(this);
+                        } else if (listener != null) {
+                            listener.onError(new Exception("Admin document not found"));
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error deserializing Admin profile", e);
+                        if (listener != null) listener.onError(e);
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -468,16 +466,38 @@ public class Admin extends AbstractUser {
         });
     }
 
-    // The following image deletion methods require that when the admin clicks on an image to remove it, it returns
-    // whether the image belongs to a user (any kind) or an event and then calls the appropriate method while passing
-    // in the associated ID.
-
-    public void removeImage(String eventId) {
+    public Task<Void> removeImage(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
-        eventRef.update("posterImageUrl", null);
+        return eventRef.update("posterImageUrl", null);
     }
 
     public void removeEventComments(String eventId) {
 
+    }
+
+    public void migrateExistingImages() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // 1. Get all documents from your original 'events' collection
+        db.collection("events").get().addOnSuccessListener(querySnapshot -> {
+            for (DocumentSnapshot eventDoc : querySnapshot) {
+                String eventId = eventDoc.getId(); // This is the Document Name
+                String url = eventDoc.getString("imageUrl");
+
+                if (url != null && !url.isEmpty()) {
+                    // 2. Prepare the data for the new collection
+                    HashMap<String, Object> imageData = new HashMap<>();
+                    imageData.put("url", url);
+                    imageData.put("eventId", eventId); // Storing it as a field too
+
+                    // 3. Create the document in the NEW collection
+                    // We use .document(eventId) to set the Document Name
+                    db.collection("imageCollection").document(eventId)
+                            .set(imageData)
+                            .addOnSuccessListener(aVoid -> Log.d("Migration", "Created image doc for: " + eventId))
+                            .addOnFailureListener(e -> Log.e("Migration", "Failed: " + eventId, e));
+                }
+            }
+        });
     }
 }

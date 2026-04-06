@@ -145,6 +145,7 @@ public class Event {
         this.waitlistCount = waitlistCount;
         this.confirmedCount = confirmedCount;
         this.posterImage = new Image(posterImageUrl, this.id);
+        this.posterImage.saveToFirebase();
         this.posterImageUrl = posterImageUrl;
         this.price = price;
         this.registrationOpens = registrationOpens;
@@ -281,6 +282,8 @@ public class Event {
 
     public void setPosterImageUrl(String posterImageUrl) {
         this.posterImageUrl = posterImageUrl;
+        this.posterImage.setUrl(posterImageUrl);
+        this.posterImage.setEventId(id);
 
     }
 
