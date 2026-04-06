@@ -125,16 +125,22 @@ public class Attendee extends AbstractUser {
 
     /**
      * Adds an event to the attendee's personal waitlist and updates Firebase.
+     * Also adds the event to the attendee's EventHistory subcollection.
      * @param eventID The unique identifier of the event.
      */
     public void joinWaitList(String eventID) {
-        // should update event history as well??
         Map<String, Object> data = new HashMap<>();
         data.put("status", "waiting");
 
-        db.collection("attendees").document(getID())
+        // Update waitlist subcollection
+        db.collection(COLLECTION_NAME).document(getID())
                 .collection("waitListed").document(eventID)
                 .set(data);
+
+        // Add to EventHistory subcollection
+        db.collection(COLLECTION_NAME).document(getID())
+                .collection("EventHistory").document(eventID)
+                .set(new HashMap<>());
     }
 
     /**
