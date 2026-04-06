@@ -100,6 +100,10 @@ public class ManageEventActivity extends AppCompatActivity {
                     .error(android.R.drawable.stat_notify_error)
                     .into(binding.eventPosterImage);
         }
+
+        binding.statusChip.setText(getStatusText(event.getStatus()));
+        binding.statusChip.setChipBackgroundColorResource(getStatusColor(event.getStatus()));
+
         binding.eventNameText.setText(event.getName());
         binding.statusChip.setText(event.getStatus());
         for (String tag : event.getTags()) {
@@ -349,4 +353,35 @@ public class ManageEventActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show());
     }
 
+    private String getStatusText(String status) {
+        if (status == null) return "Unknown";
+        switch (status) {
+            case "open":
+                return "Open";
+            case "closed":
+                return "Closed";
+            case "lottery_drawn":
+                return "Lottery Drawn";
+            case "completed":
+                return "Completed";
+            default:
+                return status;
+        }
+    }
+
+    private int getStatusColor(String status) {
+        if (status == null) return R.color.status_closed_gray;
+        switch (status) {
+            case "open":
+                return R.color.status_open_green;
+            case "closed":
+                return R.color.status_closed_gray;
+            case "lottery_drawn":
+                return R.color.status_waiting_yellow;
+            case "completed":
+                return R.color.status_closed_gray;
+            default:
+                return R.color.status_closed_gray;
+        }
+    }
 }
