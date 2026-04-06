@@ -162,16 +162,34 @@
 
             </com.google.android.material.chip.ChipGroup>
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/geolocationBadge"
-                android:layout_width="wrap_content"
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_orange_900"
-                android:visibility="gone"
-                app:chipBackgroundColor="@color/background_orange_50"
-                app:chipStrokeColor="@color/border_orange_200"
-                tools:text="Within 10km"
-                tools:visibility="visible" />
+                android:layout_gravity="bottom">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/geolocationBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_orange_900"
+                    android:visibility="gone"
+                    app:chipBackgroundColor="@color/background_orange_50"
+                    app:chipStrokeColor="@color/border_orange_200"
+                    tools:text="Within 10km"
+                    tools:visibility="visible" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/joinableBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_green_900"
+                    android:visibility="gone"
+                    app:chipBackgroundColor="@color/background_green_50"
+                    app:chipStrokeColor="@color/border_green_200"
+                    tools:text="Within Range"
+                    tools:visibility="visible"/>
+            </com.google.android.material.chip.ChipGroup>
+
 
         </LinearLayout>
 

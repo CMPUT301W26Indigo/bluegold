@@ -34,6 +34,8 @@ public class BrowseEventsFragment extends Fragment {
     private EventController eventController;
     private List<Event> allEvents = new ArrayList<>();
     private CarouselFragment carouselFragment;
+    double userLat = 0;
+    double userLon = 0;
 
 
     @Nullable
@@ -46,10 +48,17 @@ public class BrowseEventsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         eventController = new EventController();
         setupCarousel();
         setupRecyclerView();
+
+        if (getArguments() != null) {
+            userLat = getArguments().getDouble("userLat");
+            userLon = getArguments().getDouble("userLon");
+            eventAdapter.setCoordinates(userLat, userLon);
+        }
+
         setupSearch();
         setupFilters();
         loadEvents();
@@ -171,6 +180,8 @@ public class BrowseEventsFragment extends Fragment {
     private void navigateToEventDetails(Event event) {
         Intent intent = new Intent(getActivity(), EventDetailsActivity.class);
         intent.putExtra("EVENT_ID", event.getId());
+        intent.putExtra("USER_LAT", userLat);
+        intent.putExtra("USER_LON", userLon);
         startActivity(intent);
     }
 
