@@ -175,9 +175,9 @@ public class ManageEventActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // View Invited Entrants button
+        // View Waitlisted Entrants button
         binding.btnViewWaitlist.setOnClickListener(v -> {
-            Intent intent = new Intent(this, InvitedEntrantsActivity.class);
+            Intent intent = new Intent(this, ViewWaitlistActivity.class);
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
         });
