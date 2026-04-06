@@ -58,7 +58,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.gridlayout)
     implementation(libs.recyclerview)
-    // implementation(libs.cardview) // Commented out: Unused
+    implementation("androidx.preference:preference:1.2.1")
 
     // Navigation
     implementation(libs.navigation.fragment)
@@ -87,7 +87,6 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
-
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.espresso.intents)
@@ -95,6 +94,13 @@ dependencies {
     androidTestImplementation(libs.runner)
     androidTestImplementation(libs.rules)
     androidTestImplementation(libs.mockk.android)
+
+    // Geolocation Dependencies (OpenStreetMap/osmdroid)
+    implementation("androidx.preference:preference:1.2.1")
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    implementation("com.github.MKergall:osmbonuspack:6.9.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
 
     // Essential UI & Logic Utilities
     implementation(libs.core.ktx)
@@ -107,13 +113,6 @@ dependencies {
 
     // Image Loading - Glide
     implementation(libs.glide)
-    // annotationProcessor(libs.compiler) // Commented out: Unused
-
-    // External Integrations & Logic
-    // implementation(libs.core) // Commented out: Unused (provided by zxing-android-embedded)
-    // implementation(libs.play.services.location) // Commented out: Unused
-    // implementation(libs.gson) // Commented out: Unused
-    // implementation(libs.opencsv) // Commented out: Unused
     implementation(libs.commons.validator)
 }
 
@@ -123,9 +122,11 @@ tasks.register<Javadoc>("generateJavadoc") {
     source = fileTree("src/main/java")
 
     // 2. Build the classpath including the Android SDK and all project dependencies
+
     val androidJar = files(android.bootClasspath)
     val projectDependencies = configurations.getByName("debugCompileClasspath")
     classpath = androidJar + projectDependencies
+
 
     // 3. Set output location
     setDestinationDir(file("${layout.buildDirectory.get()}/outputs/javadoc"))
@@ -134,6 +135,7 @@ tasks.register<Javadoc>("generateJavadoc") {
     (options as StandardJavadocDocletOptions).apply {
         addStringOption("Xdoclint:none", "-quiet")
         links("https://developer.android.com/reference")
+        links("https://www.javadoc.io/doc/org.osmdroid/osmdroid-android/latest/")
         encoding = "UTF-8"
         charSet = "UTF-8"
     }

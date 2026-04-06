@@ -31,11 +31,13 @@ navigationUi = "2.9.7"
 gridlayout = "1.1.0"
 opencsv = "5.12.0"
 playServicesLocation = "21.3.0"
+playServicesMaps = "18.2.0"
 recyclerview = "1.4.0"
 rules = "1.7.0"
 runner = "1.7.0"
 zxing = "4.3.0"
 activity = "1.13.0"
+places = "3.3.0"
 
 [libraries]
 activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
@@ -74,11 +76,13 @@ navigation-ui = { group = "androidx.navigation", name = "navigation-ui-ktx", ver
 gridlayout = { group = "androidx.gridlayout", name = "gridlayout", version.ref = "gridlayout" }
 opencsv = { module = "com.opencsv:opencsv", version.ref = "opencsv" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 rules = { module = "androidx.test:rules", version.ref = "rules" }
 runner = { module = "androidx.test:runner", version.ref = "runner" }
 zxing-android-embedded = { group = "com.journeyapps", name = "zxing-android-embedded", version.ref = "zxing" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+google-places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
