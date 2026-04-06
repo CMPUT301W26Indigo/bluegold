@@ -174,6 +174,12 @@ public class Event {
 
     public void setId(String id) {
         this.id = id;
+        if (this.waitlist != null) {
+            this.waitlist.setEventId(id);
+        }
+        if (this.guestList != null) {
+            this.guestList.setEventId(id);
+        }
     }
 
     public String getName() {
@@ -401,10 +407,16 @@ public class Event {
     }
 
     public Waitlist getWaitlist() {
+        if (waitlist != null && (waitlist.getEventId() == null || waitlist.getEventId().isEmpty())) {
+            waitlist.setEventId(id);
+        }
         return waitlist;
     }
 
     public GuestList getGuestList() {
+        if (guestList != null && (guestList.getEventId() == null || guestList.getEventId().isEmpty())) {
+            guestList.setEventId(id);
+        }
         return guestList;
     }
 

@@ -91,6 +91,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                             // Get the current attendee ID asynchronously
                             Attendee.getFirebaseId().addOnSuccessListener(id -> {
                                 currentAttendeeId = id;
+                                Log.e(TAG, "Current attendee ID: " + currentAttendeeId);
                                 checkWaitlistStatus();
                             }).addOnFailureListener(e -> {
                                 Log.e(TAG, "Failed to get Firebase ID", e);
@@ -142,16 +143,37 @@ public class EventDetailsActivity extends AppCompatActivity {
      * @param isOnWaitlist
      */
     private void updateWaitlistButtonUI(boolean isOnWaitlist, boolean isOnGuestList) {
-        // When the lottery is drawn, the waitlist is deleted
-        // When the lottery is drawn, the guestlist is created.
         binding.joinWaitlistBtn.setEnabled(true);
 
-        String status = null;
-        if (event.getGuestList() != null) {
-            status = event.getGuestList().getAttendeeStatus(currentAttendeeId);
-            Log.e(TAG, "Guestlist status for user " + currentAttendeeId + ": " + status);
+        GuestList guestList = event.getGuestList();
+
+        if (guestList != null) {
+            guestList.setEventId(eventId);   // <-- FIX
         }
 
+        if (guestList != null) {
+            guestList.fetchFromFirebase(new GuestList.OnGuestListLoadedListener() {
+                @Override
+                public void onSuccess() {
+                    String status = guestList.getAttendeeStatus(currentAttendeeId);
+
+                    Log.e(TAG, "Guestlist status for user " + currentAttendeeId + ": " + status);
+
+                    applyWaitlistUI(status, isOnWaitlist);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Log.e(TAG, "Failed to fetch guestlist", e);
+                    applyWaitlistUI(null, isOnWaitlist); // fallback
+                }
+            });
+        } else {
+            applyWaitlistUI(null, isOnWaitlist); // <-- IMPORTANT FIX
+        }
+    }
+
+    private void applyWaitlistUI(String status, boolean isOnWaitlist) {
         // 1. Event closed/completed
         if ("closed".equals(event.getStatus()) || "completed".equals(event.getStatus())) {
 
