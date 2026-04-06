@@ -12,12 +12,11 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- Camera feature (optional for devices without camera) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -182,12 +181,11 @@
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
-        </service>
+        </service> <!-- Notification Service -->
         <service
             android:name=".services.NotificationService"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
-        <!-- Location Service -->
+            android:foregroundServiceType="dataSync" /> <!-- Location Service -->
         <service
             android:name=".services.LocationService"
             android:exported="false"

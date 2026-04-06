@@ -13,9 +13,10 @@ public abstract class AbstractUser {
     protected String address;
     protected String deviceID;
     protected String profileImageUrl;
+    protected String fcmToken;
     protected boolean isAdmin;
     protected boolean notification;
-    protected String fcmToken;
+
 
     public AbstractUser() {
         this.name = null;
@@ -23,11 +24,10 @@ public abstract class AbstractUser {
         this.phoneNumber = null;
         this.address = null;
         this.deviceID = null;
+        this.fcmToken = null;
         this.isAdmin = false;
         this.notification = true;
-        this.fcmToken = null;
     }
-
 
     // Getters and Setters
     /**
