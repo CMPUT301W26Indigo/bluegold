@@ -37,6 +37,14 @@ public class EventController {
     }
 
     /**
+     * Interface for checking guestlist status.
+     */
+    public interface OnGuestlistStatusListener {
+        void onStatusLoaded(String status);
+        void onError(Exception e);
+    }
+
+    /**
      * Interface for checking waitlist status.
      */
     public interface OnWaitlistStatusListener {
@@ -267,7 +275,7 @@ public class EventController {
 
     public void checkIfAttendeeOnGuestlist(String eventId, String attendeeId, OnWaitlistStatusListener listener) {
         db.collection(COLLECTION_NAME).document(eventId)
-                .collection("guestlist").document(attendeeId)
+                .collection("guestList").document(attendeeId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     listener.onStatusChecked(documentSnapshot.exists());
@@ -275,9 +283,23 @@ public class EventController {
                 .addOnFailureListener(listener::onError);
     }
 
+    public void getAttendeeGuestlistStatus(String eventId, String attendeeId, OnGuestlistStatusListener listener) {
+        db.collection(COLLECTION_NAME).document(eventId)
+                .collection("guestList").document(attendeeId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        listener.onStatusLoaded(documentSnapshot.getString("status"));
+                    } else {
+                        listener.onStatusLoaded(null);
+                    }
+                })
+                .addOnFailureListener(listener::onError);
+    }
+
     public void removeFromGuestlist(String eventId, String attendeeId, OnEventOperationListener listener) {
         db.collection(COLLECTION_NAME).document(eventId)
-                .collection("guestlist").document(attendeeId)
+                .collection("guestList").document(attendeeId)
                 .delete()
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(listener::onError);

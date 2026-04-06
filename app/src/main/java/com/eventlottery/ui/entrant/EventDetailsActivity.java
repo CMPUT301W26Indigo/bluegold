@@ -142,35 +142,22 @@ public class EventDetailsActivity extends AppCompatActivity {
      *
      * @param isOnWaitlist
      */
-    private void updateWaitlistButtonUI(boolean isOnWaitlist, boolean isOnGuestList) {
+    private void updateWaitlistButtonUI(boolean isOnWaitlist, boolean isOnGuestlist) {
         binding.joinWaitlistBtn.setEnabled(true);
 
-        GuestList guestList = event.getGuestList();
+        eventController.getAttendeeGuestlistStatus(eventId, currentAttendeeId, new EventController.OnGuestlistStatusListener() {
+            @Override
+            public void onStatusLoaded(String status) {
+                Log.e(TAG, "Guestlist status for user " + currentAttendeeId + ": " + status);
+                applyWaitlistUI(status, isOnWaitlist);
+            }
 
-        if (guestList != null) {
-            guestList.setEventId(eventId);   // <-- FIX
-        }
-
-        if (guestList != null) {
-            guestList.fetchFromFirebase(new GuestList.OnGuestListLoadedListener() {
-                @Override
-                public void onSuccess() {
-                    String status = guestList.getAttendeeStatus(currentAttendeeId);
-
-                    Log.e(TAG, "Guestlist status for user " + currentAttendeeId + ": " + status);
-
-                    applyWaitlistUI(status, isOnWaitlist);
-                }
-
-                @Override
-                public void onError(Exception e) {
-                    Log.e(TAG, "Failed to fetch guestlist", e);
-                    applyWaitlistUI(null, isOnWaitlist); // fallback
-                }
-            });
-        } else {
-            applyWaitlistUI(null, isOnWaitlist); // <-- IMPORTANT FIX
-        }
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Failed to fetch guestlist status", e);
+                applyWaitlistUI(null, isOnWaitlist);
+            }
+        });
     }
 
     private void applyWaitlistUI(String status, boolean isOnWaitlist) {
