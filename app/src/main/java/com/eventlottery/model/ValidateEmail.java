@@ -12,6 +12,7 @@ public class ValidateEmail {
         // If statement added by Gemini to fix issue with null pointer exception
         //  when testing deleteUser.
         if (email == null) return false;
+        if (email.equals("Unknown")) return true;
         // Code inspired from this website
         // https://commons.apache.org/proper/commons-validator/
         return EmailValidator.getInstance().isValid(email);
