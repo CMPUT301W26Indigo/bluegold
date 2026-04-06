@@ -105,7 +105,7 @@ public class NotificationListFragment extends Fragment implements NotificationAd
     @Override
     public void onNotificationClick(Notification notification) {
         if (currentMode == Mode.ENTRANT && !notification.isRead()) {
-            db.collection("notifications").document(notification.getId()).update("isRead", true);
+            db.collection("notifications").document(notification.getId()).update("read", true);
         }
     }
 
@@ -132,9 +132,9 @@ public class NotificationListFragment extends Fragment implements NotificationAd
     private void processInvitationResponse(Notification n, String businessStatus, String notificationStatus) {
         WriteBatch batch = db.batch();
         
-        // 1. Update Notification status
+        // 1. Update Notification status and mark as read
         batch.update(db.collection("notifications").document(n.getId()), 
-                "status", notificationStatus, "isRead", true);
+                "status", notificationStatus, "read", true);
         
         // 2. Update Event's guestList
         batch.update(db.collection("events").document(n.getEventId())
