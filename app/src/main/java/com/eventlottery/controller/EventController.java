@@ -4,6 +4,7 @@ import com.eventlottery.model.Comment;
 import com.eventlottery.model.Event;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -187,14 +188,17 @@ public class EventController {
         db.collection(COLLECTION_NAME).document(eventId)
                 .collection("waitlist").document(attendeeId)
                 .set(data)
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnSuccessListener(aVoid -> {
+                    // Update the event's waitlist count
+                    db.collection(COLLECTION_NAME).document(eventId)
+                            .update("waitlistCount", FieldValue.increment(1));
+                    listener.onSuccess();
+                })
                 .addOnFailureListener(listener::onError);
 
         db.collection("attendees").document(attendeeId)
                 .collection("waitListed").document(eventId)
-                .set(data)
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
-                .addOnFailureListener(listener::onError);
+                .set(data);
     }
 
     /**
@@ -207,14 +211,17 @@ public class EventController {
         db.collection(COLLECTION_NAME).document(eventId)
                 .collection("waitlist").document(attendeeId)
                 .delete()
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnSuccessListener(aVoid -> {
+                    // Update the event's waitlist count
+                    db.collection(COLLECTION_NAME).document(eventId)
+                            .update("waitlistCount", FieldValue.increment(-1));
+                    listener.onSuccess();
+                })
                 .addOnFailureListener(listener::onError);
 
         db.collection("attendees").document(attendeeId)
                 .collection("waitListed").document(eventId)
-                .delete()
-                .addOnSuccessListener(aVoid -> listener.onSuccess())
-                .addOnFailureListener(listener::onError);
+                .delete();
     }
 
     /**

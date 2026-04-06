@@ -226,7 +226,7 @@ public class Waitlist {
      * @return true if the waitlist is full, false if there is space or no limit.
      */
     public boolean isWaitlistFull() {
-        if (waitlistLimit == null) {
+        if (waitlistLimit == null || waitlistLimit == 0) {
             return false; // Unlimited waitlist
         }
         return waitlistCount >= waitlistLimit;

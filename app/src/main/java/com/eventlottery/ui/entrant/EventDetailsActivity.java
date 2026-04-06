@@ -154,10 +154,16 @@ public class EventDetailsActivity extends AppCompatActivity {
 
     private void applyWaitlistUI(String status, boolean isOnWaitlist) {
         // 1. Event closed/completed
-        if ("closed".equals(event.getStatus()) || "completed".equals(event.getStatus())) {
-
+        if ("completed".equals(event.getStatus())) {
             binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
             binding.joinWaitlistBtn.setText("Event Closed");
+            binding.joinWaitlistBtn.setEnabled(false);
+            return;
+        }
+
+        if(event.isGuestlistFull() || event.isWaitlistFull()) {
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+            binding.joinWaitlistBtn.setText("Event Full");
             binding.joinWaitlistBtn.setEnabled(false);
             return;
         }
@@ -354,14 +360,47 @@ public class EventDetailsActivity extends AppCompatActivity {
      * Loads the current waitlist count and capacity.
      */
     private void loadEventStats() {
-        // Get waitlist count and fill out capacity card in UI
-        db.collection("events").document(eventId)
+        db.collection("events")
+                .document(event.getId())
                 .collection("waitlist")
                 .get()
                 .addOnSuccessListener(query -> {
-                    binding.capacityText.setText(query.size() + " / " + event.getCapacity());
-                    binding.spotsAvailableText.setText((event.getCapacity() - query.size()) + " spots available");
+
+                    int count = query.size();
+
+                    String waitlistText;
+
+                    if (event.getWaitlistLimit() != null && event.getWaitlistLimit() > 0) {
+                        waitlistText = String.format("%d / %d on Waitlist",
+                                count,
+                                event.getWaitlistLimit());
+                    } else {
+                        waitlistText = String.format("%d on Waitlist", count);
+                    }
+
+                    binding.capacityText.setText(waitlistText);
                 });
+
+        if (event.getStatus().equals("lottery_drawn")) {
+            db.collection("events")
+                    .document(event.getId())
+                    .collection("guestList")
+                    .get()
+                    .addOnSuccessListener(query -> {
+
+                        int count = query.size();
+
+                        String guestlistText;
+                        guestlistText = String.format("%d / %d Confirmed Attendees",
+                                count,
+                                event.getCapacity());
+
+
+                        binding.spotsAvailableText.setText(guestlistText);
+                    });
+        } else {
+            binding.spotsAvailableText.setVisibility(View.GONE);
+        }
     }
 
     /**

@@ -127,45 +127,51 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_sm"
                 android:textAppearance="@style/TextAppearance.App.BodySmall"
-                tools:text="28 / 50 on waiting list" />
+                tools:text="28 / 50 entrants" />
+        </LinearLayout>
+
+        <!-- Guestlist Count -->
+        <LinearLayout
+            android:id="@+id/guestlistLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/waitlistLayout">
+
+            <ImageView
+                android:layout_width="@dimen/icon_sm"
+                android:layout_height="@dimen/icon_sm"
+                android:contentDescription="@string/capacity"
+                android:src="@android:drawable/ic_menu_agenda"
+                app:tint="@color/text_secondary" />
+
+            <TextView
+                android:id="@+id/guestlistCountText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:textAppearance="@style/TextAppearance.App.BodySmall"
+                tools:text="28 / 50 confirmed" />
 
         </LinearLayout>
 
         <!-- Tag Chips and Geolocation Badge -->
         <LinearLayout
+            android:id="@+id/infoMarkers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
             android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/waitlistLayout">
+            app:layout_constraintTop_toBottomOf="@id/guestlistLayout">
+
 
             <com.google.android.material.chip.ChipGroup
-                android:id="@+id/tagChips"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_gravity="bottom"
                 app:chipSpacingHorizontal="@dimen/spacing_xs">
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/tag1"
-                    style="@style/Widget.Material3.Chip.Assist.Elevated"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Sports" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/tag2"
-                    style="@style/Widget.Material3.Chip.Assist.Elevated"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Tournament" />
-
-            </com.google.android.material.chip.ChipGroup>
-
-            <com.google.android.material.chip.ChipGroup
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom">
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/geolocationBadge"
@@ -190,9 +196,39 @@
                     tools:visibility="visible"/>
             </com.google.android.material.chip.ChipGroup>
 
-
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/infoMarkers">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/tagChips"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:chipSpacingHorizontal="@dimen/spacing_xs">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/tag1"
+                    style="@style/Widget.Material3.Chip.Assist.Elevated"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Sports" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/tag2"
+                    style="@style/Widget.Material3.Chip.Assist.Elevated"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Tournament" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
