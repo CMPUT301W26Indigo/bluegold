@@ -8,10 +8,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import android.Manifest;
 
-import androidx.lifecycle.Lifecycle;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
@@ -23,6 +23,8 @@ import com.eventlottery.model.AttendeeEventHistory;
 import com.eventlottery.model.GuestList;
 import com.eventlottery.model.Waitlist;
 import com.eventlottery.ui.entrant.ProfileActivity;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.After;
@@ -33,6 +35,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -81,16 +84,20 @@ public class DeleteProfileTest {
      * Wipes all possible test documents to ensure no pollution in Firebase.
      */
     private void cleanUpTestData() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(10);
-        db.collection("users").document(deviceId).delete().addOnCompleteListener(t -> latch.countDown());
-        db.collection("attendees").document(deviceId).delete().addOnCompleteListener(t -> latch.countDown());
-        db.collection("users").document(otherUserId).delete().addOnCompleteListener(t -> latch.countDown());
-        db.collection("attendees").document(otherUserId).delete().addOnCompleteListener(t -> latch.countDown());
+        CountDownLatch latch = new CountDownLatch(1);
+        List<Task<?>> deleteTasks = new ArrayList<>();
+        
+        deleteTasks.add(db.collection("users").document(deviceId).delete());
+        deleteTasks.add(db.collection("attendees").document(deviceId).delete());
+        deleteTasks.add(db.collection("users").document(otherUserId).delete());
+        deleteTasks.add(db.collection("attendees").document(otherUserId).delete());
         
         for (int i = 0; i < 3; i++) {
-            db.collection("waitlists").document("event_wait_" + i).delete().addOnCompleteListener(t -> latch.countDown());
-            db.collection("guestlists").document("event_guest_" + i).delete().addOnCompleteListener(t -> latch.countDown());
+            deleteTasks.add(db.collection("waitlists").document("event_wait_" + i).delete());
+            deleteTasks.add(db.collection("guestlists").document("event_guest_" + i).delete());
         }
+        
+        Tasks.whenAllComplete(deleteTasks).addOnCompleteListener(t -> latch.countDown());
         latch.await(5, TimeUnit.SECONDS);
     }
 
@@ -114,30 +121,41 @@ public class DeleteProfileTest {
         secondary.setPhoneNumber("7804200666");
         secondary.setEmail("test@myapp.com");
 
-        CountDownLatch setupLatch = new CountDownLatch(4);
+        List<Task<?>> setupTasks = new ArrayList<>();
 
-        // Add primary user to waitlists
+        // Add primary user to waitlists (Legacy structure)
+        ArrayList<String> waitlistIds = new ArrayList<>();
         for (int i = 0; i < numWaitlists; i++) {
             String eid = "event_wait_" + i;
+            waitlistIds.add(eid);
             Waitlist wl = new Waitlist(eid);
-            wl.addAttendee(deviceId);
-            wl.saveToFirebase();
+            wl.getAttendeeIds().add(deviceId);
+            wl.setWaitlistCount(wl.getAttendeeIds().size());
+            setupTasks.add(db.collection("waitlists").document(eid).set(wl));
         }
+        primary.setWaitListed(waitlistIds);
 
-        // Add primary user to guest lists
+        // Add primary user to guest lists (Legacy structure)
+        ArrayList<AttendeeEventHistory> historyList = new ArrayList<>();
         for (int i = 0; i < numGuestLists; i++) {
             String eid = "event_guest_" + i;
+            historyList.add(new AttendeeEventHistory(eid));
             GuestList gl = new GuestList(eid);
-            gl.addGuestAttendee(deviceId);
-            gl.saveToFirebase();
+            gl.getAttendees().put(deviceId, "maybe");
+            gl.setListCount(gl.getAttendees().size());
+            setupTasks.add(db.collection("guestlists").document(eid).set(gl));
         }
+        primary.setEventHistory(historyList);
 
-        db.collection("attendees").document(deviceId).set(primary).addOnCompleteListener(t -> setupLatch.countDown());
-        db.collection("users").document(deviceId).set(primary).addOnCompleteListener(t -> setupLatch.countDown());
-        db.collection("attendees").document(otherUserId).set(secondary).addOnCompleteListener(t -> setupLatch.countDown());
-        db.collection("users").document(otherUserId).set(secondary).addOnCompleteListener(t -> setupLatch.countDown());
+        setupTasks.add(db.collection("attendees").document(deviceId).set(primary));
+        setupTasks.add(db.collection("users").document(deviceId).set(primary));
+        setupTasks.add(db.collection("attendees").document(otherUserId).set(secondary));
+        setupTasks.add(db.collection("users").document(otherUserId).set(secondary));
         
-        setupLatch.await(10, TimeUnit.SECONDS);
+        CountDownLatch setupLatch = new CountDownLatch(1);
+        Tasks.whenAllComplete(setupTasks).addOnCompleteListener(t -> setupLatch.countDown());
+        if (!setupLatch.await(15, TimeUnit.SECONDS)) fail("Setup timed out");
+        
         scenario = ActivityScenario.launch(ProfileActivity.class);
         Thread.sleep(3000);
     }
@@ -184,12 +202,12 @@ public class DeleteProfileTest {
             String gid = "event_guest_" + i;
             db.collection("waitlists").document(wid).get().addOnSuccessListener(doc -> {
                 Waitlist wl = doc.toObject(Waitlist.class);
-                assertFalse(wl != null && wl.getAttendeeIds().contains(deviceId));
+                assertFalse("User must be removed from waitlist " + wid, wl != null && wl.getAttendeeIds().contains(deviceId));
                 verifyLatch.countDown();
             });
             db.collection("guestlists").document(gid).get().addOnSuccessListener(doc -> {
                 GuestList gl = doc.toObject(GuestList.class);
-                assertFalse(gl != null && gl.getAttendees().containsKey(deviceId));
+                assertFalse("User must be removed from guestlist " + gid, gl != null && gl.getAttendees().containsKey(deviceId));
                 verifyLatch.countDown();
             });
         }

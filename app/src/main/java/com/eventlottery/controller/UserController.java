@@ -4,9 +4,7 @@ import android.util.Log;
 
 import com.eventlottery.model.Attendee;
 import com.eventlottery.model.AttendeeEventHistory;
-import com.eventlottery.model.GuestList;
 import com.eventlottery.model.User;
-import com.eventlottery.model.Waitlist;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -14,7 +12,9 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller for User-related operations.
@@ -69,15 +69,15 @@ public class UserController {
     /**
      * Deletes a user profile from Firestore.
      * Before deletion, it removes the user from all waitlists and guest lists.
-     * If the user was confirmed for an event, it triggers a spot opening for a redraw.
+     * If the user was confirmed for an event, it triggers cleanup for a redraw.
      *
      * @param userId   The ID of the user to delete.
      * @param listener The listener for success or error callbacks.
      */
     public void deleteUser(String userId, OnUserOperationListener listener) {
-        Log.d(TAG, "Starting robust deletion for user: " + userId);
+        Log.d(TAG, "Starting thorough deletion for user: " + userId);
 
-        // 1. Fetch Attendee data to identify which events need cleaning up
+        // 1. Fetch Attendee data to find associated events for cleanup
         db.collection(ATTENDEE_COLLECTION).document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     List<Task<?>> cleanupTasks = new ArrayList<>();
@@ -85,25 +85,33 @@ public class UserController {
                     if (documentSnapshot.exists()) {
                         Attendee attendee = documentSnapshot.toObject(Attendee.class);
                         if (attendee != null) {
-                            // Queue removal from waitlists (Sub-collection & Top-level)
+                            // A. Scrub from Waitlists (Sub-collection & Top-level legacy)
                             if (attendee.getWaitListed() != null) {
                                 for (String eventId : attendee.getWaitListed()) {
+                                    // Remove from modern waitlist sub-collection
                                     cleanupTasks.add(db.collection("events").document(eventId)
                                             .collection("waitlist").document(userId).delete());
-                                    cleanupTasks.add(scrubFromWaitlistDocument(eventId, userId));
+                                    // Remove from legacy top-level Waitlist document
+                                    cleanupTasks.add(db.collection("waitlists").document(eventId)
+                                            .update("attendeeIds", FieldValue.arrayRemove(userId)));
                                 }
                             }
 
-                            // Queue removal from guest lists (Sub-collection & Top-level)
+                            // B. Scrub from Guest Lists & Handle Redraws (Sub-collection & Top-level legacy)
                             if (attendee.getEventHistory() != null) {
                                 for (AttendeeEventHistory history : attendee.getEventHistory()) {
                                     String eventId = history.getEventID();
-                                    cleanupTasks.add(handleGuestListScrubAndRedraw(eventId, userId));
-                                    cleanupTasks.add(scrubFromGuestListDocument(eventId, userId));
+                                    // Change status to "declined" and signal redraw if they were confirmed
+                                    cleanupTasks.add(handleGuestListDeclineAndRedraw(eventId, userId));
+                                    
+                                    // Remove from legacy top-level GuestList document
+                                    Map<String, Object> removeMap = new HashMap<>();
+                                    removeMap.put("attendees." + userId, FieldValue.delete());
+                                    cleanupTasks.add(db.collection("guestlists").document(eventId).update(removeMap));
                                 }
                             }
 
-                            // Queue removal of user's personal 'Selected' sub-collection
+                            // C. Wipe user's personal 'Selected' sub-collection
                             cleanupTasks.add(db.collection(ATTENDEE_COLLECTION).document(userId)
                                     .collection("Selected").get().continueWithTask(task -> {
                                         if (!task.isSuccessful() || task.getResult() == null) return Tasks.forResult(null);
@@ -116,23 +124,33 @@ public class UserController {
                         }
                     }
 
-                    // 2. Wait for all cleanup tasks to complete
+                    // Broad safety cleanup for legacy waitlists (Search and Remove)
+                    cleanupTasks.add(db.collection("waitlists").whereArrayContains("attendeeIds", userId).get().continueWithTask(task -> {
+                        if (!task.isSuccessful() || task.getResult() == null) return Tasks.forResult(null);
+                        List<Task<Void>> subTasks = new ArrayList<>();
+                        for (DocumentSnapshot d : task.getResult()) {
+                            subTasks.add(d.getReference().update("attendeeIds", FieldValue.arrayRemove(userId)));
+                        }
+                        return Tasks.whenAll(subTasks);
+                    }));
+
+                    // 2. Wait for all cleanup tasks to finish before the final profile wipe
                     Tasks.whenAllComplete(cleanupTasks).addOnCompleteListener(allCleanupTask -> {
-                        // 3. Final wipe of the primary profile documents
-                        db.collection(ATTENDEE_COLLECTION).document(userId).delete();
-                        db.collection(COLLECTION_NAME).document(userId).delete()
-                                .addOnSuccessListener(aVoid -> {
-                                    Log.d(TAG, "Cleanup and deletion successful for: " + userId);
-                                    if (listener != null) listener.onSuccess();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e(TAG, "Final wipe failed", e);
-                                    if (listener != null) listener.onError(e);
-                                });
+                        // 3. Final deletion of the primary Firestore documents
+                        Task<Void> deleteAttendee = db.collection(ATTENDEE_COLLECTION).document(userId).delete();
+                        Task<Void> deleteUser = db.collection(COLLECTION_NAME).document(userId).delete();
+                        
+                        Tasks.whenAll(deleteAttendee, deleteUser).addOnSuccessListener(aVoid -> {
+                            Log.d(TAG, "Cleanup and deletion successful for: " + userId);
+                            if (listener != null) listener.onSuccess();
+                        }).addOnFailureListener(e -> {
+                            Log.e(TAG, "Final wipe failed", e);
+                            if (listener != null) listener.onError(e);
+                        });
                     });
                 })
                 .addOnFailureListener(e -> {
-                    // Fallback: If attendee fetch fails, attempt final wipe anyway
+                    // Fallback: If initial fetch fails, attempt final wipe anyway
                     db.collection(ATTENDEE_COLLECTION).document(userId).delete();
                     db.collection(COLLECTION_NAME).document(userId).delete()
                             .addOnSuccessListener(aVoid -> {
@@ -145,20 +163,21 @@ public class UserController {
     }
 
     /**
-     * Removes user from guest list sub-collection and signals a redraw if they were confirmed.
+     * Changes user status to "declined" in an event's guest list sub-collection.
+     * If user was confirmed, it decrements confirmedCount to open a spot for redraw.
      */
-    private Task<Void> handleGuestListScrubAndRedraw(String eventId, String userId) {
+    private Task<Void> handleGuestListDeclineAndRedraw(String eventId, String userId) {
         return db.collection("events").document(eventId).collection("guestList").document(userId).get()
                 .continueWithTask(task -> {
                     if (task.isSuccessful() && task.getResult().exists()) {
                         String status = task.getResult().getString("status");
                         List<Task<Void>> subTasks = new ArrayList<>();
-
-                        // Delete the guest entry
+                        
+                        // Change status to "declined" per requirement
                         subTasks.add(db.collection("events").document(eventId)
-                                .collection("guestList").document(userId).delete());
+                                .collection("guestList").document(userId).update("status", "declined"));
 
-                        // If confirmed, decrement confirmedCount to trigger a spot opening for redraw
+                        // Signal Redraw: if they were confirmed, opening a spot signals a vacancy
                         if ("confirmed".equals(status)) {
                             subTasks.add(db.collection("events").document(eventId)
                                     .update("confirmedCount", FieldValue.increment(-1)));
@@ -167,37 +186,5 @@ public class UserController {
                     }
                     return Tasks.forResult(null);
                 });
-    }
-
-    /**
-     * Helper task to remove a user from a top-level Waitlist document.
-     */
-    private Task<Void> scrubFromWaitlistDocument(String eventId, String userId) {
-        return db.collection("waitlists").document(eventId).get().continueWithTask(task -> {
-            if (task.isSuccessful() && task.getResult().exists()) {
-                Waitlist wl = task.getResult().toObject(Waitlist.class);
-                if (wl != null && wl.getAttendeeIds() != null && wl.getAttendeeIds().contains(userId)) {
-                    wl.removeAttendee(userId);
-                    return db.collection("waitlists").document(eventId).set(wl);
-                }
-            }
-            return Tasks.forResult(null);
-        });
-    }
-
-    /**
-     * Helper task to remove a user from a top-level GuestList document.
-     */
-    private Task<Void> scrubFromGuestListDocument(String eventId, String userId) {
-        return db.collection("guestlists").document(eventId).get().continueWithTask(task -> {
-            if (task.isSuccessful() && task.getResult().exists()) {
-                GuestList gl = task.getResult().toObject(GuestList.class);
-                if (gl != null && gl.getAttendees() != null && gl.getAttendees().containsKey(userId)) {
-                    gl.removeAttendee(userId);
-                    return db.collection("guestlists").document(eventId).set(gl);
-                }
-            }
-            return Tasks.forResult(null);
-        });
     }
 }
