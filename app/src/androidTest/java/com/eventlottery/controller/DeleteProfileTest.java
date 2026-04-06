@@ -73,7 +73,7 @@ public class DeleteProfileTest {
      */
     private void setupMockUser(int numWaitlists, int numGuestLists) throws InterruptedException {
         Attendee mockAttendee = new Attendee();
-        mockAttendee.setAttendeeID(deviceId);
+        mockAttendee.setID(deviceId);
         mockAttendee.setName("Max Power");
         mockAttendee.setEmail("test@myapp.com");
         mockAttendee.setPhoneNumber("7805551234");

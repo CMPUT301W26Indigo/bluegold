@@ -34,8 +34,8 @@
             <!-- Delete button — shown only to the organizer via adapter logic -->
             <ImageButton
                 android:id="@+id/btn_delete_comment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Delete comment" />
 

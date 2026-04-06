@@ -332,5 +332,4 @@ public class CommentTest {
         assertTrue(verifyLatch.await(10, TimeUnit.SECONDS));
         assertTrue("Comment posted by organizer should have isOrganizer = true", isOrganizerFlagCorrect[0]);
     }
-
 }
