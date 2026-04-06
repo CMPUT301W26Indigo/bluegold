@@ -40,8 +40,6 @@
             app:layout_constraintTop_toBottomOf="@+id/statusBadge"
             app:srcCompat="@drawable/ic_launcher_foreground" />
 
-
-
         <!-- Status Badge -->
         <com.google.android.material.chip.Chip
             android:id="@+id/statusBadge"
@@ -52,6 +50,20 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Open" />
+
+        <!-- Private Badge (Admin only or context-dependent) -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/privateBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:text="Private"
+            android:textColor="@android:color/white"
+            android:visibility="gone"
+            app:chipBackgroundColor="@android:color/holo_red_dark"
+            app:layout_constraintEnd_toStartOf="@id/statusBadge"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
 
         <!-- Date and Time -->
         <LinearLayout

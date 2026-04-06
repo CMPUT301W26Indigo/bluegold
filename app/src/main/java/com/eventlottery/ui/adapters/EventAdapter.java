@@ -129,6 +129,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 getStatusColor(event.getStatus())
             );
 
+            // Set private badge
+            if (event.isPrivate()) {
+                binding.privateBadge.setVisibility(View.VISIBLE);
+            } else {
+                binding.privateBadge.setVisibility(View.GONE);
+            }
+
             //set image
             if (event.getPosterImageUrl() != null) {
                 Bitmap bitmap = Base64EncodeDecode.decodeBase64(event.getPosterImageUrl());
