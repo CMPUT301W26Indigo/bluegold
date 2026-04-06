@@ -26,15 +26,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
  * US 01.04.03: As an entrant I want to opt out of receiving notifications.
- * Verifies both UI persistence and backend state logic.
+ * Verifies both UI persistence and backend state logic using valid profile data.
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -47,48 +45,54 @@ public class NotificationSettingsTest {
     public ActivityScenarioRule<ProfileActivity> activityRule = new ActivityScenarioRule<>(ProfileActivity.class);
 
     private FirebaseFirestore db;
-    private String testAttendeeId = "test_user_settings";
+    private String deviceId;
 
     @Before
     public void setUp() throws InterruptedException {
         db = FirebaseFirestore.getInstance();
         
-        // Setup a FULL valid profile to avoid validation crashes during deserialization
+        CountDownLatch idLatch = new CountDownLatch(1);
+        Attendee.getFirebaseId().addOnSuccessListener(id -> {
+            deviceId = id;
+            idLatch.countDown();
+        });
+        idLatch.await(5, TimeUnit.SECONDS);
+
+        // Setup a FULL valid profile (Profile 1) to avoid validation crashes
         Attendee mock = new Attendee();
-        mock.setID(testAttendeeId);
-        mock.setName("Test User");
-        mock.setEmail("test@example.com");
-        mock.setPhoneNumber("1234567890");
-        mock.setAddress("123 Test St");
+        mock.setID(deviceId);
+        mock.setName("Max Power");
+        mock.setAddress("123 Fake St NW");
+        mock.setPhoneNumber("7806660420");
+        mock.setEmail("test@myapp.now");
         mock.setNotification(true);
 
         CountDownLatch latch = new CountDownLatch(1);
-        db.collection("attendees").document(testAttendeeId).set(mock)
+        db.collection("attendees").document(deviceId).set(mock)
                 .addOnCompleteListener(task -> latch.countDown());
         latch.await(10, TimeUnit.SECONDS);
     }
 
     /**
-     * US 01.04.03: Verifies that the opt-out preference is correctly saved in Firestore.
+     * US 01.04.03 (Logic): Verifies that the opt-out preference is correctly saved in Firestore.
      */
     @Test
     public void testOptOutLogicPersistence() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        
-        db.collection("attendees").document(testAttendeeId)
+        db.collection("attendees").document(deviceId)
                 .update("notification", false)
                 .addOnCompleteListener(task -> latch.countDown());
 
         assertTrue("Database update timed out", latch.await(10, TimeUnit.SECONDS));
-        verifyPreferenceInDb(testAttendeeId, false);
+        verifyPreferenceInDb(deviceId, false);
     }
 
     /**
-     * US 01.04.03: Verifies that toggling the notification switch in the UI is possible.
+     * US 01.04.03 (UI): Verifies that toggling the notification switch in the UI is possible.
      */
     @Test
     public void testNotificationToggleUI() throws InterruptedException {
-        // Wait for profile to load
+        // Wait for profile to load into UI
         Thread.sleep(3000);
         
         onView(withId(R.id.switchNotifications)).check(matches(isDisplayed()));
@@ -111,7 +115,7 @@ public class NotificationSettingsTest {
 
         assertTrue("Settings verification timed out", verifyLatch.await(10, TimeUnit.SECONDS));
         if (expected != actual[0]) {
-            fail("Notification preference mismatch. Expected: " + expected + ", Actual: " + actual[0]);
+            fail("US 01.04.03 Failure: Notification preference mismatch. Expected: " + expected + ", Actual: " + actual[0]);
         }
     }
 }

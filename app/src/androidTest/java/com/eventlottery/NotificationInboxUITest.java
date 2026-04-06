@@ -13,6 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.rule.GrantPermissionRule;
 
+import com.eventlottery.model.Attendee;
 import com.eventlottery.model.Notification;
 import com.eventlottery.ui.entrant.NotificationsActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -40,20 +41,28 @@ public class NotificationInboxUITest {
     public GrantPermissionRule permissionRule = GrantPermissionRule.grant(Manifest.permission.POST_NOTIFICATIONS);
 
     private FirebaseFirestore db;
-    private String testAttendeeId;
+    private String deviceId;
     private String notifId;
 
     @Before
     public void setUp() throws InterruptedException {
         db = FirebaseFirestore.getInstance();
-        testAttendeeId = "ui_test_user_" + UUID.randomUUID().toString();
-        notifId = UUID.randomUUID().toString();
+        
+        // 1. Get the REAL device ID so the activity's query finds our test data
+        CountDownLatch idLatch = new CountDownLatch(1);
+        Attendee.getFirebaseId().addOnSuccessListener(id -> {
+            deviceId = id;
+            idLatch.countDown();
+        });
+        idLatch.await(5, TimeUnit.SECONDS);
 
-        // 1. Pre-inject a notification for the UI to display
+        notifId = "ui_test_" + UUID.randomUUID().toString();
+
+        // 2. Pre-inject a notification linked to the real device ID
         Notification n = new Notification(
                 notifId,
                 "UI Test Message",
-                testAttendeeId,
+                deviceId,
                 "test_event_id",
                 "INFO",
                 new Date()
@@ -75,9 +84,8 @@ public class NotificationInboxUITest {
      */
     @Test
     public void testNotificationDisplayInInbox() throws InterruptedException {
-        // Launch activity with specific attendee ID
+        // Launch activity
         Intent intent = new Intent(ApplicationProvider.getApplicationContext(), NotificationsActivity.class);
-        intent.putExtra("attendeeId", testAttendeeId);
         
         try (androidx.test.core.app.ActivityScenario<NotificationsActivity> scenario = androidx.test.core.app.ActivityScenario.launch(intent)) {
             // Wait for real-time Firestore sync to populate the RecyclerView
