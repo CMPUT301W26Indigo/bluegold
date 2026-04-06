@@ -13,6 +13,7 @@ public abstract class AbstractUser {
     protected String address;
     protected String deviceID;
     protected String profileImageUrl;
+    protected String fcmToken;
     protected boolean isAdmin;
     protected boolean notification;
 
@@ -23,10 +24,10 @@ public abstract class AbstractUser {
         this.phoneNumber = null;
         this.address = null;
         this.deviceID = null;
+        this.fcmToken = null;
         this.isAdmin = false;
         this.notification = true;
     }
-
 
     // Getters and Setters
     /**
@@ -101,7 +102,6 @@ public abstract class AbstractUser {
     /**
      * Sets the attendee's physical address.
      * @param address The address to set.
-     * todo Throw IllegalArgumentException for invalid format and ensure it can be converted to coordinates.
      */
     public void setAddress(String address) {
         this.address = address;
@@ -148,6 +148,14 @@ public abstract class AbstractUser {
      */
     public boolean getNotification() {
         return notification;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 
     /**

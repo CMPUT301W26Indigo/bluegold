@@ -19,7 +19,7 @@ public class Notification {
     private String senderName;
     private String type; // e.g., "INVITATION", "INFO"
     private String status; // e.g., "PENDING", "ACCEPTED", "DECLINED"
-    private boolean isRead;
+    private boolean read; // Database field name: "read"
     
     @ServerTimestamp
     private Date timestamp;
@@ -35,7 +35,7 @@ public class Notification {
         this.eventId = eventId;
         this.type = type;
         this.status = "PENDING";
-        this.isRead = false;
+        this.read = false;
         this.timestamp = timestamp;
     }
 
@@ -64,8 +64,14 @@ public class Notification {
     public void setType(String type) { this.type = type; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-    public boolean isRead() { return isRead; }
-    public void setRead(boolean read) { isRead = read; }
+
+    /**
+     * Standard Java Boolean getter. Firestore SDK will map this to "read" field.
+     */
+    public boolean isRead() { return read; }
+
+    public void setRead(boolean read) { this.read = read; }
+
     public Date getTimestamp() { return timestamp; }
     public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
 }
