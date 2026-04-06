@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 
@@ -32,6 +31,13 @@ public class ReviewImagesActivity extends AppCompatActivity implements ImageAdap
     private FirebaseFirestore db;
     private Admin admin;
 
+    /**
+     * Called when the activity is first created. Initializes the view, toolbar, 
+     * and triggers admin authentication and image fetching.
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in {@link #onSaveInstanceState}. <b><i>Note: Otherwise it is null.</i></b>
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,12 +59,12 @@ public class ReviewImagesActivity extends AppCompatActivity implements ImageAdap
         
         setupRecyclerView();
         initializeAdminAndFetchImages();
-        
-        migrateExistingImages();
+
+        migrateExistingImages(); // Migrate existing images to eventImages
     }
 
     /**
-     * Sets up the toolbar with a back button.
+     * Sets up the toolbar with a back button and listener to close the activity.
      */
     private void setupToolbar() {
         setSupportActionBar(binding.toolbar);
@@ -69,6 +75,10 @@ public class ReviewImagesActivity extends AppCompatActivity implements ImageAdap
         binding.toolbar.setNavigationOnClickListener(v -> finish());
     }
 
+    /**
+     * Handles the up navigation action.
+     * @return true to indicate the event was handled.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();
@@ -77,6 +87,7 @@ public class ReviewImagesActivity extends AppCompatActivity implements ImageAdap
 
     /**
      * Initializes the Admin object for the current user and then fetches images.
+     * Uses the device's Firebase ID to identify the user and verify admin status.
      */
     private void initializeAdminAndFetchImages() {
         Log.d(TAG, "initializeAdminAndFetchImages: Getting Firebase ID");
@@ -109,6 +120,9 @@ public class ReviewImagesActivity extends AppCompatActivity implements ImageAdap
         });
     }
 
+    /**
+     * Configures the RecyclerView with a GridLayoutManager and attaches the ImageAdapter.
+     */
     private void setupRecyclerView() {
         Log.d(TAG, "setupRecyclerView: Initializing adapter");
         adapter = new ImageAdapter(this);
@@ -116,6 +130,10 @@ public class ReviewImagesActivity extends AppCompatActivity implements ImageAdap
         binding.rvReviewImages.setAdapter(adapter);
     }
 
+    /**
+     * Fetches all images from the 'eventImages' collection in Firestore.
+     * Updates the adapter's data set upon success.
+     */
     private void fetchImages() {
         Log.d(TAG, "fetchImages: Fetching from eventImages collection");
         db.collection("eventImages")
@@ -145,6 +163,11 @@ public class ReviewImagesActivity extends AppCompatActivity implements ImageAdap
                 });
     }
 
+    /**
+     * Callback method from ImageAdapter when an image is clicked.
+     * Shows a confirmation dialog for image deletion.
+     * @param image The Image object that was clicked.
+     */
     @Override
     public void onImageClick(Image image) {
         // When an image is clicked, confirm deletion
@@ -156,6 +179,10 @@ public class ReviewImagesActivity extends AppCompatActivity implements ImageAdap
                 .show();
     }
 
+    /**
+     * Removes an image from both the associated Event document and the 'eventImages' collection.
+     * @param image The Image object to be deleted.
+     */
     private void deleteImage(Image image) {
         if (admin == null) {
             Toast.makeText(this, "Admin not initialized", Toast.LENGTH_SHORT).show();
@@ -183,7 +210,8 @@ public class ReviewImagesActivity extends AppCompatActivity implements ImageAdap
     }
 
     /**
-     * Helper to migrate existing images if needed.
+     * Helper to migrate existing images from the 'events' collection to 'eventImages' if needed.
+     * Scans for events with posters and creates corresponding metadata documents.
      */
     public void migrateExistingImages() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
