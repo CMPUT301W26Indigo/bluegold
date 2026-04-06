@@ -84,7 +84,7 @@ public class WaitlistMapActivity extends AppCompatActivity {
 
         // Move the map
         mapController.animateTo(point); // animateTo is smoother than setCenter
-        mapController.setZoom(8.0);   // zoom in close
+        mapController.setZoom(12.0);   // zoom in close
 
         // Drop a marker
         map.getOverlays().clear();
