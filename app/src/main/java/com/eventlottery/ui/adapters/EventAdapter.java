@@ -1,6 +1,7 @@
 package com.eventlottery.ui.adapters;
 
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,8 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     
     private List<Event> events;
     private OnEventClickListener listener;
+    private static double userLat = 0;
+    private static double userLon = 0;
     
     public interface OnEventClickListener {
         void onEventClick(Event event);
@@ -63,6 +66,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @Override
     public int getItemCount() {
         return events.size();
+    }
+
+    public void setCoordinates(double lat, double lon) {
+        userLat = lat;
+        userLon = lon;
     }
     
     static class EventViewHolder extends RecyclerView.ViewHolder {
@@ -126,6 +134,27 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 binding.geolocationBadge.setText(
                     String.format("Within %dkm", event.getGeolocationRadius())
                 );
+                binding.joinableBadge.setVisibility(View.VISIBLE);
+                if (userLat == 0 || userLon == 0) {
+                    binding.joinableBadge.setText("Unknown");
+                    binding.joinableBadge.setBackgroundColor(binding.getRoot().getContext().getColor(R.color.status_closed_gray));
+                } else {
+                    float[] distance = new float[1];
+                    Location.distanceBetween(userLat, userLon, event.getLatitude(), event.getLongitude(), distance);
+                    float distanceKm = distance[0] / 1000;
+                    if (distanceKm <= event.getGeolocationRadius()) {
+                        binding.joinableBadge.setText(
+                                String.format("Joinable", event.getGeolocationRadius())
+                        );
+                    } else {
+                        binding.joinableBadge.setText(
+                                String.format("Not Joinable", event.getGeolocationRadius())
+                        );
+                        binding.joinableBadge.setTextColor(binding.getRoot().getContext().getColor(R.color.text_red_900));
+                        binding.joinableBadge.setChipStrokeColorResource(R.color.text_red_900);
+                        binding.joinableBadge.setChipBackgroundColorResource(R.color.status_flagged_red);
+                    }
+                }
             } else {
                 binding.geolocationBadge.setVisibility(View.GONE);
             }

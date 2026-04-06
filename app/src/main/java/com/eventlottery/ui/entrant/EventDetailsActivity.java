@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -49,6 +50,8 @@ public class EventDetailsActivity extends AppCompatActivity {
     private EventController eventController;
     private String currentAttendeeId;
     private LocationService locationService = new LocationService(this);
+    private double userLat = 0;
+    private double userLon = 0;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,11 +61,14 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         eventController = new EventController();
 
+
         // Get event from Intent
         if (getIntent().getData() != null) {
             eventId = getIntent().getData().getLastPathSegment();  // get ID from QR scan
         } else {
             eventId = getIntent().getStringExtra("EVENT_ID");  // get ID normally
+            userLat = getIntent().getDoubleExtra("USER_LAT",0);
+            userLon = getIntent().getDoubleExtra("USER_LON",0);
         }
 
         // Initialize Firebase
@@ -92,21 +98,6 @@ public class EventDetailsActivity extends AppCompatActivity {
                         finish();
                     }
                 });
-
-
-        //just here for testing purposes
-        locationService.requestLocation(new LocationService.LocationCallback() {
-            @Override
-            public void onLocationReady(double lat, double lon) {
-                Log.d("Location", "Latitude: " + lat + ", Longitude: " + lon);
-            }
-
-            @Override
-            public void onPermissionDenied() {
-                Log.d("Location", "Permission denied");
-            }
-        });
-        //just here for testing purposes
     }
 
     /**
@@ -185,7 +176,21 @@ public class EventDetailsActivity extends AppCompatActivity {
         binding.locationNameText.setText(event.getLocation());
 
         // Buttons only appear if event is not private
-        binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
+        // Button is Greyed out if not within geolocation radius
+        if (event.isGeolocationEnabled() && event.getGeolocationRadius() != null) {
+            float[] distance = new float[1];
+            Location.distanceBetween(userLat, userLon, event.getLatitude(), event.getLongitude(), distance);
+            float distanceKm = distance[0] / 1000;
+
+            if (distanceKm <= event.getGeolocationRadius()) {
+                binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
+            } else {
+                binding.joinWaitlistBtn.setEnabled(false);
+                binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+            }
+        } else {
+            binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
+        }
 
         // Can only see the QR button in a public event
         if(!event.isPrivate()) {
