@@ -468,6 +468,8 @@ public class Admin extends AbstractUser {
 
     public Task<Void> removeImage(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
+        DocumentReference imageRef = eventRef.collection("eventImages").document(eventId);
+        imageRef.update("url", null);
         return eventRef.update("posterImageUrl", null);
     }
 
