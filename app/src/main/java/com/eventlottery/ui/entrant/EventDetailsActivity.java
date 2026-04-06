@@ -120,7 +120,7 @@ public class EventDetailsActivity extends AppCompatActivity {
                                 new EventController.OnWaitlistStatusListener() {
                                     @Override
                                     public void onStatusChecked(boolean isOnGuestlist) {
-                                        updateWaitlistButtonUI(isOnWaitlist, isOnGuestlist);
+                                        updateWaitlistButtonUI(isOnWaitlist);
                                     }
 
                                     @Override
@@ -142,7 +142,7 @@ public class EventDetailsActivity extends AppCompatActivity {
      *
      * @param isOnWaitlist
      */
-    private void updateWaitlistButtonUI(boolean isOnWaitlist, boolean isOnGuestlist) {
+    private void updateWaitlistButtonUI(boolean isOnWaitlist) {
         binding.joinWaitlistBtn.setEnabled(true);
 
         eventController.getAttendeeGuestlistStatus(eventId, currentAttendeeId, new EventController.OnGuestlistStatusListener() {
@@ -181,8 +181,10 @@ public class EventDetailsActivity extends AppCompatActivity {
         // 3. Invited users can decline
         if ("invited".equals(status)) {
 
-            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.secondary_orange));
-            binding.joinWaitlistBtn.setText("Decline Invitation");
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.secondary_red));
+            binding.joinWaitlistBtn.setTextColor(getColor(R.color.background_white));
+            binding.joinWaitlistBtn.setText("Accept/Decline Invitation to Interact with this Event");
+            binding.joinWaitlistBtn.setEnabled(false);
             return;
         }
 
