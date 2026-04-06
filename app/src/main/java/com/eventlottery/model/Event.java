@@ -33,6 +33,7 @@ public class Event {
     private int waitlistCount;
     private int confirmedCount;
     private String posterImageUrl;
+    private Image posterImage;
     private double price;
     private long registrationOpens;
     private long registrationCloses;
@@ -69,6 +70,7 @@ public class Event {
         this.waitlistCount = 0;
         this.confirmedCount = 0;
         this.posterImageUrl = null;
+        this.posterImage = new Image(null, this.id);
         this.price = 0.0;
         this.registrationOpens = 0L;
         this.registrationCloses = 0L;
@@ -142,6 +144,7 @@ public class Event {
         this.waitlistLimit = waitlistLimit;
         this.waitlistCount = waitlistCount;
         this.confirmedCount = confirmedCount;
+        this.posterImage = new Image(posterImageUrl, this.id);
         this.posterImageUrl = posterImageUrl;
         this.price = price;
         this.registrationOpens = registrationOpens;
@@ -278,6 +281,7 @@ public class Event {
 
     public void setPosterImageUrl(String posterImageUrl) {
         this.posterImageUrl = posterImageUrl;
+
     }
 
     public double getPrice() {

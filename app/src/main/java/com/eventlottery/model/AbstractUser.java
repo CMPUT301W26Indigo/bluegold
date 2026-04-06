@@ -12,7 +12,7 @@ public abstract class AbstractUser {
     protected String phoneNumber;
     protected String address;
     protected String deviceID;
-    protected String profileImageUrl;
+    //protected String profileImageUrl;
     protected String fcmToken;
     protected boolean isAdmin;
     protected boolean notification;
@@ -124,14 +124,7 @@ public abstract class AbstractUser {
         this.deviceID = id;
     }
 
-    public String getProfileImageUrl() {
-        return profileImageUrl;
-    }
 
-    public void setProfileImageUrl(String profileImageUrl) {
-        this.profileImageUrl = profileImageUrl;
-        saveToFirebase();
-    }
 
     /**
      * Sets the notification preference and updates Firebase.

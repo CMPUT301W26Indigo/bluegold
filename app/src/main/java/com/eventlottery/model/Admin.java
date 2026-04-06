@@ -167,19 +167,6 @@ public class Admin extends AbstractUser {
      * Saves to Firestore
      * @param profileImageUrl
      */
-    @Override
-    public void setProfileImageUrl(String profileImageUrl) {
-        super.setProfileImageUrl(profileImageUrl);
-        if (attendee != null) {
-            attendee.setProfileImageUrl(profileImageUrl);
-            attendee.saveToFirebase();
-        }
-        if (eventOrganizer != null) {
-            eventOrganizer.setProfileImageUrl(profileImageUrl);
-            eventOrganizer.saveToFirebase();
-        }
-        saveToFirebase();
-    }
 
     /**
      * Sets the attendee's notification preference.
@@ -269,7 +256,7 @@ public class Admin extends AbstractUser {
             attendee.setEmail(this.email);
             attendee.setPhoneNumber(this.phoneNumber);
             attendee.setAddress(this.address);
-            attendee.setProfileImageUrl(this.profileImageUrl);
+            //attendee.setProfileImageUrl(this.profileImageUrl);
             attendee.setNotification(this.notification);
             attendee.saveToFirebase();
             isAttendee = true;
@@ -290,7 +277,7 @@ public class Admin extends AbstractUser {
             eventOrganizer.setEmail(this.email);
             eventOrganizer.setPhoneNumber(this.phoneNumber);
             eventOrganizer.setAddress(this.address);
-            eventOrganizer.setProfileImageUrl(this.profileImageUrl);
+            //eventOrganizer.setProfileImageUrl(this.profileImageUrl);
             eventOrganizer.setNotification(this.notification);
             eventOrganizer.saveToFirebase();
             isEventOrganizer = true;
@@ -485,16 +472,7 @@ public class Admin extends AbstractUser {
     // whether the image belongs to a user (any kind) or an event and then calls the appropriate method while passing
     // in the associated ID.
 
-    /**
-     * Removes an attendee's profile image from the database
-     * @param userId
-     */
-    public void removeImageProfile(String userId) {
-        DocumentReference userRef = db.collection("users").document(userId);
-        userRef.update("profileImageUrl", null);
-    }
-
-    public void removeImageEvent(String eventId) {
+    public void removeImage(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
         eventRef.update("posterImageUrl", null);
     }
