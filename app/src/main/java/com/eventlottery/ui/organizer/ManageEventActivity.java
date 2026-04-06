@@ -1,5 +1,7 @@
 package com.eventlottery.ui.organizer;
 
+import static com.eventlottery.services.Base64EncodeDecode.encodeImageToBase64;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -14,12 +16,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityManageEvent1Binding;
 import com.eventlottery.databinding.ActivityManageEventBinding;
 import com.eventlottery.model.Event;
 import com.eventlottery.model.Notification;
 import com.eventlottery.services.Base64EncodeDecode;
+import com.eventlottery.services.ImagePicker;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -57,12 +61,21 @@ public class ManageEventActivity extends AppCompatActivity {
     private String eventId;
     private String eventName;
     private Event event;
+    private ImagePicker imagePicker;
 
+    /**
+     * Called when the activity is first created.
+     * @param savedInstanceState Instance state of the activity
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityManageEvent1Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        imagePicker = new ImagePicker(this, uri -> {
+            uploadImage(event, uri);
+        });
 
         eventId = getIntent().getStringExtra("EVENT_ID");
 
@@ -84,6 +97,25 @@ public class ManageEventActivity extends AppCompatActivity {
     }
 
     /**
+     * Uploads an edited poster to Firebase.
+     */
+    private void uploadImage(Event event, Uri imageUri) {
+        if (imageUri != null) {
+            String base64Image = encodeImageToBase64(this,imageUri);
+            if (base64Image != null) {
+                event.setPosterImageUrl(base64Image);
+                db.collection("events").document(eventId).set(event);
+                Glide.with(this)
+                        .load(imageUri)
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .error(android.R.drawable.stat_notify_error)
+                        .into(binding.eventPosterImage);
+            }
+        }
+    }
+
+    /**
      * Sets up the UI elements with event data.
      */
     private void setupUI() {
@@ -97,9 +129,15 @@ public class ManageEventActivity extends AppCompatActivity {
             Bitmap bitmap = Base64EncodeDecode.decodeBase64(event.getPosterImageUrl());
             Glide.with(this)
                     .load(bitmap)
+                    .skipMemoryCache(true)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .error(android.R.drawable.stat_notify_error)
                     .into(binding.eventPosterImage);
         }
+
+        binding.statusChip.setText(getStatusText(event.getStatus()));
+        binding.statusChip.setChipBackgroundColorResource(getStatusColor(event.getStatus()));
+
         binding.eventNameText.setText(event.getName());
         binding.statusChip.setText(event.getStatus());
         for (String tag : event.getTags()) {
@@ -158,6 +196,18 @@ public class ManageEventActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SendNotificationsActivity.class);
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
+        });
+
+        binding.btnSeeWaitlistMap.setOnClickListener(v -> {
+            Intent intent = new Intent(this, WaitlistMapActivity.class);
+            intent.putExtra("EVENT_ID", eventId);
+            intent.putExtra("EVENT_LAT", event.getLatitude());
+            intent.putExtra("EVENT_LON", event.getLongitude());
+            startActivity(intent);
+        });
+
+        binding.btnEditPoster.setOnClickListener(v -> {
+            imagePicker.pickImage();
         });
     }
 
@@ -349,4 +399,35 @@ public class ManageEventActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT).show());
     }
 
+    private String getStatusText(String status) {
+        if (status == null) return "Unknown";
+        switch (status) {
+            case "open":
+                return "Open";
+            case "closed":
+                return "Closed";
+            case "lottery_drawn":
+                return "Lottery Drawn";
+            case "completed":
+                return "Completed";
+            default:
+                return status;
+        }
+    }
+
+    private int getStatusColor(String status) {
+        if (status == null) return R.color.status_closed_gray;
+        switch (status) {
+            case "open":
+                return R.color.status_open_green;
+            case "closed":
+                return R.color.status_closed_gray;
+            case "lottery_drawn":
+                return R.color.status_waiting_yellow;
+            case "completed":
+                return R.color.status_closed_gray;
+            default:
+                return R.color.status_closed_gray;
+        }
+    }
 }
