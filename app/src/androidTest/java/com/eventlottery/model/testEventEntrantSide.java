@@ -33,6 +33,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * UI Tests for the Entrant side of the app.
  * Testing to make sure Joining Waitlist is working as expected.
+ * Written by Google Gemini, Prompt: "could you write in
+ * testEventEntrantSide.java tests that create events which
+ * should be unable for the entrant to enter say, not in
+ * geolocation range, registration has ended,
+ * waitlist limit full? and then check if its still
+ * possible for the entrant to enter?"
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
