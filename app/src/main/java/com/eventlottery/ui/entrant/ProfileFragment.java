@@ -1,9 +1,5 @@
 package com.eventlottery.ui.entrant;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -61,15 +57,16 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
+        // Initialize the controller to avoid NullPointerException
         userController = new UserController();
         currentAttendee = new Attendee();
         
         // Retrieve the unique ID and load the profile
         Attendee.getFirebaseId().addOnSuccessListener(id -> {
             Log.d(TAG, "Device uniquely identified as: " + id);
-            currentAttendee.setAttendeeID(id);
+            currentAttendee.setID(id);
             loadAttendeeProfile();
-            
+
             // Check and request notification permissions for Android 13+
             checkNotificationPermission();
         }).addOnFailureListener(e -> {
@@ -154,7 +151,8 @@ public class ProfileFragment extends Fragment {
 
             @Override
             public void onError(Exception e) {
-                Log.d(TAG, "No existing profile found for ID: " + currentAttendee.getAttendeeID());
+                Log.d(TAG, "No existing profile found or error loading: " + e.getMessage());
+                // This is fine for new users; the fields will just remain empty.
             }
         });
     }
@@ -163,16 +161,15 @@ public class ProfileFragment extends Fragment {
         binding.btnSaveChanges.setOnClickListener(v -> {
             if (currentAttendee != null) {
                 try {
+                    // Updating the model automatically triggers its saveToFirebase() method
                     currentAttendee.setName(binding.etFullName.getText().toString());
                     currentAttendee.setEmail(binding.etEmail.getText().toString());
                     currentAttendee.setPhoneNumber(binding.etPhone.getText().toString());
                     currentAttendee.setNotification(binding.switchNotifications.isChecked());
 
-                    // Manual save triggered by user action
-                    currentAttendee.saveToFirebase();
-                    
                     Toast.makeText(getContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
                     
+                    // Optional: Close fragment or navigate back
                     if (getActivity() != null) {
                         getActivity().onBackPressed();
                     }
@@ -188,7 +185,7 @@ public class ProfileFragment extends Fragment {
                         .setTitle("Delete Profile")
                         .setMessage("Are you sure you want to delete your profile? This action cannot be undone.")
                         .setPositiveButton("Delete", (dialog, which) -> {
-                            userController.deleteUser(currentAttendee.getAttendeeID(), new UserController.OnUserOperationListener() {
+                            userController.deleteUser(currentAttendee.getID(), new UserController.OnUserOperationListener() {
                                 @Override
                                 public void onSuccess() {
                                     Toast.makeText(getContext(), "Profile deleted", Toast.LENGTH_SHORT).show();

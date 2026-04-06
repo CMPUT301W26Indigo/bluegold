@@ -12,7 +12,9 @@ public abstract class AbstractUser {
     protected String phoneNumber;
     protected String address;
     protected String deviceID;
-    private String profileImageUrl;
+    protected String profileImageUrl;
+    protected boolean isAdmin;
+    protected boolean notification;
     protected String fcmToken;
 
     public AbstractUser() {
@@ -21,6 +23,8 @@ public abstract class AbstractUser {
         this.phoneNumber = null;
         this.address = null;
         this.deviceID = null;
+        this.isAdmin = false;
+        this.notification = true;
         this.fcmToken = null;
     }
 
@@ -42,6 +46,7 @@ public abstract class AbstractUser {
     public void setEmail(String email) {
         if (ValidateEmail.isValidEmail(email)) {
             this.email = email;
+            saveToFirebase();
         } else {
             throw new IllegalArgumentException("Invalid email format");
         }
@@ -61,6 +66,7 @@ public abstract class AbstractUser {
      */
     public void setName(String name) {
         this.name = name;
+        saveToFirebase();
     }
 
     /**
@@ -79,6 +85,7 @@ public abstract class AbstractUser {
     public void setPhoneNumber(String phoneNumber) {
         if (ValidatePhone.isValidPhoneNumber(phoneNumber)) {
             this.phoneNumber = phoneNumber;
+            saveToFirebase();
         } else {
             throw new IllegalArgumentException("Invalid phone number format");
         }
@@ -99,13 +106,14 @@ public abstract class AbstractUser {
      */
     public void setAddress(String address) {
         this.address = address;
+        saveToFirebase();
     }
 
     /**
      * Gets the attendee's unique ID (typically the device ID or Firebase ID).
      * @return The attendee ID.
      */
-    public String getAttendeeID() {
+    public String getID() {
         return deviceID;
     }
 
@@ -113,7 +121,7 @@ public abstract class AbstractUser {
      * Sets the attendee's unique ID.
      * @param id The ID to set (e.g., the Firebase Installation ID).
      */
-    public void setAttendeeID(String id) {
+    public void setID(String id) {
         this.deviceID = id;
     }
 
@@ -123,6 +131,24 @@ public abstract class AbstractUser {
 
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+        saveToFirebase();
+    }
+
+    /**
+     * Sets the notification preference and updates Firebase.
+     * @param notification True to enable notifications, false to disable.
+     */
+    public void setNotification(boolean notification) {
+        this.notification = notification;
+        saveToFirebase();
+    }
+
+    /**
+     * Gets the notification preference for the attendee.
+     * @return True if notifications are enabled, false otherwise.
+     */
+    public boolean getNotification() {
+        return notification;
     }
 
     public String getFcmToken() {
@@ -155,4 +181,6 @@ public abstract class AbstractUser {
     public static Task<String> getFirebaseId() {
         return FirebaseInstallations.getInstance().getId();
     }
+
+    public abstract void saveToFirebase();
 }
