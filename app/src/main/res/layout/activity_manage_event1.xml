@@ -46,7 +46,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="70dp"
+
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -439,6 +439,16 @@
                     style="@style/Widget.App.Button"
                     android:padding="10dp"
                     android:text="@string/view_invited"
+                    android:textSize="@dimen/text_lg"
+                    app:backgroundTint="@color/primary_blue" />
+
+                <Button
+                    android:id="@+id/btnSeeWaitlistMap"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button"
+                    android:padding="10dp"
+                    android:text="@string/waitlist_map"
                     android:textSize="@dimen/text_lg"
                     app:backgroundTint="@color/primary_blue" />
 
