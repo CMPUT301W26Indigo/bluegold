@@ -13,12 +13,15 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.eventlottery.R;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +36,10 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
     private EntrantAdapter adapter;
     private FirebaseFirestore db;
     private String eventId;
-    private List<InvitedEntrant> entrants = new ArrayList<>();
+    private List<InvitedEntrant> allEntrants = new ArrayList<>();
+    private List<InvitedEntrant> filteredEntrants = new ArrayList<>();
+    private ChipGroup chipGroup;
+    private Chip chipInvited, chipConfirmed, chipDeclined;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,46 +53,85 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
         adapter = new EntrantAdapter();
         listView.setAdapter(adapter);
 
+        chipGroup = findViewById(R.id.tagChipGroup);
+        chipInvited = findViewById(R.id.chipInvited);
+        chipConfirmed = findViewById(R.id.chipConfirmed);
+        chipDeclined = findViewById(R.id.chipDeclined);
+
+        setupFilters();
         loadInvitedEntrants();
+    }
+
+    private void setupFilters() {
+        View.OnClickListener filterListener = v -> applyFilters();
+        chipInvited.setOnClickListener(filterListener);
+        chipConfirmed.setOnClickListener(filterListener);
+        chipDeclined.setOnClickListener(filterListener);
+    }
+
+    private void applyFilters() {
+        boolean showInvited = chipInvited.isChecked();
+        boolean showConfirmed = chipConfirmed.isChecked();
+        boolean showDeclined = chipDeclined.isChecked();
+
+        // If none selected, show all (default behavior)
+        if (!showInvited && !showConfirmed && !showDeclined) {
+            filteredEntrants.clear();
+            filteredEntrants.addAll(allEntrants);
+        } else {
+            filteredEntrants.clear();
+            for (InvitedEntrant entrant : allEntrants) {
+                if ((showInvited && "invited".equals(entrant.status)) ||
+                    (showConfirmed && "confirmed".equals(entrant.status)) ||
+                    (showDeclined && "declined".equals(entrant.status))) {
+                    filteredEntrants.add(entrant);
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();
+        
+        TextView emptyView = findViewById(R.id.tvEmptyState);
+        if (emptyView != null) {
+            emptyView.setVisibility(filteredEntrants.isEmpty() ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void loadInvitedEntrants() {
         db.collection("events").document(eventId)
                 .collection("guestList")
-                .whereEqualTo("status", "invited")
+                .whereIn("status", Arrays.asList("invited", "confirmed", "declined"))
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    entrants.clear();
+                    allEntrants.clear();
                     TextView emptyView = findViewById(R.id.tvEmptyState);
 
                     if (queryDocumentSnapshots.isEmpty()) {
                         if (emptyView != null) emptyView.setVisibility(View.VISIBLE);
-                        adapter.notifyDataSetChanged();
+                        applyFilters();
                         return;
                     }
 
-                    if (emptyView != null) emptyView.setVisibility(View.GONE);
-
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         String userId = doc.getId();
+                        String status = doc.getString("status");
                         long invitedAt = doc.getLong("invitedAt") != null ? doc.getLong("invitedAt") : 0;
 
-                        // Important: Check 'attendees' collection (not 'users') as that's where profiles are stored
                         db.collection("attendees").document(userId).get()
                                 .addOnSuccessListener(userDoc -> {
                                     String name = userDoc.getString("name");
                                     String email = userDoc.getString("email");
-                                    String phone = userDoc.getString("phoneNumber"); // Using phoneNumber from Attendee model
+                                    String phone = userDoc.getString("phoneNumber");
 
                                     InvitedEntrant entrant = new InvitedEntrant(
                                             userId,
                                             name != null ? name : "Unknown ID: " + userId,
                                             email != null ? email : "",
                                             phone != null ? phone : "",
+                                            status != null ? status : "invited",
                                             invitedAt
                                     );
-                                    entrants.add(entrant);
-                                    adapter.notifyDataSetChanged();
+                                    allEntrants.add(entrant);
+                                    applyFilters();
                                 });
                     }
                 })
@@ -207,21 +252,22 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
     }
 
     private static class InvitedEntrant {
-        String id, name, email, phone;
+        String id, name, email, phone, status;
         long invitedAt;
 
-        InvitedEntrant(String id, String name, String email, String phone, long invitedAt) {
+        InvitedEntrant(String id, String name, String email, String phone, String status, long invitedAt) {
             this.id = id;
             this.name = name;
             this.email = email;
             this.phone = phone;
+            this.status = status;
             this.invitedAt = invitedAt;
         }
     }
 
     private class EntrantAdapter extends ArrayAdapter<InvitedEntrant> {
         EntrantAdapter() {
-            super(InvitedEntrantsActivity.this, 0, entrants);
+            super(InvitedEntrantsActivity.this, 0, filteredEntrants);
         }
 
         @Override
@@ -238,14 +284,22 @@ public class InvitedEntrantsActivity extends AppCompatActivity {
             Button btnConfirm = convertView.findViewById(R.id.btnConfirm);
             Button btnDecline = convertView.findViewById(R.id.btnDecline);
 
-            if (tvName != null) tvName.setText(entrant.name);
+            if (tvName != null) {
+                String displayName = entrant.name;
+                if (entrant.status != null) {
+                    displayName += " (" + entrant.status.toUpperCase() + ")";
+                }
+                tvName.setText(displayName);
+            }
             if (tvEmail != null) tvEmail.setText(entrant.email);
             if (tvPhone != null) tvPhone.setText(entrant.phone);
 
             if (btnConfirm != null) {
+                btnConfirm.setVisibility("invited".equals(entrant.status) ? View.VISIBLE : View.GONE);
                 btnConfirm.setOnClickListener(v -> updateStatus(entrant.id, "confirmed"));
             }
             if (btnDecline != null) {
+                btnDecline.setVisibility("invited".equals(entrant.status) ? View.VISIBLE : View.GONE);
                 btnDecline.setOnClickListener(v -> updateStatus(entrant.id, "declined"));
             }
 
