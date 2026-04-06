@@ -1,8 +1,6 @@
 package com.eventlottery.ui.entrant;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
@@ -12,7 +10,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
 import com.bumptech.glide.Glide;
 import com.eventlottery.R;
@@ -20,18 +17,13 @@ import com.eventlottery.controller.EventController;
 import com.eventlottery.databinding.ActivityEventDetailsBinding;
 import com.eventlottery.model.Attendee;
 import com.eventlottery.model.Event;
-import com.eventlottery.model.GuestList;
 import com.eventlottery.services.Base64EncodeDecode;
 import com.eventlottery.services.LocationService;
 import com.eventlottery.ui.qr.QRDisplayActivity;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.io.Console;
 import java.text.DecimalFormat;
-import java.util.List;
-
-import com.eventlottery.ui.entrant.CommentsActivity;
 
 /**
  * EventDetailsActivity
@@ -297,7 +289,6 @@ public class EventDetailsActivity extends AppCompatActivity {
         EventController.OnEventOperationListener listener = new EventController.OnEventOperationListener() {
             @Override
             public void onSuccess() {
-                // Now update the Attendee's profile as well
                 updateAttendeeWaitlist(isJoining);
             }
 
@@ -374,6 +365,11 @@ public class EventDetailsActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Gets the text for the status chip.
+     * @param status
+     * @return
+     */
     private String getStatusText(String status) {
         if (status == null) return "Unknown";
         switch (status) {
@@ -390,6 +386,11 @@ public class EventDetailsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Gets the color for the status chip.
+     * @param status
+     * @return
+     */
     private int getStatusColor(String status) {
         if (status == null) return R.color.status_closed_gray;
         switch (status) {

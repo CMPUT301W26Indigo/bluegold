@@ -282,29 +282,4 @@ public class GuestList {
         }
         return attendees.get(attendeeId);
     }
-
-    public boolean isAttendeeInvited(String attendeeId) {
-        String status = getAttendeeStatus(attendeeId);
-        return "invited".equals(status);
-    }
-
-    public boolean isAttendeeConfirmed(String attendeeId) {
-        String status = getAttendeeStatus(attendeeId);
-        return "confirmed".equals(status);
-    }
-
-    public boolean isAttendeeDeclined(String attendeeId) {
-        String status = getAttendeeStatus(attendeeId);
-        return "declined".equals(status);
-    }
-
-    public boolean isAttendeeCancelled(String attendeeId) {
-        String status = getAttendeeStatus(attendeeId);
-        return "cancelled".equals(status);
-    }
-
-    public boolean isAttendeeMaybe(String attendeeId) {
-        String status = getAttendeeStatus(attendeeId);
-        return "maybe".equals(status);
-    }
 }
