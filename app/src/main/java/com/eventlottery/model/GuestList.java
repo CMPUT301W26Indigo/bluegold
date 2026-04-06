@@ -16,8 +16,8 @@ public class GuestList {
     private static final String COLLECTION_NAME = "guestlists";
 
     private String eventId;
-    //private ArrayList<HashMap<String, String>> attendeeIds;
     private HashMap<String, String> attendees; // <attendeeId, status>
+    // Statuses: maybe, invited, confirmed, declined, cancelled
     private Integer listCount;
     private Integer listLimit;
 
@@ -245,27 +245,41 @@ public class GuestList {
         }
     }
 
-        /**
-         * Change all entrants who did not sign up for the event to the cancelled status
-         * Cancelled attendees are those who have the declined and maybe statuses.
-         */
-        public void cancelEntrants() {
-            ArrayList<String> toCancel = new ArrayList<>();
-            attendees.forEach((attendeeId, status) -> {
-                Boolean b = status.equals("declined") || status.equals("maybe") ? toCancel.add(attendeeId) : null;
-            });
+    /**
+     * Change all entrants who did not sign up for the event to the cancelled status
+     * Cancelled attendees are those who have the declined and maybe statuses.
+     */
+    public void cancelEntrants() {
+        ArrayList<String> toCancel = new ArrayList<>();
+        attendees.forEach((attendeeId, status) -> {
+            Boolean b = status.equals("declined") || status.equals("maybe") ? toCancel.add(attendeeId) : null;
+        });
 
-            for (String attendeeId : toCancel) {
-                changeAttendeeStatus(attendeeId, "cancelled");
-            }
+        for (String attendeeId : toCancel) {
+            changeAttendeeStatus(attendeeId, "cancelled");
         }
+    }
 
-        /**
-         * Creates and returns a list of attendee IDs.
-         *
-         * @return ArrayList of just attendee IDs
-         */
-        public ArrayList<String> getAttendeeIds() {
-            return new ArrayList<>(attendees.keySet());
+    /**
+     * Creates and returns a list of attendee IDs.
+     *
+     * @return ArrayList of just attendee IDs
+     */
+    public ArrayList<String> getAttendeeIds() {
+        return new ArrayList<>(attendees.keySet());
+    }
+
+    /**
+     * Returns the status of an attendee in the guest list.
+     *
+     * @param attendeeId The attendee ID
+     * @return The attendee status (maybe, invited, confirmed, declined, cancelled)
+     *         or null if the attendee is not on the guest list
+     */
+    public String getAttendeeStatus(String attendeeId) {
+        if (attendeeId == null || attendees == null) {
+            return null;
         }
+        return attendees.get(attendeeId);
+    }
 }

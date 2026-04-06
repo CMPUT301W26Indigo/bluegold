@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -196,7 +197,6 @@ public class CreateEventActivity extends AppCompatActivity {
      * events.
      */
     private void setupUI() {
-        // some setup logic here
 
         binding.cancelButton.setOnClickListener(v -> finish());
 
@@ -334,6 +334,10 @@ public class CreateEventActivity extends AppCompatActivity {
 
         //beginning to create the event and assign its details and push it to the database
         binding.createEventButton.setOnClickListener(v -> {
+            if (!validateInput()) {
+                return;
+            }
+
             Event event = new Event();
             event.setName(binding.eventNameEditText.getText().toString());
             event.setDescription(binding.descriptionEditText.getText().toString());
@@ -412,6 +416,74 @@ public class CreateEventActivity extends AppCompatActivity {
                 }
             });
         });
+    }
+
+    /**
+     * Ensures all events have a name, description, date, time, registration period, tags and capacity.
+     * @return
+     */
+    private boolean validateInput() {
+        boolean isValid = true;
+
+        if (TextUtils.isEmpty(binding.eventNameEditText.getText())) {
+            binding.eventNameLayout.setError("Event name is required");
+            isValid = false;
+        } else {
+            binding.eventNameLayout.setError(null);
+        }
+
+        if (TextUtils.isEmpty(binding.descriptionEditText.getText())) {
+            binding.descriptionLayout.setError("Description is required");
+            isValid = false;
+        } else {
+            binding.descriptionLayout.setError(null);
+        }
+
+        if (TextUtils.isEmpty(binding.eventDateEditText.getText())) {
+            binding.eventDateLayout.setError("Date is required");
+            isValid = false;
+        } else {
+            binding.eventDateLayout.setError(null);
+        }
+
+        if (TextUtils.isEmpty(binding.eventTimeEditText.getText())) {
+            binding.eventTimeLayout.setError("Time is required");
+            isValid = false;
+        } else {
+            binding.eventTimeLayout.setError(null);
+        }
+
+        if (registrationOpensTime == 0L) {
+            binding.registrationOpensLayout.setError("Opening date is required");
+            isValid = false;
+        } else {
+            binding.registrationOpensLayout.setError(null);
+        }
+
+        if (registrationClosesTime == 0L) {
+            binding.registrationClosesLayout.setError("Closing date is required");
+            isValid = false;
+        } else {
+            binding.registrationClosesLayout.setError(null);
+        }
+
+        if (TextUtils.isEmpty(binding.capacityEditText.getText())) {
+            binding.capacityLayout.setError("Capacity is required");
+            isValid = false;
+        } else {
+            binding.capacityLayout.setError(null);
+        }
+
+        if (binding.tagChipGroup.getCheckedChipIds().isEmpty()) {
+            Toast.makeText(this, "Please select at least one tag", Toast.LENGTH_SHORT).show();
+            isValid = false;
+        }
+
+        if (!isValid) {
+            Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
+        }
+
+        return isValid;
     }
 
     /**
