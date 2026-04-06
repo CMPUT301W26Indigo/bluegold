@@ -359,7 +359,6 @@ public class EventDetailsActivity extends AppCompatActivity {
                 .collection("waitlist")
                 .get()
                 .addOnSuccessListener(query -> {
-                    binding.tvWaitlistCount.setText(query.size() + " in the waitlist");
                     binding.capacityText.setText(query.size() + " / " + event.getCapacity());
                     binding.spotsAvailableText.setText((event.getCapacity() - query.size()) + " spots available");
                 });
