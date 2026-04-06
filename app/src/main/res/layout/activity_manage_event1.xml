@@ -457,6 +457,16 @@
                     app:backgroundTint="@color/primary_blue" />
 
                 <Button
+                    android:id="@+id/btnViewWaitlist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.App.Button"
+                    android:padding="10dp"
+                    android:text="View Waitlist"
+                    android:textSize="@dimen/text_lg"
+                    app:backgroundTint="@color/primary_blue" />
+
+                <Button
                     android:id="@+id/btnViewInvited"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
