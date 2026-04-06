@@ -513,9 +513,13 @@ public class Event {
      * Gets the number of spots available for an event
      * @return int
      */
-    public int getAvailableSpots() {
-        if (guestList.getListLimit() == null) return Integer.MAX_VALUE;
-        return Math.max(0, guestList.getListLimit() - guestList.getListCount());
+    public int getAvailableWaitlistSpots() {
+        if (waitlist.getWaitlistLimit() == null) return -1;
+        return Math.max(0, waitlist.getWaitlistLimit() - guestList.getListCount());
+    }
+
+    public int getAvailableGuestlistSpots() {
+        return getCapacity() - getConfirmedCount();
     }
 
     /**
@@ -576,6 +580,8 @@ public class Event {
     public boolean isWaitlistFull() {
         return waitlist.isWaitlistFull();
     }
+
+    public boolean isGuestlistFull() {return guestList.isGuestlistFull(capacity);}
 
     /**
      * Checks if the registration is open

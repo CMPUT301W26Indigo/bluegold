@@ -282,4 +282,8 @@ public class GuestList {
         }
         return attendees.get(attendeeId);
     }
+
+    public boolean isGuestlistFull(int capacity) {
+        return getListCount() >= capacity;
+    }
 }

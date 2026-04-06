@@ -206,4 +206,15 @@ public class Attendee extends AbstractUser {
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
+
+    /**
+     * Checks if attendee profile is complete enough to join events
+     */
+    @Exclude
+    public boolean isProfileComplete() {
+        return name != null && !name.trim().isEmpty()
+                && email != null && !email.trim().isEmpty()
+                && phoneNumber != null && !phoneNumber.trim().isEmpty();
+    }
+
 }

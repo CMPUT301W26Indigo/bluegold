@@ -50,6 +50,11 @@ public class EventDetailsActivity extends AppCompatActivity {
     private double userLat = 0;
     private double userLon = 0;
 
+    private boolean isWaitlistFull = false;
+    private boolean isGuestlistFull = false;
+    private boolean isOnWaitlist = false;
+    private String guestStatus = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,8 +88,27 @@ public class EventDetailsActivity extends AppCompatActivity {
                             // Get the current attendee ID asynchronously
                             Attendee.getFirebaseId().addOnSuccessListener(id -> {
                                 currentAttendeeId = id;
-                                Log.e(TAG, "Current attendee ID: " + currentAttendeeId);
-                                checkWaitlistStatus();
+
+                                Attendee attendee = new Attendee();
+                                attendee.setID(currentAttendeeId);
+
+                                attendee.fetchFromFirebase(new Attendee.OnAttendeeLoadedListener() {
+                                    @Override
+                                    public void onSuccess(Attendee loadedAttendee) {
+
+                                        if (!loadedAttendee.isProfileComplete()) {
+                                            showIncompleteProfileState();
+                                            return;
+                                        }
+
+                                        checkWaitlistStatus();
+                                    }
+
+                                    @Override
+                                    public void onError(Exception e) {
+                                        showIncompleteProfileState();
+                                    }
+                                });
                             }).addOnFailureListener(e -> {
                                 Log.e(TAG, "Failed to get Firebase ID", e);
                                 Toast.makeText(this, "Error identifying user", Toast.LENGTH_SHORT).show();
@@ -112,7 +136,8 @@ public class EventDetailsActivity extends AppCompatActivity {
                                 new EventController.OnWaitlistStatusListener() {
                                     @Override
                                     public void onStatusChecked(boolean isOnGuestlist) {
-                                        updateWaitlistButtonUI(isOnWaitlist);
+                                        EventDetailsActivity.this.isOnWaitlist = isOnWaitlist;
+                                        updateWaitlistButtonUI();
                                     }
 
                                     @Override
@@ -131,37 +156,38 @@ public class EventDetailsActivity extends AppCompatActivity {
 
     /**
      * Updates the UI to reflect the current waitlist and event status.
-     *
-     * @param isOnWaitlist
      */
-    private void updateWaitlistButtonUI(boolean isOnWaitlist) {
+    private void updateWaitlistButtonUI() {
         binding.joinWaitlistBtn.setEnabled(true);
 
-        eventController.getAttendeeGuestlistStatus(eventId, currentAttendeeId, new EventController.OnGuestlistStatusListener() {
-            @Override
-            public void onStatusLoaded(String status) {
-                Log.e(TAG, "Guestlist status for user " + currentAttendeeId + ": " + status);
-                applyWaitlistUI(status, isOnWaitlist);
-            }
+        eventController.getAttendeeGuestlistStatus(eventId, currentAttendeeId,
+                new EventController.OnGuestlistStatusListener() {
 
-            @Override
-            public void onError(Exception e) {
-                Log.e(TAG, "Failed to fetch guestlist status", e);
-                applyWaitlistUI(null, isOnWaitlist);
-            }
+                    @Override
+                    public void onStatusLoaded(String status) {
+                        guestStatus = status;
+                        applyWaitlistUI(guestStatus, isOnWaitlist);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        applyWaitlistUI(null, isOnWaitlist);
+                    }
+                });
+    }
+
+    private void showIncompleteProfileState() {
+        binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.secondary_red));
+        binding.joinWaitlistBtn.setTextColor(getColor(R.color.background_white));
+        binding.joinWaitlistBtn.setText("Complete Profile to Join Event");
+
+        binding.joinWaitlistBtn.setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
         });
     }
 
     private void applyWaitlistUI(String status, boolean isOnWaitlist) {
         long currentTime = System.currentTimeMillis();
-
-        //check waitList limit full
-        if (event.getWaitlistLimit() != null && event.getWaitlistCount() >= event.getWaitlistLimit()) {
-            binding.joinWaitlistBtn.setEnabled(false);
-            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
-            binding.joinWaitlistBtn.setText("Waitlist Full");
-            return;
-        }
 
         //check registration closed
         if (event.getRegistrationCloses() > 0 && currentTime > event.getRegistrationCloses()) {
@@ -184,9 +210,8 @@ public class EventDetailsActivity extends AppCompatActivity {
             }
         }
 
-        // 1. Event closed/completed
+        // Check if the event status is closed or completed
         if ("closed".equals(event.getStatus()) || "completed".equals(event.getStatus())) {
-
             binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
             binding.joinWaitlistBtn.setText("Event Closed");
             binding.joinWaitlistBtn.setEnabled(false);
@@ -219,6 +244,12 @@ public class EventDetailsActivity extends AppCompatActivity {
             return;
         }
 
+        if ((isWaitlistFull || isGuestlistFull)) {
+            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
+            binding.joinWaitlistBtn.setText("Event Full");
+            binding.joinWaitlistBtn.setEnabled(false);
+            return;
+        }
         // 5. Everyone else can join
         binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.primary_blue));
         binding.joinWaitlistBtn.setText("Join Waitlist");
@@ -271,30 +302,8 @@ public class EventDetailsActivity extends AppCompatActivity {
         // Buttons only appear if event is not private
         // Button is Greyed out if not within geolocation radius
         // Button is greyed out if registration date has passed
-        long currentTime = System.currentTimeMillis();
-        if (event.getWaitlistLimit() != null && event.getWaitlistCount() >= event.getWaitlistLimit()) {
-            binding.joinWaitlistBtn.setEnabled(false);
-            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
-            binding.joinWaitlistBtn.setText("Waitlist Full");
-        } else if (event.getRegistrationCloses() > 0 && currentTime > event.getRegistrationCloses()) {
-            binding.joinWaitlistBtn.setEnabled(false);
-            binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
-            binding.joinWaitlistBtn.setText("Registration Closed");
-        } else if (event.isGeolocationEnabled() && event.getGeolocationRadius() != null) {
-            float[] distance = new float[1];
-            Location.distanceBetween(userLat, userLon, event.getLatitude(), event.getLongitude(), distance);
-            float distanceKm = distance[0] / 1000;
 
-            if (distanceKm <= event.getGeolocationRadius()) {
-                binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
-            } else {
-                binding.joinWaitlistBtn.setEnabled(false);
-                binding.joinWaitlistBtn.setBackgroundColor(getColor(R.color.status_closed_gray));
-                binding.joinWaitlistBtn.setText("Event Outside Geolocation Radius");
-            }
-        } else {
-            binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
-        }
+        binding.joinWaitlistBtn.setOnClickListener(v -> handleWaitlistToggle());
 
         // Can only see the QR button in a public event
         if (!event.isPrivate()) {
@@ -396,15 +405,60 @@ public class EventDetailsActivity extends AppCompatActivity {
      * Loads the current waitlist count and capacity.
      */
     private void loadEventStats() {
-        // Get waitlist count and fill out capacity card in UI
-        db.collection("events").document(eventId)
+        db.collection("events")
+                .document(event.getId())
                 .collection("waitlist")
                 .get()
                 .addOnSuccessListener(query -> {
-                    binding.tvWaitlistCount.setText(query.size() + " in the waitlist");
-                    binding.capacityText.setText(query.size() + " / " + event.getCapacity());
-                    binding.spotsAvailableText.setText((event.getCapacity() - query.size()) + " spots available");
+
+                    int count = query.size();
+
+                    String waitlistText;
+
+                    if (event.getWaitlistLimit() != null && event.getWaitlistLimit() > 0) {
+                        waitlistText = String.format("%d / %d on Waitlist",
+                                count,
+                                event.getWaitlistLimit());
+                    } else {
+                        waitlistText = String.format("%d on Waitlist", count);
+                    }
+
+                    binding.capacityText.setText(waitlistText);
+                    if (event.getWaitlistLimit() != null && event.getWaitlistLimit() > 0) {
+                        isWaitlistFull = (count >= event.getWaitlistLimit());
+                    } else {
+                        isWaitlistFull = false;
+                    }
+                     if (isWaitlistFull) {
+                        updateWaitlistButtonUI();
+                    }
                 });
+
+        if (event.getStatus().equals("lottery_drawn")) {
+            db.collection("events")
+                    .document(event.getId())
+                    .collection("guestList")
+                    .get()
+                    .addOnSuccessListener(query -> {
+
+                        int count = query.size();
+
+                        String guestlistText;
+                        guestlistText = String.format("%d / %d Confirmed Attendees",
+                                count,
+                                event.getCapacity());
+
+
+                        binding.spotsAvailableText.setText(guestlistText);
+
+                        isGuestlistFull = (event.getCapacity() == count);
+                        if (isGuestlistFull) {
+                            updateWaitlistButtonUI();
+                        }
+                    });
+        } else {
+            binding.spotsAvailableText.setVisibility(View.GONE);
+        }
     }
 
     /**
