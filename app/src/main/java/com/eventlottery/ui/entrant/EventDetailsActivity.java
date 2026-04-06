@@ -302,7 +302,7 @@ public class EventDetailsActivity extends AppCompatActivity {
             eventController.leaveWaitlist(eventId, currentAttendeeId, listener);
             eventController.removeFromGuestlist(eventId, currentAttendeeId, listener);
         } else if (isJoining) {
-            eventController.joinWaitlist(eventId, currentAttendeeId, listener);
+            eventController.joinWaitlist(eventId, currentAttendeeId, userLat, userLon, listener);
         } else {
             eventController.leaveWaitlist(eventId, currentAttendeeId, listener);
         }
