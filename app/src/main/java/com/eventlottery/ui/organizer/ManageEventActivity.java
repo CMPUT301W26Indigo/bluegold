@@ -63,6 +63,10 @@ public class ManageEventActivity extends AppCompatActivity {
     private Event event;
     private ImagePicker imagePicker;
 
+    /**
+     * Called when the activity is first created.
+     * @param savedInstanceState Instance state of the activity
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +96,9 @@ public class ManageEventActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Uploads an edited poster to Firebase.
+     */
     private void uploadImage(Event event, Uri imageUri) {
         if (imageUri != null) {
             String base64Image = encodeImageToBase64(this,imageUri);

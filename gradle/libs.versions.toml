@@ -38,6 +38,8 @@ runner = "1.7.0"
 zxing = "4.3.0"
 activity = "1.13.0"
 places = "3.3.0"
+robolectric = "4.14.1"
+mockito = "5.14.2"
 
 [libraries]
 activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
@@ -83,6 +85,8 @@ runner = { module = "androidx.test:runner", version.ref = "runner" }
 zxing-android-embedded = { group = "com.journeyapps", name = "zxing-android-embedded", version.ref = "zxing" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 google-places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

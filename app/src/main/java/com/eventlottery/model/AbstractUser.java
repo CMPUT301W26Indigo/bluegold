@@ -6,6 +6,9 @@ import android.provider.Settings;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.installations.FirebaseInstallations;
 
+/**
+ * Abstract class representing a user in the application.
+ */
 public abstract class AbstractUser {
     protected String name;
     protected String email;
@@ -18,6 +21,9 @@ public abstract class AbstractUser {
     protected boolean notification;
 
 
+    /**
+     * Constructor for AbstractUser.
+     */
     public AbstractUser() {
         this.name = null;
         this.email = null;
