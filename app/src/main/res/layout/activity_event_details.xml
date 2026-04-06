@@ -413,6 +413,18 @@
                         android:paddingVertical="@dimen/spacing_lg"
                         app:backgroundTint="@color/primary_blue" />
 
+                    <!-- View Comments Button -->
+                    <Button
+                        android:id="@+id/viewCommentsBtn"
+                        style="@style/Widget.App.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/spacing_lg"
+                        android:text="View Comments"
+                        android:textSize="@dimen/text_lg"
+                        android:paddingVertical="@dimen/spacing_lg"
+                        app:backgroundTint="@color/border_orange_200" />
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
