@@ -15,8 +15,10 @@ import com.eventlottery.model.Notification;
 import com.eventlottery.ui.adapters.NotificationAdapter;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -202,15 +204,41 @@ public class NotificationListFragment extends Fragment implements NotificationAd
     @Override
     public void onAcceptInvitation(Notification notification) {
         if (currentMode == Mode.ENTRANT) {
-            processInvitationResponse(notification, "confirmed", "ACCEPTED");
+            if ("CO_ORGANIZER_INVITE".equals(notification.getType())) {
+                processCoOrganizerResponse(notification, "ACCEPTED");
+            } else {
+                processInvitationResponse(notification, "confirmed", "ACCEPTED");
+            }
         }
     }
 
     @Override
     public void onDeclineInvitation(Notification notification) {
         if (currentMode == Mode.ENTRANT) {
-            processInvitationResponse(notification, "declined", "DECLINED");
+            if ("CO_ORGANIZER_INVITE".equals(notification.getType())) {
+                processCoOrganizerResponse(notification, "DECLINED");
+            } else {
+                processInvitationResponse(notification, "declined", "DECLINED");
+            }
         }
+    }
+
+    private void processCoOrganizerResponse(Notification n, String status) {
+        WriteBatch batch = db.batch();
+        DocumentReference notifRef = db.collection("notifications").document(n.getId());
+        batch.update(notifRef, "status", status, "read", true);
+
+        if ("ACCEPTED".equals(status)) {
+            DocumentReference eventRef = db.collection("events").document(n.getEventId());
+            batch.update(eventRef, "coOrganizerIds", FieldValue.arrayUnion(n.getAttendeeId()));
+        }
+
+        batch.commit().addOnSuccessListener(aVoid -> {
+            Toast.makeText(getContext(), "Co-organizer invitation " + status.toLowerCase(), Toast.LENGTH_SHORT).show();
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Error processing co-organizer response", e);
+            Toast.makeText(getContext(), "Error sending response", Toast.LENGTH_SHORT).show();
+        });
     }
 
     /**

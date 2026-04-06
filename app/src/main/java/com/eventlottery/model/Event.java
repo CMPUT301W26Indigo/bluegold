@@ -23,6 +23,7 @@ public class Event {
     private String name;
     private String description;
     private String organizerId;
+    private List<String> coOrganizerIds;
     private String date;
     private String time;
     private String endTime;
@@ -59,6 +60,7 @@ public class Event {
         this.name = "";
         this.description = "";
         this.organizerId = "";
+        this.coOrganizerIds = new ArrayList<>();
         this.date = "";
         this.time = "";
         this.endTime = "";
@@ -100,6 +102,7 @@ public class Event {
             String name,
             String description,
             String organizerId,
+            List<String> coOrganizerIds,
             String date,
             String time,
             String endTime,
@@ -133,6 +136,7 @@ public class Event {
         this.name = name;
         this.description = description;
         this.organizerId = organizerId;
+        this.coOrganizerIds = (coOrganizerIds != null) ? new ArrayList<>(coOrganizerIds) : new ArrayList<>();
         this.date = date;
         this.time = time;
         this.endTime = endTime;
@@ -204,6 +208,14 @@ public class Event {
 
     public void setOrganizerId(String organizerId) {
         this.organizerId = organizerId;
+    }
+
+    public List<String> getCoOrganizerIds() {
+        return coOrganizerIds;
+    }
+
+    public void setCoOrganizerIds(List<String> coOrganizerIds) {
+        this.coOrganizerIds = coOrganizerIds;
     }
 
     public String getDate() {
