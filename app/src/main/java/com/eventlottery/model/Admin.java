@@ -9,33 +9,52 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Exclude;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Represents an Admin user who can also act as an Attendee and Event Organizer.
- * Admins are currently stored in the "attendees" collection.
+ * Admins are stored in the "attendees" collection.
  */
 public class Admin extends AbstractUser {
     private static final String TAG = "Admin";
-    private static final String COLLECTION_NAME = "admins";
+    private static final String COLLECTION_NAME = "attendees";
 
     private Attendee attendee;
     private EventOrganizer eventOrganizer;
 
-    private boolean isAdmin;
     private boolean isAttendee;
     private boolean isEventOrganizer;
-    private boolean notification;
 
     @Exclude
     private final FirebaseFirestore db;
 
-
+    /**
+     * Interface for handling asynchronous admin profile loading.
+     */
     public interface OnAdminLoadedListener {
         void onSuccess(Admin admin);
+        void onError(Exception e);
+    }
+
+    /**
+     * Interface for handling asynchronous event fetching.
+     */
+    public interface OnEventsFetchedListener {
+        /**
+         * Called when events are successfully fetched.
+         * @param events ArrayList of fetched Event objects.
+         */
+        void onSuccess(ArrayList<Event> events);
+
+        /**
+         * Called when an error occurs during event fetching.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 
@@ -134,7 +153,6 @@ public class Admin extends AbstractUser {
      * Updates the attendee and event organizer's addresses as well.
      * Saves to Firestore
      * @param address The address to set.
-     * Todo Throw IllegalArgumentException for invalid format and ensure it can be converted to coordinates.
      */
     @Override
     public void setAddress(String address) {
@@ -183,65 +201,19 @@ public class Admin extends AbstractUser {
         saveToFirebase();
     }
 
-    /**
-     * Returns if the user is an admin boolean.
-     * @return isAdmin.
-     */
-    public boolean isAdmin() {
-        return isAdmin;
-    }
+    public boolean isAdmin() { return isAdmin; }
+    public boolean isAttendee() { return isAttendee; }
+    public boolean isEventOrganizer() { return isEventOrganizer; }
+
+    public Attendee getAttendee() { return attendee; }
+    public void setAttendee(Attendee attendee) { this.attendee = attendee; }
+
+    public EventOrganizer getEventOrganizer() { return eventOrganizer; }
+    public void setEventOrganizer(EventOrganizer eventOrganizer) { this.eventOrganizer = eventOrganizer; }
 
     /**
-     * Returns if the user is an attendee boolean.
-     * @return isAttendee
-     */
-    public boolean isAttendee() {
-        return isAttendee;
-    }
-
-    /**
-     * Returns if the user is an event organizer boolean.
-     * @return isEventOrganizer
-     */
-    public boolean isEventOrganizer() {
-        return isEventOrganizer;
-    }
-
-    /**
-     * Gets the attendee associated with this admin.
-     * @return attendee
-     */
-    public Attendee getAttendee() {
-        return attendee;
-    }
-
-    /**
-     * Sets the attendee associated with this admin.
-     * @param attendee
-     */
-    public void setAttendee(Attendee attendee) {
-        this.attendee = attendee;
-    }
-
-    /**
-     * Gets the event organizer associated with this admin.
-     * @return
-     */
-    public EventOrganizer getEventOrganizer() {
-        return eventOrganizer;
-    }
-
-    /**
-     * Sets the event organizer associated with this admin.
-     * @param eventOrganizer
-     */
-    public void setEventOrganizer(EventOrganizer eventOrganizer) {
-        this.eventOrganizer = eventOrganizer;
-    }
-
-    /**
-     * Creates and returns an attendee object for admin to use if one doesn't already exist
-     * @return attendee
+     * Creates an attendee object for this admin if one doesn't exist.
+     * @return The attendee object.
      */
     public Attendee createAttendee() {
         if (attendee == null) {
@@ -260,8 +232,8 @@ public class Admin extends AbstractUser {
     }
 
     /**
-     * Creates and returns an event organizer object for admin to use if one doesn't already exist
-     * @return eventOrganizer
+     * Creates an event organizer object for this admin if one doesn't exist.
+     * @return The event organizer object.
      */
     public EventOrganizer createEventOrganizer() {
         if (eventOrganizer == null) {
@@ -292,7 +264,7 @@ public class Admin extends AbstractUser {
     }
 
     /**
-     * Fetches the admin from Firebase.
+     * Fetches the admin profile from Firebase.
      * @param listener Callback for completion.
      */
     public void fetchFromFirebase(OnAdminLoadedListener listener) {
@@ -304,7 +276,7 @@ public class Admin extends AbstractUser {
             if (listener != null) listener.onError(new Exception("DeviceID not set"));
             return;
         }
-        db.collection("attendees").document(deviceID).get()
+        db.collection(COLLECTION_NAME).document(deviceID).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     try {
                         Admin remote = documentSnapshot.toObject(Admin.class);
@@ -345,9 +317,72 @@ public class Admin extends AbstractUser {
     }
 
     /**
-     * Removes an event from the database
-     * Removes event from associated attendee event history and waitlist
-     * @param eventId
+     * Fetches all events from Firestore where the given profileId is the organizer.
+     * @param profileId The ID of the organizer.
+     * @param listener Callback returning an ArrayList of events.
+     */
+    public void getEvents(String profileId, OnEventsFetchedListener listener) {
+        if (db == null) {
+            if (listener != null) listener.onError(new Exception("Firebase not initialized"));
+            return;
+        }
+        db.collection("events")
+                .whereEqualTo("organizerId", profileId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    ArrayList<Event> events = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Event event = document.toObject(Event.class);
+                        if (event != null) {
+                            event.setId(document.getId());
+                            events.add(event);
+                        }
+                    }
+                    if (listener != null) listener.onSuccess(events);
+                })
+                .addOnFailureListener(e -> {
+                    if (listener != null) listener.onError(e);
+                });
+    }
+
+    /**
+     * Fetches all events for a given organizer profileID and deletes them if no co-organizer is specified.
+     * @param profileId The ID of the organizer.
+     */
+    public void removeEvents(String profileId) {
+        getEvents(profileId, new OnEventsFetchedListener() {
+            @Override
+            public void onSuccess(ArrayList<Event> events) {
+                for (Event event : events) {
+                    // Delete the event if coOrganizerIds is null or empty
+                    if (event.getCoOrganizerIds() == null || event.getCoOrganizerIds().isEmpty()) {
+                        removeEvent(event.getId());
+                    } else {
+                        List<String> coOrganizerIds = event.getCoOrganizerIds();
+                        String newOrganizerId = coOrganizerIds.get(0);
+                        coOrganizerIds.remove(0);
+                        
+                        event.setOrganizerId(newOrganizerId);
+                        event.setCoOrganizerIds(coOrganizerIds);
+
+                        db.collection("events").document(event.getId())
+                                .update("organizerId", newOrganizerId, "coOrganizerIds", coOrganizerIds)
+                                .addOnSuccessListener(aVoid -> Log.d(TAG, "Event organizer updated successfully"))
+                                .addOnFailureListener(e -> Log.e(TAG, "Error updating event organizer", e));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error fetching events for removal", e);
+            }
+        });
+    }
+
+    /**
+     * Removes a single event and cleans up associated references.
+     * @param eventId The ID of the event to remove.
      */
     public void removeEvent(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
@@ -357,14 +392,12 @@ public class Admin extends AbstractUser {
 
             WriteBatch batch = db.batch();
 
-            // remove event from organizer's list of events
             String organizerId = event.getOrganizerId();
             if (organizerId != null) {
                 DocumentReference organizerRef = db.collection("eventOrganizers").document(organizerId);
                 batch.update(organizerRef, "events", FieldValue.arrayRemove(event));
             }
 
-            // remove event from attendee's event history and waitlist
             GuestList guestList = event.getGuestList();
             if (guestList != null) {
                 ArrayList<String> attendeeIds = guestList.getAttendeeIds();
@@ -385,7 +418,6 @@ public class Admin extends AbstractUser {
                 }
             }
             
-            // Delete the event document
             batch.delete(eventRef);
 
             batch.commit().addOnSuccessListener(aVoid -> {
@@ -396,7 +428,11 @@ public class Admin extends AbstractUser {
         });
     }
 
-    public void removeAttendeeProfile(String attendeeId) {
+    /**
+     * Removes an attendee profile and cleans up their associations with events.
+     * @param attendeeId The ID of the attendee to remove.
+     */
+    public void removeProfile(String attendeeId) {
         DocumentReference attendeeRef = db.collection("attendees").document(attendeeId);
         attendeeRef.get().addOnCompleteListener(doc -> {
             Attendee attendee = doc.getResult().toObject(Attendee.class);
@@ -431,8 +467,8 @@ public class Admin extends AbstractUser {
     }
 
     /**
-     * Removes an event organizer's profile from the database
-     * @param eventOrganizerId
+     * Removes an event organizer's profile from the database.
+     * @param eventOrganizerId The ID of the organizer.
      */
     public void removeEventOrganizerProfile(String eventOrganizerId) {
         DocumentReference eventOrganizerRef = db.collection("eventOrganizers").document(eventOrganizerId);
@@ -452,8 +488,8 @@ public class Admin extends AbstractUser {
     }
 
     /**
-     * Deletes all documents in a collection
-     * @param collection
+     * Deletes all documents in a collection.
+     * @param collection The collection to clear.
      */
     private void deleteCollectionDocs(CollectionReference collection) {
         collection.get().addOnSuccessListener(querySnapshot -> {
@@ -466,40 +502,15 @@ public class Admin extends AbstractUser {
         });
     }
 
+    /**
+     * Removes an image associated with an event.
+     * @param eventId The ID of the event.
+     * @return A Task representing the asynchronous operation.
+     */
     public Task<Void> removeImage(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
-        DocumentReference imageRef = eventRef.collection("eventImages").document(eventId);
-        imageRef.update("url", null);
+        DocumentReference imageRef = eventRef.collection("images").document("main");
+        imageRef.update("imageUrl", null);
         return eventRef.update("posterImageUrl", null);
-    }
-
-    public void removeEventComments(String eventId) {
-
-    }
-
-    public void migrateExistingImages() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        // 1. Get all documents from your original 'events' collection
-        db.collection("events").get().addOnSuccessListener(querySnapshot -> {
-            for (DocumentSnapshot eventDoc : querySnapshot) {
-                String eventId = eventDoc.getId(); // This is the Document Name
-                String url = eventDoc.getString("imageUrl");
-
-                if (url != null && !url.isEmpty()) {
-                    // 2. Prepare the data for the new collection
-                    HashMap<String, Object> imageData = new HashMap<>();
-                    imageData.put("url", url);
-                    imageData.put("eventId", eventId); // Storing it as a field too
-
-                    // 3. Create the document in the NEW collection
-                    // We use .document(eventId) to set the Document Name
-                    db.collection("imageCollection").document(eventId)
-                            .set(imageData)
-                            .addOnSuccessListener(aVoid -> Log.d("Migration", "Created image doc for: " + eventId))
-                            .addOnFailureListener(e -> Log.e("Migration", "Failed: " + eventId, e));
-                }
-            }
-        });
     }
 }
