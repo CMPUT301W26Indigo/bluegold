@@ -54,7 +54,7 @@ public class NotificationFlowTest {
     }
 
     /**
-     * US 01.04.01 & 02.05.01: Verifies winner receives notification.
+     * US 01.04.01 {@code &} 02.05.01: Verifies winner receives notification.
      */
     @Test
     public void testWinnerReceivesNotification() throws InterruptedException {

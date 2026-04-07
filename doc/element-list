@@ -1,7 +1,6 @@
 com.eventlottery
 com.eventlottery.controller
 com.eventlottery.controller.entrant
-com.eventlottery.data.models
 com.eventlottery.model
 com.eventlottery.services
 com.eventlottery.ui.adapters

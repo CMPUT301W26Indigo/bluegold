@@ -26,7 +26,16 @@ public class AdminController {
      * @param <T> The type of data to be loaded.
      */
     public interface OnDataLoadedListener<T> {
+        /**
+         * Called when data is successfully loaded.
+         * @param data List of loaded data items.
+         */
         void onDataLoaded(List<T> data);
+        
+        /**
+         * Called when an error occurs during data loading.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 
@@ -34,7 +43,15 @@ public class AdminController {
      * Interface for handling operations on data.
      */
     public interface OnOperationListener {
+        /**
+         * Called when the operation is successful.
+         */
         void onSuccess();
+        
+        /**
+         * Called when an error occurs during the operation.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 
@@ -47,6 +64,7 @@ public class AdminController {
 
     /**
      * Fetches all users from the 'users' collection.
+     * @param listener Callback for the loaded users.
      */
     public void getAllUsers(OnDataLoadedListener<User> listener) {
         db.collection("users")
@@ -71,6 +89,7 @@ public class AdminController {
 
     /**
      * Fetches all attendees from the 'attendees' collection.
+     * @param listener Callback for the loaded attendees.
      */
     public void getAllAttendees(OnDataLoadedListener<Attendee> listener) {
         db.collection("attendees")
@@ -95,6 +114,8 @@ public class AdminController {
 
     /**
      * Deletes a user from the system.
+     * @param userId The ID of the user to be deleted.
+     * @param listener Callback for the deletion result.
      */
     public void deleteUser(String userId, OnOperationListener listener) {
         db.collection("users").document(userId).delete()
@@ -104,6 +125,7 @@ public class AdminController {
 
     /**
      * Fetches flagged events for review.
+     * @param listener Callback for the flagged events.
      */
     public void getFlaggedEvents(OnDataLoadedListener<Event> listener) {
         db.collection("events")
@@ -127,6 +149,10 @@ public class AdminController {
                 .addOnFailureListener(listener::onError);
     }
 
+    /**
+     * Fetches all events from the 'events' collection.
+     * @param listener Callback for the loaded events.
+     */
     public void getAllEvents(OnDataLoadedListener<Event> listener) {
         db.collection("events")
                 .get()

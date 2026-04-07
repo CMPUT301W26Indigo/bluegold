@@ -117,7 +117,7 @@ public class AdminEventCommentsActivity extends AppCompatActivity {
     }
 
     /**
-     * Deletes a comment from Firestore and refreshes the list on success
+     * Deletes a comment from Firestore and refreshes the list on success.
      *
      * @param comment The comment to delete.
      */

@@ -327,7 +327,7 @@ public class CarouselFragment extends Fragment {
     }
 
     /**
-     * Gets events < $10
+     * Gets events {@code <} $10
      */
     public void getCheap() {
         List<Event> cheapEvents = new ArrayList<>();
