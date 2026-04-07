@@ -88,6 +88,14 @@ public abstract class AbstractUser {
         }
     }
 
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
     /**
      * Gets the attendee's name.
      * @return The name of the attendee.
