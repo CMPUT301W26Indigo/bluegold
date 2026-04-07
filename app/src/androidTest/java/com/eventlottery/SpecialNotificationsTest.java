@@ -59,6 +59,7 @@ public class SpecialNotificationsTest {
 
         Notification n = new Notification(
                 notifId,
+                "Invitation",
                 "You've been invited to join the waitlist for a private event!",
                 attendeeId,
                 eventId,
@@ -85,6 +86,7 @@ public class SpecialNotificationsTest {
 
         Notification n = new Notification(
                 notifId,
+                "Co-Organizer",
                 "You have been invited to be a co-organizer for an event.",
                 attendeeId,
                 eventId,

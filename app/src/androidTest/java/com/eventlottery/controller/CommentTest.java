@@ -207,11 +207,35 @@ public class CommentTest {
     /**
      * No comments yet, screen loads without crashing.
      */
+    /**
+     * No comments yet, screen loads without crashing.
+     */
     @Test
     public void testViewComments_EmptyList() throws InterruptedException {
-        // No comments seeded — clean state guaranteed by @Before
+        // Ensure deviceId is initialized even if setUp was slow
+        if (deviceId == null) {
+            CountDownLatch idLatch = new CountDownLatch(1);
+            Attendee.getFirebaseId().addOnSuccessListener(id -> {
+                deviceId = id;
+                idLatch.countDown();
+            });
+            idLatch.await(10, TimeUnit.SECONDS);
+        }
+
+        // Force a valid profile to prevent fetchFromFirebase from crashing on stale/invalid data
+        Attendee attendee = new Attendee();
+        attendee.setID(deviceId);
+        attendee.setName("Test Entrant");
+        attendee.setEmail("test@example.com");
+        attendee.setPhoneNumber("1234567890");
+
+        CountDownLatch profileLatch = new CountDownLatch(1);
+        db.collection("attendees").document(deviceId).set(attendee)
+                .addOnCompleteListener(task -> profileLatch.countDown());
+        profileLatch.await(10, TimeUnit.SECONDS);
+
         ActivityScenario.launch(buildCommentsIntent(FAKE_ORGANIZER_ID));
-        Thread.sleep(2000);
+        Thread.sleep(3000);
 
         // Verify the activity loaded successfully (input and send button are visible)
         onView(withId(R.id.et_comment_input)).check(matches(isDisplayed()));

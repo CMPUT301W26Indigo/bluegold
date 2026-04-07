@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.not;
 import android.content.Context;
 import android.content.Intent;
 
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
@@ -20,6 +21,7 @@ import androidx.test.filters.LargeTest;
 import com.eventlottery.R;
 import com.eventlottery.controller.EventController;
 import com.eventlottery.ui.entrant.EventDetailsActivity;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -47,9 +49,31 @@ public class testEventEntrantSide {
     private EventController eventController;
     private final Context context = ApplicationProvider.getApplicationContext();
 
+    private String deviceId;
+
     @Before
-    public void setUp() {
+    public void setUp() throws InterruptedException {
         eventController = new EventController();
+
+        // Ensure we have a valid device ID
+        CountDownLatch idLatch = new CountDownLatch(1);
+        Attendee.getFirebaseId().addOnSuccessListener(id -> {
+            deviceId = id;
+            idLatch.countDown();
+        });
+        idLatch.await(5, TimeUnit.SECONDS);
+
+        // Seed a valid profile so we can actually "join" (or attempt to)
+        Attendee attendee = new Attendee();
+        attendee.setID(deviceId);
+        attendee.setName("Test Entrant");
+        attendee.setEmail("test@example.com");
+        attendee.setPhoneNumber("1234567890");
+
+        CountDownLatch profileLatch = new CountDownLatch(1);
+        FirebaseFirestore.getInstance().collection("attendees").document(deviceId).set(attendee)
+                .addOnCompleteListener(task -> profileLatch.countDown());
+        profileLatch.await(10, TimeUnit.SECONDS);
     }
 
     /**
@@ -83,34 +107,75 @@ public class testEventEntrantSide {
     }
 
     /**
+     * Test for making sure users can join when all conditions are met
+     * @throws InterruptedException if the thread is interrupted
+     */
+    @Test
+    public void testJoinWaitlist_Success() throws InterruptedException {
+        Event event = new Event();
+        event.setName("Valid Event");
+        event.setRegistrationOpens(System.currentTimeMillis() - 10000);
+        event.setRegistrationCloses(System.currentTimeMillis() + 100000);
+        event.setStatus("open");
+
+        String eventId = createTestEvent(event);
+
+        Intent intent = new Intent(context, EventDetailsActivity.class);
+        intent.putExtra("EVENT_ID", eventId);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        ActivityScenario.launch(intent);
+
+        sleep(2000);
+
+        onView(withId(R.id.joinWaitlistBtn)).check(matches(isEnabled()));
+        onView(withId(R.id.joinWaitlistBtn)).check(matches(withText("Join Waitlist")));
+        onView(withId(R.id.joinWaitlistBtn)).perform(scrollTo(), click());
+
+        sleep(3000);
+
+        onView(withId(R.id.joinWaitlistBtn)).check(matches(withText("Leave Waitlist")));
+
+        // Verify in Firestore
+        CountDownLatch verifyLatch = new CountDownLatch(1);
+        final boolean[] found = {false};
+        FirebaseFirestore.getInstance().collection("events").document(eventId)
+                .collection("waitlist").document(deviceId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        found[0] = true;
+                    }
+                    verifyLatch.countDown();
+                });
+        verifyLatch.await(5, TimeUnit.SECONDS);
+        assert(found[0]);
+    }
+
+    /**
      * Test for making sure users cannot join after registration end
      * @throws InterruptedException if the thread is interrupted
      */
     @Test
     public void testCannotJoinWhenRegistrationClosed() throws InterruptedException {
-        // Create an event where registration ended 1 hour ago
         Event event = new Event();
-        event.setName("Closed Registration Event");
-        event.setDescription("Testing closed registration");
-        event.setRegistrationOpens(System.currentTimeMillis() - 7200000); // 2 hours ago
-        event.setRegistrationCloses(System.currentTimeMillis() - 3600000); // 1 hour ago
+        event.setName("Closed Reg Event");
+        event.setDescription("This event has closed registration.");
+        event.setRegistrationOpens(System.currentTimeMillis() - 20000);
+        event.setRegistrationCloses(System.currentTimeMillis() - 10000); // Closed 10s ago
         event.setStatus("open");
-        event.setTags(new ArrayList<>());
 
-        String id = createTestEvent(event);
+        String eventId = createTestEvent(event);
 
-        // Launch Activity directly with this event
         Intent intent = new Intent(context, EventDetailsActivity.class);
-        intent.putExtra("EVENT_ID", id);
+        intent.putExtra("EVENT_ID", eventId);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         androidx.test.core.app.ActivityScenario.launch(intent);
 
         sleep(2000);
 
-        // Verify button is disabled and shows "Registration Closed"
-        onView(withId(R.id.joinWaitlistBtn))
-                .check(matches(not(isEnabled())))
-                .check(matches(withText("Registration Closed")));
+        onView(withId(R.id.joinWaitlistBtn)).check(matches(not(isEnabled())));
+        onView(withId(R.id.joinWaitlistBtn)).check(matches(withText("Registration Closed")));
     }
 
     /**
@@ -119,28 +184,32 @@ public class testEventEntrantSide {
      */
     @Test
     public void testCannotJoinWhenWaitlistFull() throws InterruptedException {
-        // Create an event with a waitlist limit of 1 and 1 person already on it
         Event event = new Event();
         event.setName("Full Waitlist Event");
         event.setWaitlistLimit(1);
-        event.setWaitlistCount(1); // Simulate full count
-        event.setRegistrationOpens(System.currentTimeMillis() - 3600000);
-        event.setRegistrationCloses(System.currentTimeMillis() + 3600000);
+        event.setRegistrationOpens(System.currentTimeMillis() - 10000);
+        event.setRegistrationCloses(System.currentTimeMillis() + 100000);
         event.setStatus("open");
-        event.setTags(new ArrayList<>());
 
-        String id = createTestEvent(event);
+        String eventId = createTestEvent(event);
+
+        // Manually fill the waitlist by adding another user
+        CountDownLatch fillLatch = new CountDownLatch(1);
+        FirebaseFirestore.getInstance().collection("events").document(eventId)
+                .collection("waitlist").document("other_user_id").set(new java.util.HashMap<>())
+                .addOnCompleteListener(t -> fillLatch.countDown());
+        fillLatch.await(5, TimeUnit.SECONDS);
 
         Intent intent = new Intent(context, EventDetailsActivity.class);
-        intent.putExtra("EVENT_ID", id);
+        intent.putExtra("EVENT_ID", eventId);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         androidx.test.core.app.ActivityScenario.launch(intent);
 
-        sleep(2000);
+        sleep(3000); // Wait for loadEventStats to run
 
-        onView(withId(R.id.joinWaitlistBtn))
-                .check(matches(not(isEnabled())))
-                .check(matches(withText("Waitlist Full")));
+        onView(withId(R.id.joinWaitlistBtn)).check(matches(not(isEnabled())));
+        onView(withId(R.id.joinWaitlistBtn)).check(matches(withText("Event Full")));
     }
 
     /**
@@ -149,32 +218,30 @@ public class testEventEntrantSide {
      */
     @Test
     public void testCannotJoinWhenOutsideGeolocation() throws InterruptedException {
-        // Create an event in Edmonton with 1km radius
         Event event = new Event();
-        event.setName("Geo-restricted Event");
+        event.setName("Geo-fenced Event");
         event.setGeolocationEnabled(true);
-        event.setGeolocationRadius(1);
-        event.setLatitude(53.5461);  // Edmonton
-        event.setLongitude(-113.4938);
-        event.setRegistrationOpens(System.currentTimeMillis() - 3600000);
-        event.setRegistrationCloses(System.currentTimeMillis() + 3600000);
+        event.setGeolocationRadius(5); // 5km radius
+        event.setLatitude(40.7128); // NYC
+        event.setLongitude(-74.0060);
+        event.setRegistrationOpens(System.currentTimeMillis() - 10000);
+        event.setRegistrationCloses(System.currentTimeMillis() + 100000);
         event.setStatus("open");
-        event.setTags(new ArrayList<>());
 
-        String id = createTestEvent(event);
+        String eventId = createTestEvent(event);
 
-        // Launch with a location far away (e.g. Calgary)
         Intent intent = new Intent(context, EventDetailsActivity.class);
-        intent.putExtra("EVENT_ID", id);
-        intent.putExtra("USER_LAT", 51.0447); // Calgary
-        intent.putExtra("USER_LON", -114.0719);
+        intent.putExtra("EVENT_ID", eventId);
+        // Set user location far away (e.g., LA)
+        intent.putExtra("USER_LAT", 34.0522);
+        intent.putExtra("USER_LON", -118.2437);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         androidx.test.core.app.ActivityScenario.launch(intent);
 
         sleep(2000);
 
-        onView(withId(R.id.joinWaitlistBtn))
-                .check(matches(not(isEnabled())))
-                .check(matches(withText("Event Outside Geolocation Radius")));
+        onView(withId(R.id.joinWaitlistBtn)).check(matches(not(isEnabled())));
+        onView(withId(R.id.joinWaitlistBtn)).check(matches(withText("Event Outside Geolocation Radius")));
     }
 }

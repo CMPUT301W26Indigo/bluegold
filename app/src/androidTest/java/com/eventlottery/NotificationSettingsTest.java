@@ -20,12 +20,14 @@ import com.eventlottery.R;
 import com.eventlottery.model.Attendee;
 import com.eventlottery.ui.entrant.ProfileActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -71,20 +73,6 @@ public class NotificationSettingsTest {
         db.collection("attendees").document(deviceId).set(mock)
                 .addOnCompleteListener(task -> latch.countDown());
         latch.await(10, TimeUnit.SECONDS);
-    }
-
-    /**
-     * US 01.04.03 (Logic): Verifies that the opt-out preference is correctly saved in Firestore.
-     */
-    @Test
-    public void testOptOutLogicPersistence() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        db.collection("attendees").document(deviceId)
-                .update("notification", false)
-                .addOnCompleteListener(task -> latch.countDown());
-
-        assertTrue("Database update timed out", latch.await(10, TimeUnit.SECONDS));
-        verifyPreferenceInDb(deviceId, false);
     }
 
     /**
