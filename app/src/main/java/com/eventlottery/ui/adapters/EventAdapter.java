@@ -34,6 +34,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     
     private List<Event> events;
     private OnEventClickListener listener;
+    private boolean isAdminMode = false;
     private static double userLat = 0;
     private static double userLon = 0;
 
@@ -42,6 +43,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      */
     public interface OnEventClickListener {
         void onEventClick(Event event);
+        default void onDeleteClick(Event event) {}
     }
 
     /**
@@ -59,6 +61,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
      */
     public void submitList(List<Event> newEvents) {
         this.events = newEvents;
+        notifyDataSetChanged();
+    }
+
+    public void setAdminMode(boolean adminMode) {
+        this.isAdminMode = adminMode;
         notifyDataSetChanged();
     }
 
@@ -85,7 +92,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = events.get(position);
-        holder.bind(event, listener);
+        holder.bind(event, listener, isAdminMode);
     }
 
     /**
@@ -122,7 +129,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
          * @param event The event to bind
          * @param listener The listener to handle event clicks
          */
-        void bind(Event event, OnEventClickListener listener) {
+        void bind(Event event, OnEventClickListener listener, boolean isAdminMode) {
             Log.e("EventAdapter", "Waitlist count: " + event.getWaitlistCount());
             // Set event name
             binding.eventNameText.setText(event.getName());
@@ -244,6 +251,18 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 binding.geolocationBadge.setVisibility(View.GONE);
             }
             
+            // Admin Action Button
+            if (isAdminMode) {
+                binding.adminActionButton.setVisibility(View.VISIBLE);
+                binding.adminActionButton.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onDeleteClick(event);
+                    }
+                });
+            } else {
+                binding.adminActionButton.setVisibility(View.GONE);
+            }
+
             // Set click listener
             binding.getRoot().setOnClickListener(v -> {
                 if (listener != null) {

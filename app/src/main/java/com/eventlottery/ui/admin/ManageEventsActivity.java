@@ -21,6 +21,17 @@ import com.eventlottery.model.Event;
 import com.eventlottery.model.Notification;
 import com.eventlottery.services.Base64EncodeDecode;
 import com.google.android.material.chip.Chip;
+import com.eventlottery.ui.adapters.AdminManageEventsAdapter;
+
+import android.view.View;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import com.eventlottery.databinding.ActivityManageEventsBinding;
+import com.eventlottery.model.Event;
+import com.eventlottery.ui.adapters.EventAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.WriteBatch;
@@ -209,6 +220,10 @@ public class ManageEventActivity extends AppCompatActivity {
                     binding.tvConfirmedCount.setText(query.size() + " / " + event.getCapacity());
                 });
 
+        adapter = new EventAdapter(this);
+        adapter.setAdminMode(true);
+        binding.rvManageEvents.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvManageEvents.setAdapter(adapter);
     }
 
     /**
@@ -352,13 +367,54 @@ public class ManageEventActivity extends AppCompatActivity {
                             cancelledUsers.size() + " cancelled entrants found",
                             Toast.LENGTH_SHORT).show();
 
-                    // If needed later, you now have the cancelled user IDs
-                    // Example: send notifications, display list, etc.
+
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this,
                                 "Error fetching cancelled entrants",
                                 Toast.LENGTH_SHORT).show());
+    @Override
+    public void onDeleteClick(Event event) {
+        showDeleteConfirmation(event);
+    }
+
+    private void showDeleteConfirmation(Event event) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Event")
+                .setMessage("Are you sure you want to delete event: " + event.getName() + "?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    showFinalDeleteConfirmation(event);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showFinalDeleteConfirmation(Event event) {
+        new AlertDialog.Builder(this)
+                .setTitle("Final Confirmation")
+                .setMessage("This action is permanent and cannot be undone. Are you REALLY sure you want to delete " + event.getName() + "?")
+                .setPositiveButton("YES, DELETE", (dialog, which) -> {
+                    performDelete(event);
+                })
+                .setNegativeButton("No", null)
+                .show();
+    }
+
+    private void performDelete(Event event) {
+        db.collection("events").document(event.getId()).delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error deleting event", e);
+                    Toast.makeText(this, "Error deleting event", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        binding = null;
     }
 
     private void loadComments() {

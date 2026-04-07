@@ -74,9 +74,11 @@ public class SearchUsersFragment extends Fragment implements UserAdapter.OnAtten
             public void onInviteClick(Attendee attendee) {
                 if (isCoOrganizerMode && eventId != null) {
                     sendCoOrganizerInvite(attendee);
-                } else {
-                    // TODO: Actually send the notification for private event invitation
-                    Toast.makeText(getContext(), "Invite sent to: " + attendee.getName(), Toast.LENGTH_SHORT).show();
+                } else if (eventId != null) {
+                    organizerController.sendPrivateEventInvite(eventId, attendee.getID(), (eventName != null ? eventName : "Event"), new OrganizerController.OnOperationListener() {
+                        @Override public void onSuccess() { if (isAdded()) Toast.makeText(getContext(), "Invitation sent to " + attendee.getName(), Toast.LENGTH_SHORT).show(); }
+                        @Override public void onError(Exception e) { if (isAdded()) Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show(); }
+                    });
                 }
             }
 
