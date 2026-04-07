@@ -40,6 +40,8 @@
             app:layout_constraintTop_toBottomOf="@+id/statusBadge"
             app:srcCompat="@drawable/ic_launcher_foreground" />
 
+
+
         <!-- Status Badge -->
         <com.google.android.material.chip.Chip
             android:id="@+id/statusBadge"
@@ -51,19 +53,6 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Open" />
 
-        <!-- Private Badge (Admin only or context-dependent) -->
-        <com.google.android.material.chip.Chip
-            android:id="@+id/privateBadge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/spacing_sm"
-            android:text="Private"
-            android:textColor="@android:color/white"
-            android:visibility="gone"
-            app:chipBackgroundColor="@android:color/holo_red_dark"
-            app:layout_constraintEnd_toStartOf="@id/statusBadge"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="visible" />
 
         <!-- Date and Time -->
         <LinearLayout
@@ -139,83 +128,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_sm"
                 android:textAppearance="@style/TextAppearance.App.BodySmall"
-                tools:text="28 / 50 entrants" />
-        </LinearLayout>
-
-        <!-- Guestlist Count -->
-        <LinearLayout
-            android:id="@+id/guestlistLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/waitlistLayout">
-
-            <ImageView
-                android:layout_width="@dimen/icon_sm"
-                android:layout_height="@dimen/icon_sm"
-                android:contentDescription="@string/capacity"
-                android:src="@android:drawable/ic_menu_agenda"
-                app:tint="@color/text_secondary" />
-
-            <TextView
-                android:id="@+id/guestlistCountText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/spacing_sm"
-                android:textAppearance="@style/TextAppearance.App.BodySmall"
-                tools:text="28 / 50 confirmed" />
+                tools:text="28 / 50 on waiting list" />
 
         </LinearLayout>
 
         <!-- Tag Chips and Geolocation Badge -->
         <LinearLayout
-            android:id="@+id/infoMarkers"
+            android:id="@+id/tagLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
             android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/guestlistLayout">
-
-
-            <com.google.android.material.chip.ChipGroup
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                app:chipSpacingHorizontal="@dimen/spacing_xs">
-
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/geolocationBadge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_orange_900"
-                    android:visibility="gone"
-                    app:chipBackgroundColor="@color/background_orange_50"
-                    app:chipStrokeColor="@color/border_orange_200"
-                    tools:text="Within 10km"
-                    tools:visibility="visible" />
-
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/joinableBadge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/text_green_900"
-                    android:visibility="gone"
-                    app:chipBackgroundColor="@color/background_green_50"
-                    app:chipStrokeColor="@color/border_green_200"
-                    tools:text="Within Range"
-                    tools:visibility="visible"/>
-            </com.google.android.material.chip.ChipGroup>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/infoMarkers">
+            app:layout_constraintTop_toBottomOf="@id/waitlistLayout">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/tagChips"
@@ -240,7 +164,39 @@
 
             </com.google.android.material.chip.ChipGroup>
 
+            <com.google.android.material.chip.Chip
+                android:id="@+id/geolocationBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_orange_900"
+                android:visibility="gone"
+                app:chipBackgroundColor="@color/background_orange_50"
+                app:chipStrokeColor="@color/border_orange_200"
+                tools:text="Within 10km"
+                tools:visibility="visible" />
+
         </LinearLayout>
+
+        <!-- Admin Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:orientation="horizontal"
+            android:gravity="end"
+            app:layout_constraintTop_toBottomOf="@id/tagLayout">
+
+            <Button
+                android:id="@+id/btn_admin_comments"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Comments"
+                style="@style/Widget.App.Button.Small" />
+
+        </LinearLayout>
+
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
