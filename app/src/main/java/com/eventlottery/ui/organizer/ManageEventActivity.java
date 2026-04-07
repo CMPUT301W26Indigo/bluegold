@@ -12,12 +12,14 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.eventlottery.R;
+import com.eventlottery.controller.OrganizerController;
 import com.eventlottery.databinding.ActivityManageEvent1Binding;
 import com.eventlottery.model.Event;
 import com.eventlottery.model.Notification;
@@ -57,6 +59,7 @@ public class ManageEventActivity extends AppCompatActivity {
 
     private @NonNull ActivityManageEvent1Binding binding;
     private FirebaseFirestore db;
+    private OrganizerController organizerController;
     private String eventId;
     private String eventName;
     private Event event;
@@ -71,6 +74,8 @@ public class ManageEventActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityManageEvent1Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        organizerController = new OrganizerController();
 
         imagePicker = new ImagePicker(this, uri -> {
             uploadImage(event, uri);
@@ -216,6 +221,30 @@ public class ManageEventActivity extends AppCompatActivity {
             Intent intent = new Intent(this, SendNotificationsActivity.class);
             intent.putExtra("EVENT_ID", eventId);
             startActivity(intent);
+        });
+
+        // Delete
+        binding.btnDeleteEvent.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                .setTitle("Delete Event")
+                .setMessage("Are you sure you want to delete this event? This action cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    organizerController.deleteEvent(eventId, new OrganizerController.OnOperationListener() {
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(ManageEventActivity.this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            Log.e("ManageEventActivity", "Error deleting event", e);
+                            Toast.makeText(ManageEventActivity.this, "Failed to delete event", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
         });
 
         binding.btnSeeWaitlistMap.setOnClickListener(v -> {
