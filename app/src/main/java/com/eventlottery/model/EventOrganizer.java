@@ -69,6 +69,39 @@ public class EventOrganizer extends AbstractUser {
 
     /**
      * Creates an event with all parameters.
+     * @param id
+     * @param name
+     * @param description
+     * @param organizerId
+     * @param coOrganizerIds
+     * @param date
+     * @param time
+     * @param endTime
+     * @param location
+     * @param locationAddress
+     * @param capacity
+     * @param waitlistLimit
+     * @param waitlistCount
+     * @param confirmedCount
+     * @param posterImageUrl
+     * @param price
+     * @param registrationOpens
+     * @param registrationCloses
+     * @param lotteryDrawDate
+     * @param createdAt
+     * @param updatedAt
+     * @param tags
+     * @param geolocationEnabled
+     * @param geolocationRadius
+     * @param status
+     * @param qrCodeUrl
+     * @param qrCode
+     * @param isFlagged
+     * @param flagCount
+     * @param waitlist
+     * @param guestList
+     * @param recurringEvent
+     * @param isPrivate
      * @return created event
      */
     public Event createEvent(

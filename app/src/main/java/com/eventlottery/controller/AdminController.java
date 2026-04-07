@@ -149,6 +149,10 @@ public class AdminController {
                 .addOnFailureListener(listener::onError);
     }
 
+    /**
+     * Fetches all events from the 'events' collection.
+     * @param listener Callback for the loaded events.
+     */
     public void getAllEvents(OnDataLoadedListener<Event> listener) {
         db.collection("events")
                 .get()

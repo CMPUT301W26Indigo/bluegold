@@ -133,6 +133,10 @@ public class OrganizerController {
 
     /**
      * Sends a private event invitation to an attendee.
+     * @param eventId The ID of the event.
+     * @param attendeeId The ID of the attendee to invite.
+     * @param eventName The name of the event.
+     * @param listener Callback for the operation result.
      */
     public void sendPrivateEventInvite(String eventId, String attendeeId, String eventName, OnOperationListener listener) {
         WriteBatch batch = db.batch();

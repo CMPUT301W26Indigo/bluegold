@@ -98,6 +98,39 @@ public class Event {
     /**
      * Constructor with all parameters.
      * Use null for eventCapacity or waitlistLimit if they are not restricted.
+     * @param id The unique identifier for the event.
+     * @param name The name of the event.
+     * @param description A brief description of the event.
+     * @param organizerId The ID of the organizer who created the event.
+     * @param coOrganizerIds A list of IDs for co-organizers of the event.
+     * @param date The date the event occurs.
+     * @param time The start time of the event.
+     * @param endTime The end time of the event.
+     * @param location The name of the event location.
+     * @param locationAddress The physical address of the event.
+     * @param capacity The maximum number of participants for the event.
+     * @param waitlistLimit The maximum number of people allowed on the waitlist.
+     * @param waitlistCount The current number of people on the waitlist.
+     * @param confirmedCount The number of people who have confirmed attendance.
+     * @param posterImageUrl The URL of the event's poster image.
+     * @param price The ticket price for the event.
+     * @param registrationOpens The timestamp when registration opens.
+     * @param registrationCloses The timestamp when registration closes.
+     * @param lotteryDrawDate The timestamp when the lottery draw occurs.
+     * @param createdAt The timestamp when the event was created.
+     * @param updatedAt The timestamp when the event was last updated.
+     * @param tags A list of categories or tags for the event.
+     * @param geolocationEnabled Whether geolocation is required for registration.
+     * @param geolocationRadius The required radius for geolocation validation.
+     * @param status The current status of the event (e.g., open, closed).
+     * @param qrCodeUrl The URL of the event's QR code.
+     * @param qrCode The Bitmap representation of the event's QR code.
+     * @param isFlagged Whether the event has been flagged for review.
+     * @param flagCount The number of times the event has been flagged.
+     * @param waitlist The Waitlist object managing entrants.
+     * @param guestList The GuestList object managing selected participants.
+     * @param recurringEvent Whether the event occurs on a recurring basis.
+     * @param isPrivate Whether the event is private and requires an invite.
      */
     public Event(
             String id,
@@ -499,7 +532,7 @@ public class Event {
      * Lottery System if a max num of guests to select is specified
      * Randomly selects guests from the waitlist and adds them to the guest list.
      * Sends notifications to the selected guests.
-     * @param lotteryLimit
+     * @param lotteryLimit The maximum number of guests to select.
      */
     public void LotterySystem(int lotteryLimit) {
         Integer limit = guestList.getListLimit();
@@ -520,23 +553,35 @@ public class Event {
         }
     }
 
+    /**
+     * Adds an attendee to the waitlist.
+     * @param attendeeId The ID of the attendee to add.
+     */
     public void addAttendeeToWaitlist(String attendeeId) {
         waitlist.addAttendee(attendeeId);
     }
 
+    /**
+     * Checks if the waitlist is full.
+     * @return true if the waitlist has reached its limit, false otherwise.
+     */
     public boolean waitlistIsFull() {
         return waitlist.isWaitlistFull();
     }
 
     /**
      * Gets the number of spots available for an event
-     * @return int
+     * @return The number of available spots.
      */
     public int getAvailableWaitlistSpots() {
         if (waitlist.getWaitlistLimit() == null) return -1;
         return Math.max(0, waitlist.getWaitlistLimit() - guestList.getListCount());
     }
 
+    /**
+     * Gets the number of available guest list spots.
+     * @return The remaining capacity of the guest list.
+     */
     public int getAvailableGuestlistSpots() {
         return getCapacity() - getConfirmedCount();
     }
@@ -544,7 +589,7 @@ public class Event {
     /**
      * Adds a tag to an event
      *
-     * @param tag
+     * @param tag The tag to add.
      */
     public void addTag(String tag) {
         tags.add(tag);
@@ -553,7 +598,7 @@ public class Event {
     /**
      * Removes a tag from an event
      *
-     * @param tag
+     * @param tag The tag to remove.
      */
     public void removeTag(String tag) {
         tags.remove(tag);
@@ -594,17 +639,21 @@ public class Event {
 
     /**
      * Checks if the waitlist is full
-     * @return boolean
+     * @return true if full, false otherwise.
      */
     public boolean isWaitlistFull() {
         return waitlist.isWaitlistFull();
     }
 
+    /**
+     * Checks if the guest list is full.
+     * @return true if full, false otherwise.
+     */
     public boolean isGuestlistFull() {return guestList.isGuestlistFull(capacity);}
 
     /**
      * Checks if the registration is open
-     * @return boolean
+     * @return true if open, false otherwise.
      */
     public boolean isRegistrationOpen() {
         long currentTime = System.currentTimeMillis();
@@ -614,9 +663,16 @@ public class Event {
                 !isWaitlistFull();
     }
 
+    /**
+     * Placeholder method for adding an attendee.
+     */
     public void addAttendee(){
 
     }
+
+    /**
+     * Placeholder method for removing a user.
+     */
     public void removeUser() {
 
     }

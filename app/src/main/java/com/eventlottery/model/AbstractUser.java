@@ -130,8 +130,6 @@ public abstract class AbstractUser {
         this.deviceID = id;
     }
 
-
-
     /**
      * Sets the notification preference and updates Firebase.
      * @param notification True to enable notifications, false to disable.
@@ -149,10 +147,18 @@ public abstract class AbstractUser {
         return notification;
     }
 
+    /**
+     * Sets the admin status of the attendee.
+     * @return True if the attendee is an admin, false otherwise.
+     */
     public String getFcmToken() {
         return fcmToken;
     }
 
+    /**
+     * Sets the admin status of the attendee.
+     * @param fcmToken The Firebase Cloud Messaging (FCM) token.
+     */
     public void setFcmToken(String fcmToken) {
         this.fcmToken = fcmToken;
     }
