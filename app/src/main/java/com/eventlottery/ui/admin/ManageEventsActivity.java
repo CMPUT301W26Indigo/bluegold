@@ -1,4 +1,4 @@
-package com.eventlottery.ui.organizer;
+package com.eventlottery.ui.admin;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -16,10 +16,15 @@ import androidx.core.content.FileProvider;
 import com.bumptech.glide.Glide;
 import com.eventlottery.R;
 import com.eventlottery.databinding.ActivityManageEvent1Binding;
-import com.eventlottery.databinding.ActivityManageEventBinding;
+import com.eventlottery.databinding.ActivityManageEventsBinding;
 import com.eventlottery.model.Event;
 import com.eventlottery.model.Notification;
 import com.eventlottery.services.Base64EncodeDecode;
+import com.eventlottery.ui.organizer.ConfirmedEntrantsActivity;
+import com.eventlottery.ui.organizer.DrawLotteryActivity;
+import com.eventlottery.ui.organizer.InvitedEntrantsActivity;
+import com.eventlottery.ui.organizer.SearchUsersActivity;
+import com.eventlottery.ui.organizer.SendNotificationsActivity;
 import com.google.android.material.chip.Chip;
 import com.eventlottery.ui.adapters.AdminManageEventsAdapter;
 
@@ -29,7 +34,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import com.eventlottery.databinding.ActivityManageEventsBinding;
 import com.eventlottery.model.Event;
 import com.eventlottery.ui.adapters.EventAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -68,7 +72,7 @@ import java.util.List;
  * @see InvitedEntrantsActivity
  * @see ConfirmedEntrantsActivity
  */
-public class ManageEventActivity extends AppCompatActivity {
+public class ManageEventsActivity extends AppCompatActivity {
 
     private @NonNull ActivityManageEvent1Binding binding;
     private FirebaseFirestore db;
@@ -76,6 +80,9 @@ public class ManageEventActivity extends AppCompatActivity {
     private String eventName;
     private Event event;
     private RecyclerView rvComments;
+    private EventAdapter adapter;
+
+
 
 
     @Override
@@ -374,11 +381,12 @@ public class ManageEventActivity extends AppCompatActivity {
                         Toast.makeText(this,
                                 "Error fetching cancelled entrants",
                                 Toast.LENGTH_SHORT).show());
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        binding = null;
     }
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy();
+//        binding = null;
+//    }
 
     private void loadComments() {
         rvComments = findViewById(R.id.rv_organizer_comments);
