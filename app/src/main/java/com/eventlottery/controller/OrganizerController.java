@@ -23,9 +23,19 @@ public class OrganizerController {
 
     /**
      * Interface for handling events loaded from Firestore.
+     * @param <T> The type of data being loaded.
      */
     public interface OnDataLoadedListener<T> {
+        /**
+         * Called when data is successfully loaded.
+         * @param data List of loaded data items.
+         */
         void onDataLoaded(List<T> data);
+        
+        /**
+         * Called when an error occurs during data loading.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 
@@ -33,7 +43,15 @@ public class OrganizerController {
      * Interface for handling operations on events.
      */
     public interface OnOperationListener {
+        /**
+         * Called when the operation is successful.
+         */
         void onSuccess();
+        
+        /**
+         * Called when an error occurs during the operation.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 
@@ -46,6 +64,8 @@ public class OrganizerController {
 
     /**
      * Fetches events where the user is the main organizer or a co-organizer.
+     * @param userId The ID of the user whose events are to be fetched.
+     * @param listener Callback for the loaded data.
      */
     public void getOrganizerEvents(String userId, OnDataLoadedListener<Event> listener) {
         db.collection("events")
@@ -68,6 +88,9 @@ public class OrganizerController {
 
     /**
      * Adds a user as a co-organizer to an event directly.
+     * @param eventId The ID of the event.
+     * @param coOrganizerId The ID of the co-organizer to add.
+     * @param listener Callback for the operation result.
      * @deprecated Use {@link #sendCoOrganizerInvite} to follow invitation workflow.
      */
     @Deprecated
@@ -110,6 +133,10 @@ public class OrganizerController {
 
     /**
      * Sends a private event invitation to an attendee.
+     * @param eventId The ID of the event.
+     * @param attendeeId The ID of the attendee to invite.
+     * @param eventName The name of the event.
+     * @param listener Callback for the operation result.
      */
     public void sendPrivateEventInvite(String eventId, String attendeeId, String eventName, OnOperationListener listener) {
         WriteBatch batch = db.batch();
@@ -126,6 +153,8 @@ public class OrganizerController {
 
     /**
      * Conducts a lottery draw for an event.
+     * @param eventId The ID of the event to conduct the lottery for.
+     * @param listener Callback for the operation result.
      */
     public void conductLottery(String eventId, OnOperationListener listener) {
         // Logic to select winners from the waitlist

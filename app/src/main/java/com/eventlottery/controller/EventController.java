@@ -70,6 +70,7 @@ public class EventController {
 
     /**
      * Fetches all events from Firestore.
+     * @param listener Callback for the loaded events.
      */
     public void getAllEvents(OnEventsLoadedListener listener) {
         db.collection(COLLECTION_NAME)
@@ -88,7 +89,7 @@ public class EventController {
 
     /**
      * Fetches only public events from Firestore.
-     * @param listener
+     * @param listener Callback for the loaded events.
      */
     public void getAllPublicEvents(OnEventsLoadedListener listener) {
         db.collection(COLLECTION_NAME)
@@ -108,6 +109,8 @@ public class EventController {
 
     /**
      * Fetches specific events from Firestore by their IDs.
+     * @param eventIds List of event IDs.
+     * @param listener Callback for the loaded events.
      */
     public void getEventsByIds(List<String> eventIds, OnEventsLoadedListener listener) {
         if (eventIds == null || eventIds.isEmpty()) {
@@ -133,6 +136,8 @@ public class EventController {
 
     /**
      * Adds a new event to Firestore.
+     * @param event The event to add.
+     * @param listener Callback for completion.
      */
     public void addEvent(Event event, OnEventOperationListener listener) {
         DocumentReference docRef = db.collection(COLLECTION_NAME).document();
@@ -148,6 +153,8 @@ public class EventController {
 
     /**
      * Updates an existing event in Firestore.
+     * @param event The event to update.
+     * @param listener Callback for completion.
      */
     public void updateEvent(Event event, OnEventOperationListener listener) {
         if (event.getId() == null || event.getId().isEmpty()) {
@@ -163,6 +170,8 @@ public class EventController {
 
     /**
      * Deletes an event from Firestore.
+     * @param eventId The ID of the event to delete.
+     * @param listener Callback for completion.
      */
     public void deleteEvent(String eventId, OnEventOperationListener listener) {
         db.collection(COLLECTION_NAME)
@@ -176,6 +185,8 @@ public class EventController {
      * Adds an attendee to an event's waitlist.
      * @param eventId The ID of the event.
      * @param attendeeId The ID of the attendee.
+     * @param lat Latitude of the attendee.
+     * @param lon Longitude of the attendee.
      * @param listener Callback for completion.
      */
     public void joinWaitlist(String eventId, String attendeeId, double lat, double lon, OnEventOperationListener listener) {
@@ -242,6 +253,9 @@ public class EventController {
 
     /**
      * Adds a new comment to an event's comments subcollection.
+     * @param eventId The ID of the event.
+     * @param comment The comment to add.
+     * @param listener Callback for completion.
      */
     public void addComment(String eventId, Comment comment, OnEventOperationListener listener) {
         DocumentReference docRef = db.collection(COLLECTION_NAME).document(eventId)
@@ -254,6 +268,8 @@ public class EventController {
 
     /**
      * Fetches all comments for a specific event (ascending order in time)
+     * @param eventId The ID of the event.
+     * @param listener Callback for the loaded comments.
      */
     public void getComments(String eventId, OnCommentsLoadedListener listener) {
         db.collection(COLLECTION_NAME).document(eventId)
@@ -274,6 +290,9 @@ public class EventController {
 
     /**
      * Deletes a specific comment
+     * @param eventId The ID of the event.
+     * @param commentId The ID of the comment to delete.
+     * @param listener Callback
      */
     public void deleteComment(String eventId, String commentId, OnEventOperationListener listener) {
         db.collection(COLLECTION_NAME).document(eventId)

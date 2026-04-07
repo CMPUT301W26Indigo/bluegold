@@ -10,14 +10,44 @@ import com.google.firebase.installations.FirebaseInstallations;
  * Abstract class representing a user in the application.
  */
 public abstract class AbstractUser {
+    /**
+     * The user's full name.
+     */
     protected String name;
+    
+    /**
+     * The user's email address.
+     */
     protected String email;
+    
+    /**
+     * The user's phone number.
+     */
     protected String phoneNumber;
+    
+    /**
+     * The user's physical address.
+     */
     protected String address;
+    
+    /**
+     * The unique device or Firebase ID for the user.
+     */
     protected String deviceID;
     //protected String profileImageUrl;
+    /**
+     * The FCM registration token for push notifications.
+     */
     protected String fcmToken;
+    
+    /**
+     * Whether the user has administrative privileges.
+     */
     protected boolean isAdmin;
+    
+    /**
+     * Whether notifications are enabled for this user.
+     */
     protected boolean notification;
 
 
@@ -130,8 +160,6 @@ public abstract class AbstractUser {
         this.deviceID = id;
     }
 
-
-
     /**
      * Sets the notification preference and updates Firebase.
      * @param notification True to enable notifications, false to disable.
@@ -149,10 +177,18 @@ public abstract class AbstractUser {
         return notification;
     }
 
+    /**
+     * Sets the admin status of the attendee.
+     * @return True if the attendee is an admin, false otherwise.
+     */
     public String getFcmToken() {
         return fcmToken;
     }
 
+    /**
+     * Sets the admin status of the attendee.
+     * @param fcmToken The Firebase Cloud Messaging (FCM) token.
+     */
     public void setFcmToken(String fcmToken) {
         this.fcmToken = fcmToken;
     }
@@ -180,5 +216,8 @@ public abstract class AbstractUser {
         return FirebaseInstallations.getInstance().getId();
     }
 
+    /**
+     * Abstract method to synchronize user data to Firebase.
+     */
     public abstract void saveToFirebase();
 }

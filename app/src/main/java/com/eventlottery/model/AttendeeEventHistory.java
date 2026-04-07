@@ -17,6 +17,9 @@ public class AttendeeEventHistory {
      * Interface to notify parent objects of changes.
      */
     public interface OnChangeListener {
+        /**
+         * Called when the attendance status or event information changes.
+         */
         void onChanged();
     }
 
@@ -38,7 +41,7 @@ public class AttendeeEventHistory {
 
     /**
      * Gets the unique identifier for the event.
-     * @return The event ID.
+     * @return The event ID string.
      */
     public String getEventID() {
         return eventID;

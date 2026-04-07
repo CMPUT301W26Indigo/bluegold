@@ -38,6 +38,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private static double userLat = 0;
     private static double userLon = 0;
 
+
     /**
      * Interface for handling event clicks
      */

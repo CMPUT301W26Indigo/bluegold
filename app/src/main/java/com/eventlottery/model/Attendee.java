@@ -38,7 +38,16 @@ public class Attendee extends AbstractUser {
      * Interface for handling asynchronous attendee loading from Firebase.
      */
     public interface OnAttendeeLoadedListener {
+        /**
+         * Called when the attendee is successfully loaded.
+         * @param attendee The loaded attendee object.
+         */
         void onSuccess(Attendee attendee);
+        
+        /**
+         * Called when an error occurs during loading.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 
@@ -183,34 +192,55 @@ public class Attendee extends AbstractUser {
         return waitListed;
     }
 
+    /**
+     * Sets the list of event IDs the attendee is waitlisted for.
+     * @param waitListed The list of event IDs to set.
+     */
     public void setWaitListed(ArrayList<String> waitListed) { this.waitListed = waitListed;}
 
     /**
      * Sets the list of events the attendee has participated in.
-     * @param eventHistory
+     * @param eventHistory An ArrayList of AttendeeEventHistory objects.
      */
     public void setEventHistory(ArrayList<AttendeeEventHistory> eventHistory) {
         this.eventHistory = eventHistory;
     }
 
+    /**
+     * Gets the latitude of the attendee's location.
+     * @return The latitude coordinate.
+     */
     public double getLatitude() {
         return latitude;
     }
 
+    /**
+     * Sets the latitude of the attendee's location.
+     * @param latitude The latitude coordinate to set.
+     */
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
+    /**
+     * Gets the longitude of the attendee's location.
+     * @return The longitude coordinate.
+     */
     public double getLongitude() {
         return longitude;
     }
 
+    /**
+     * Sets the longitude of the attendee's location.
+     * @param longitude The longitude coordinate to set.
+     */
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 
     /**
-     * Checks if attendee profile is complete enough to join events
+     * Checks if attendee profile is complete enough to join events.
+     * @return true if name, email, and phone number are provided, false otherwise.
      */
     @Exclude
     public boolean isProfileComplete() {

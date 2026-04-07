@@ -18,11 +18,26 @@ public class EventOrganizer extends AbstractUser {
     @Exclude
     private final FirebaseFirestore db;
 
+    /**
+     * Interface for handling asynchronous event organizer profile loading.
+     */
     public interface OnEventOrganizerLoadedListener {
+        /**
+         * Called when the event organizer profile is successfully loaded.
+         * @param eventOrganizer The loaded EventOrganizer object.
+         */
         void onSuccess(EventOrganizer eventOrganizer);
+        
+        /**
+         * Called when an error occurs during loading.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 
+    /**
+     * Constructs a new EventOrganizer with default values.
+     */
     public EventOrganizer() {
         super();
         this.events = new ArrayList<Event>();
@@ -41,7 +56,7 @@ public class EventOrganizer extends AbstractUser {
 
     /**
      * Gets the list of events associated with this organizer.
-     * @return events
+     * @return The list of associated events.
      */
     public ArrayList<Event> getEvents() {
         return events;
@@ -49,7 +64,7 @@ public class EventOrganizer extends AbstractUser {
 
     /**
      * Sets the list of events associated with this organizer.
-     * @param events
+     * @param events The list of events to set.
      */
     public void setEvents(ArrayList<Event> events) {
         this.events = events;
@@ -59,7 +74,7 @@ public class EventOrganizer extends AbstractUser {
     // Methods to create an event with or without parameters based on UI implementation
     /**
      * Creates an event with no parameters.
-     * @return created event
+     * @return The newly created blank event.
      */
     public Event createEventBlank() {
         Event event = new Event();
@@ -69,7 +84,40 @@ public class EventOrganizer extends AbstractUser {
 
     /**
      * Creates an event with all parameters.
-     * @return created event
+     * @param id Unique identifier for the event.
+     * @param name The name of the event.
+     * @param description A brief description of the event.
+     * @param organizerId The ID of the primary organizer.
+     * @param coOrganizerIds A list of IDs for co-organizers.
+     * @param date The date the event occurs.
+     * @param time The start time of the event.
+     * @param endTime The end time of the event.
+     * @param location The name of the event location.
+     * @param locationAddress The physical address of the event location.
+     * @param capacity The maximum number of attendees.
+     * @param waitlistLimit The maximum number of attendees allowed on the waitlist.
+     * @param waitlistCount The current number of attendees on the waitlist.
+     * @param confirmedCount The current number of confirmed attendees.
+     * @param posterImageUrl The URL of the event's poster image.
+     * @param price The ticket price for the event.
+     * @param registrationOpens The timestamp when registration opens.
+     * @param registrationCloses The timestamp when registration closes.
+     * @param lotteryDrawDate The timestamp when the lottery draw occurs.
+     * @param createdAt The timestamp when the event was created.
+     * @param updatedAt The timestamp when the event was last updated.
+     * @param tags A list of categories or tags for the event.
+     * @param geolocationEnabled Whether geolocation validation is enabled.
+     * @param geolocationRadius The radius for geolocation validation.
+     * @param status The current status of the event (e.g., open, closed).
+     * @param qrCodeUrl The URL of the event's QR code.
+     * @param qrCode The Bitmap representation of the event's QR code.
+     * @param isFlagged Whether the event has been flagged.
+     * @param flagCount The number of times the event has been flagged.
+     * @param waitlist The Waitlist object for the event.
+     * @param guestList The GuestList object for the event.
+     * @param recurringEvent Whether the event is recurring.
+     * @param isPrivate Whether the event is private.
+     * @return The newly created and fully initialized event.
      */
     public Event createEvent(
             String id,
@@ -145,7 +193,7 @@ public class EventOrganizer extends AbstractUser {
 
     /**
      * Adds an event to the organizer's list of events.
-     * @param event
+     * @param event The event to add.
      */
     public void addEvent(Event event) {
         events.add(event);
@@ -155,8 +203,9 @@ public class EventOrganizer extends AbstractUser {
     /**
      * Finds an event from the organizer's list of events.
      * If event with that ID is not found, and exception is thrown
-     * @param eventId
-     * @return found event
+     * @param eventId The ID of the event to find.
+     * @throws IllegalArgumentException if no event is found with the given ID.
+     * @return The found event.
      */
     public Event findEvent(String eventId) {
         for (Event event : events) {
@@ -167,6 +216,10 @@ public class EventOrganizer extends AbstractUser {
         throw new IllegalArgumentException("No event found with ID: " + eventId);
     }
 
+    /**
+     * Removes an event from the organizer's list of events.
+     * @param eventId The ID of the event to remove.
+     */
     public void removeEvent(String eventId) {
         try {
             Event event = findEvent(eventId);
@@ -252,8 +305,8 @@ public class EventOrganizer extends AbstractUser {
     /**
      * Sends a notification to all attendees of an event.
      *
-     * @param eventId
-     * @param message
+     * @param message The text content of the notification.
+     * @param eventId The ID of the event whose attendees are being notified.
      */
     public void sendNotification(String message, String eventId) {
         Notification notification = new Notification();
@@ -267,7 +320,7 @@ public class EventOrganizer extends AbstractUser {
     /**
      * Triggers lottery system of a specified event without a limit.
      *
-     * @param eventId
+     * @param eventId The ID of the event to conduct the lottery for.
      */
     public void lotteryWithoutLimit(String eventId) {
         Event event = findEvent(eventId);
@@ -277,8 +330,8 @@ public class EventOrganizer extends AbstractUser {
     /**
      * Triggers lottery system of a specified event with a limit.
      *
-     * @param eventId
-     * @param limit
+     * @param eventId The ID of the event to conduct the lottery for.
+     * @param limit The maximum number of winners to select.
      */
     public void lotteryWithLimit(String eventId, int limit) {
         Event event = findEvent(eventId);
@@ -287,7 +340,7 @@ public class EventOrganizer extends AbstractUser {
 
     /**
      * Removes all inactive attendees from a specified event.
-     * @param eventId
+     * @param eventId The ID of the event whose cancelled entrants are being cleared.
      */
     public void removeInactiveAttendees(String eventId) {
         Event event = findEvent(eventId);
@@ -306,6 +359,10 @@ public class EventOrganizer extends AbstractUser {
                 .addOnFailureListener(e -> Log.e(TAG, "Error updating attendee on Firebase", e));
     }
 
+    /**
+     * Fetches the event organizer profile from Firebase.
+     * @param listener Callback for completion.
+     */
     public void fetchFromFirebase(OnEventOrganizerLoadedListener listener) {
         if (db == null) {
             if (listener != null) listener.onError(new Exception("Firebase not initialized"));
@@ -337,9 +394,20 @@ public class EventOrganizer extends AbstractUser {
                 });
     }
 
-
+    /**
+     * Interface for handling asynchronous attendee list loading.
+     */
     public interface OnAttendeesLoadedListener {
+        /**
+         * Called when the list of attendees is successfully loaded.
+         * @param attendees The list of retrieved Attendee objects.
+         */
         void onSuccess(ArrayList<Attendee> attendees);
+        
+        /**
+         * Called when an error occurs during loading.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 }

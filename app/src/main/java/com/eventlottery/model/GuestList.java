@@ -68,6 +68,10 @@ public class GuestList {
         this.listLimit = null;
     }
 
+    /**
+     * Constructs a GuestList with a specific FirebaseFirestore instance.
+     * @param db The Firestore instance to use.
+     */
     public GuestList(FirebaseFirestore db) {
         this.db = db;
         this.attendees = new HashMap<>();
@@ -120,8 +124,19 @@ public class GuestList {
                 });
     }
 
+    /**
+     * Interface for handling guest list loading results.
+     */
     public interface OnGuestListLoadedListener {
+        /**
+         * Called when the guest list is successfully loaded.
+         */
         void onSuccess();
+        
+        /**
+         * Called when an error occurs during loading.
+         * @param e The exception that occurred.
+         */
         void onError(Exception e);
     }
 
@@ -210,7 +225,7 @@ public class GuestList {
     /**
      * Finds the attendee with the given ID in the list.
      *
-     * @param attendeeId
+     * @param attendeeId The ID of the attendee to find.
      * @return status of attendee or null if none is found
      */
     public String findAttendee(String attendeeId) {
@@ -283,6 +298,11 @@ public class GuestList {
         return attendees.get(attendeeId);
     }
 
+    /**
+     * Checks if the guest list has reached its capacity.
+     * @param capacity The total capacity of the event.
+     * @return true if the list count is greater than or equal to capacity, false otherwise.
+     */
     public boolean isGuestlistFull(int capacity) {
         return getListCount() >= capacity;
     }
