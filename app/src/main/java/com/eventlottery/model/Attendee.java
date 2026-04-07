@@ -31,6 +31,7 @@ public class Attendee extends AbstractUser {
     private ArrayList<AttendeeEventHistory> eventHistory;
     private ArrayList<String> waitListed;
 
+
     @Exclude
     private final FirebaseFirestore db;
 
@@ -59,6 +60,7 @@ public class Attendee extends AbstractUser {
         super();
         this.eventHistory = new ArrayList<AttendeeEventHistory>();
         this.waitListed = new ArrayList<String>();
+        //this.isAdmin = false;
         
         FirebaseFirestore tempDb = null;
         try {
@@ -133,6 +135,7 @@ public class Attendee extends AbstractUser {
                     if (listener != null) listener.onError(e);
                 });
     }
+
 
     /**
      * Adds an event to the attendee's personal waitlist and updates Firebase.

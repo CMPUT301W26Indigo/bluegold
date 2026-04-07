@@ -99,7 +99,8 @@ public class MainActivity extends AppCompatActivity {
                     FirebaseFirestore.getInstance().collection("attendees").document(id).get()
                             .addOnSuccessListener(documentSnapshot -> {
                                 Boolean isAdmin = documentSnapshot.getBoolean("isAdmin");
-                                if (isAdmin != null && isAdmin) {
+                                Boolean admin = documentSnapshot.getBoolean("admin");
+                                if (isAdmin != null && isAdmin || admin != null && admin) {
                                     Intent intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
                                     startActivity(intent);
                                 } else {
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 DocumentReference ref = doc.getReference();
                 // Add the new field with a default value (e.g., "Unknown" or false)
                 if (!doc.contains("isAdmin")) {
-                    batch.update(ref, "isAdmin", false);
+                    batch.update(ref, "isAdmin", true);
                 }
             }
 
