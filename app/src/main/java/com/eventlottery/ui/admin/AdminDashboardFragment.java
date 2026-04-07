@@ -47,6 +47,13 @@ public class AdminDashboardFragment extends Fragment {
         binding.cardNotificationLogs.setOnClickListener(v -> {
             startActivity(new Intent(getActivity(), NotificationLogsActivity.class));
         });
+
+        binding.cardManageComments.setOnClickListener(v -> {
+            // Need to pass an event ID
+            Intent intent = new Intent(getActivity(), AdminEventCommentsActivity.class);
+            intent.putExtra("EVENT_ID", "YOUR_EVENT_ID"); // You need to select which event
+            startActivity(intent);
+        });
     }
 
     @Override
