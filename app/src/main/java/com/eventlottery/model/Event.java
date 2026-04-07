@@ -213,6 +213,10 @@ public class Event {
         return id;
     }
 
+    /**
+     * Sets the event ID and updates associated lists.
+     * @param id The ID to set.
+     */
     public void setId(String id) {
         this.id = id;
         if (this.waitlist != null) {
@@ -331,6 +335,10 @@ public class Event {
         return posterImageUrl;
     }
 
+    /**
+     * Sets the poster image URL and updates the associated Image object.
+     * @param posterImageUrl The URL string to set.
+     */
     public void setPosterImageUrl(String posterImageUrl) {
         this.posterImageUrl = posterImageUrl;
         this.posterImage.setUrl(posterImageUrl);

@@ -132,8 +132,19 @@ public class Waitlist {
                 });
     }
 
+    /**
+     * Interface for waitlist data loading.
+     */
     public interface OnWaitlistLoadedListener {
+        /**
+         * Called when data is successfully loaded.
+         */
         void onSuccess();
+        
+        /**
+         * Called when an error occurs during data loading.
+         * @param e The exception encountered.
+         */
         void onError(Exception e);
     }
 

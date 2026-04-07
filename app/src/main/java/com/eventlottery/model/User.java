@@ -19,6 +19,10 @@ public class User implements Parcelable {
     public User() {
     }
 
+    /**
+     * Constructs a User from a Parcel.
+     * @param in The parcel containing the user data.
+     */
     protected User(Parcel in) {
         id = in.readString();
         name = in.readString();
@@ -29,6 +33,11 @@ public class User implements Parcelable {
         deviceToken = in.readString();
     }
 
+    /**
+     * Writes the user data to a Parcel.
+     * @param dest The parcel to write to.
+     * @param flags Additional flags about how the object should be written.
+     */
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(id);
@@ -46,11 +55,21 @@ public class User implements Parcelable {
     }
 
     public static final Creator<User> CREATOR = new Creator<User>() {
+        /**
+         * Creates a User from a Parcel.
+         * @param in The parcel to read from.
+         * @return A new User instance.
+         */
         @Override
         public User createFromParcel(Parcel in) {
             return new User(in);
         }
 
+        /**
+         * Creates a new array of Users.
+         * @param size The size of the array.
+         * @return An array of Users.
+         */
         @Override
         public User[] newArray(int size) {
             return new User[size];
