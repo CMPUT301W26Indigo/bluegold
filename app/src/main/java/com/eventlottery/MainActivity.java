@@ -2,12 +2,21 @@ package com.eventlottery;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import com.eventlottery.databinding.ActivityMainBinding;
+import com.eventlottery.model.AbstractUser;
+import com.eventlottery.model.Attendee;
 import com.eventlottery.ui.entrant.BrowseEventsActivity;
 import com.eventlottery.ui.organizer.OrganizerDashboardActivity;
 import com.eventlottery.ui.admin.AdminDashboardActivity;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 
 /**
  * MainActivity - Role Selection Screen
@@ -32,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         
         setupRoleSelection();
+
+        // Update all attendees with new field
+        updateAllAttendeesWithNewField();
     }
 
     /**
@@ -78,8 +90,32 @@ public class MainActivity extends AppCompatActivity {
      * Navigates to the admin flow
      */
     private void navigateToAdminFlow() {
-        Intent intent = new Intent(this, AdminDashboardActivity.class);
-        startActivity(intent);
+        AbstractUser.getFirebaseId().addOnSuccessListener(id -> {
+            Attendee attendee = new Attendee();
+            attendee.setID(id);
+            attendee.fetchFromFirebase(new Attendee.OnAttendeeLoadedListener() {
+                @Override
+                public void onSuccess(Attendee loadedAttendee) {
+                    FirebaseFirestore.getInstance().collection("attendees").document(id).get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                Boolean isAdmin = documentSnapshot.getBoolean("isAdmin");
+                                if (isAdmin != null && isAdmin) {
+                                    Intent intent = new Intent(MainActivity.this, AdminDashboardActivity.class);
+                                    startActivity(intent);
+                                } else {
+                                    Toast.makeText(MainActivity.this, "This is restricted to admins", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Toast.makeText(MainActivity.this, "Error verifying admin status", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }).addOnFailureListener(e -> {
+            Toast.makeText(MainActivity.this, "Error identifying user", Toast.LENGTH_SHORT).show();
+        });
     }
 
     /**
@@ -89,5 +125,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         binding = null;
+    }
+
+    public void updateAllAttendeesWithNewField() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("attendees").get().addOnSuccessListener(querySnapshot -> {
+            WriteBatch batch = db.batch(); // Use a Batch for better performance
+
+            for (DocumentSnapshot doc : querySnapshot) {
+                DocumentReference ref = doc.getReference();
+                // Add the new field with a default value (e.g., "Unknown" or false)
+                if (!doc.contains("isAdmin")) {
+                    batch.update(ref, "isAdmin", false);
+                }
+            }
+
+            // Commit all changes at once
+            batch.commit().addOnSuccessListener(aVoid -> Log.d("DB", "All attendees updated!"));
+        });
     }
 }
