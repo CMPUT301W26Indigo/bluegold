@@ -30,7 +30,6 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Summer Basketball Tournament" />
 
-
         <ImageView
             android:id="@+id/eventPosterImage"
             android:layout_width="match_parent"
@@ -39,8 +38,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/statusBadge"
             app:srcCompat="@drawable/ic_launcher_foreground" />
-
-
 
         <!-- Status Badge -->
         <com.google.android.material.chip.Chip
@@ -53,6 +50,19 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Open" />
 
+        <!-- Private Badge -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/privateBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="Private"
+            android:textColor="@color/text_white"
+            android:visibility="gone"
+            app:chipBackgroundColor="@color/status_closed_gray"
+            app:layout_constraintEnd_toStartOf="@id/statusBadge"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
 
         <!-- Date and Time -->
         <LinearLayout
@@ -132,6 +142,32 @@
 
         </LinearLayout>
 
+        <!-- Guestlist Count -->
+        <LinearLayout
+            android:id="@+id/guestlistLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/waitlistLayout">
+
+            <ImageView
+                android:layout_width="@dimen/icon_sm"
+                android:layout_height="@dimen/icon_sm"
+                android:contentDescription="Confirmed"
+                android:src="@android:drawable/ic_menu_agenda"
+                app:tint="@color/status_open_green" />
+
+            <TextView
+                android:id="@+id/guestlistCountText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:textAppearance="@style/TextAppearance.App.BodySmall"
+                tools:text="10 / 50 Confirmed" />
+
+        </LinearLayout>
+
         <!-- Tag Chips and Geolocation Badge -->
         <LinearLayout
             android:id="@+id/tagLayout"
@@ -139,7 +175,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
             android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/waitlistLayout">
+            app:layout_constraintTop_toBottomOf="@id/guestlistLayout">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/tagChips"
@@ -155,25 +191,32 @@
                     android:layout_height="wrap_content"
                     tools:text="Sports" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/tag2"
-                    style="@style/Widget.Material3.Chip.Assist.Elevated"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="Tournament" />
-
             </com.google.android.material.chip.ChipGroup>
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/geolocationBadge"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text_orange_900"
-                android:visibility="gone"
-                app:chipBackgroundColor="@color/background_orange_50"
-                app:chipStrokeColor="@color/border_orange_200"
-                tools:text="Within 10km"
-                tools:visibility="visible" />
+                android:orientation="vertical">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/geolocationBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/text_orange_900"
+                    android:visibility="gone"
+                    app:chipBackgroundColor="@color/background_orange_50"
+                    app:chipStrokeColor="@color/border_orange_200"
+                    tools:text="Within 10km"
+                    tools:visibility="visible" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/joinableBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    tools:text="Joinable"
+                    tools:visibility="visible" />
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -190,13 +233,21 @@
                 android:id="@+id/btn_admin_comments"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:text="Comments"
                 style="@style/Widget.App.Button.Small" />
 
+            <Button
+                android:id="@+id/adminActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete"
+                android:visibility="gone"
+                app:backgroundTint="@color/status_flagged_red"
+                style="@style/Widget.App.Button.Small"
+                tools:visibility="visible" />
+
         </LinearLayout>
-
-
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
